@@ -36,7 +36,7 @@ function Index() {
           </span>
           <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
             Assinaturas premium <br />
-            <span className="shine-text inline-block bg-gradient-to-r from-primary via-foreground to-primary bg-[length:200%_auto] bg-clip-text text-transparent [animation:shine-sweep_4s_linear_infinite]">
+            <span className="text-primary">
               pelo melhor preço.
             </span>
           </h1>
