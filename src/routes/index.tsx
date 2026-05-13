@@ -23,8 +23,10 @@ function Index() {
   return (
     <Layout>
       <section className="relative mx-auto max-w-7xl overflow-hidden px-6 pb-16 pt-16 sm:pt-24">
-        {/* Animated aurora blobs */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
+        {/* Animated mesh + grid background */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 overflow-hidden">
+          <div className="bg-animated-mesh" />
+          <div className="bg-animated-grid" />
           <div className="aurora-blob aurora-blob-1 left-[10%] top-[5%] h-72 w-72" />
           <div className="aurora-blob aurora-blob-2 right-[8%] top-[15%] h-80 w-80" />
           <div className="aurora-blob aurora-blob-3 left-[40%] top-[40%] h-64 w-64" />
