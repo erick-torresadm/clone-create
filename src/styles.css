@@ -178,40 +178,15 @@
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-  opacity: 0.85;
-  transition: opacity 0.4s ease;
-  animation: glow-spin 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
   pointer-events: none;
   z-index: 1;
 }
 
 .glow-card:hover::before {
   opacity: 1;
-}
-
-.glow-card::after {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  border-radius: inherit;
-  background: conic-gradient(
-    from var(--glow-angle),
-    transparent 0deg,
-    oklch(0.65 0.25 255 / 0.5) 60deg,
-    oklch(0.6 0.28 290 / 0.4) 120deg,
-    transparent 180deg,
-    transparent 360deg
-  );
-  filter: blur(18px);
-  opacity: 0.45;
-  transition: opacity 0.4s ease;
   animation: glow-spin 4s linear infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.glow-card:hover::after {
-  opacity: 0.85;
 }
 
 
@@ -297,10 +272,12 @@
   inset: -10%;
   pointer-events: none;
   background:
-    radial-gradient(at 20% 20%, color-mix(in oklab, var(--primary) 35%, transparent) 0px, transparent 45%),
-    radial-gradient(at 80% 10%, color-mix(in oklab, var(--accent) 30%, transparent) 0px, transparent 50%),
-    radial-gradient(at 60% 80%, color-mix(in oklab, var(--primary) 25%, transparent) 0px, transparent 55%);
-  filter: blur(40px);
-  animation: mesh-drift 18s ease-in-out infinite;
-  opacity: 0.7;
+    radial-gradient(at 20% 20%, color-mix(in oklab, var(--primary) 30%, transparent) 0px, transparent 45%),
+    radial-gradient(at 80% 10%, color-mix(in oklab, var(--accent) 25%, transparent) 0px, transparent 50%),
+    radial-gradient(at 60% 80%, color-mix(in oklab, var(--primary) 20%, transparent) 0px, transparent 55%);
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, .bg-animated-grid { animation: none !important; }
 }

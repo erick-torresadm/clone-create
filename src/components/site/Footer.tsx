@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, Instagram, Send, Mail } from "lucide-react";
+import { Sparkles, Instagram, Send, Mail } from "lucide-react";
 
 export function Footer() {
   return (
@@ -7,12 +7,14 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-foreground">FDM store</span>
-            <BadgeCheck className="h-5 w-5 text-primary" />
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <span className="text-lg font-extrabold text-foreground">Blue<span className="text-primary">Prime</span></span>
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-            Assinaturas digitais, streaming e contas premium com os melhores preços do mercado.
-            Entrega automática e suporte 24/7.
+            Contas Facebook, Business Managers e ativos digitais premium —
+            entrega automática, garantia e suporte 24/7.
           </p>
           <div className="mt-4 flex items-center gap-2">
             <a
@@ -62,7 +64,7 @@ export function Footer() {
 
       <div className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:px-6">
-          <span>© {new Date().getFullYear()} Minha Loja. Todos os direitos reservados.</span>
+          <span>© {new Date().getFullYear()} BluePrime. Todos os direitos reservados.</span>
           <span>Feito com cuidado ✦</span>
         </div>
       </div>

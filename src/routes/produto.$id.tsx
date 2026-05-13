@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ShieldCheck,
   Zap,
@@ -14,6 +14,7 @@ import {
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ALL_PRODUCTS, discount, formatBRL, getProduct } from "@/lib/products";
+import { useCart } from "@/lib/use-cart";
 
 export const Route = createFileRoute("/produto/$id")({
   loader: ({ params }) => {
@@ -58,6 +59,15 @@ function ProductPage() {
   const { product } = Route.useLoaderData();
   const off = discount(product.oldPrice, product.price);
   const related = ALL_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const { add } = useCart();
+  const navigate = useNavigate();
+
+  const handleAdd = () =>
+    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+  const handleBuyNow = () => {
+    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+    navigate({ to: "/carrinho" });
+  };
 
   return (
     <Layout>
@@ -134,10 +144,10 @@ function ProductPage() {
 
             <div className="mt-5 rounded-xl border border-border bg-background/40 p-4">
               <div className="text-center text-xs text-muted-foreground">(Estoque ilimitado)</div>
-              <button className="mt-3 h-12 w-full rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-[0_10px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110">
+              <button onClick={handleBuyNow} className="mt-3 h-12 w-full rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-[0_10px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110">
                 Comprar agora
               </button>
-              <button className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-semibold text-foreground transition hover:border-primary">
+              <button onClick={handleAdd} className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-semibold text-foreground transition hover:border-primary">
                 <ShoppingCart className="h-4 w-4" /> Adicionar ao carrinho
               </button>
               <button
