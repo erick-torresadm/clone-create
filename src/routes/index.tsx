@@ -7,9 +7,9 @@ import { SECTIONS } from "@/lib/products";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Minha Loja — Streaming, contas e assinaturas premium" },
+      { title: "FDM store — Streaming, contas e assinaturas premium" },
       { name: "description", content: "Assinaturas digitais com entrega automática, suporte 24/7 e os melhores preços." },
-      { property: "og:title", content: "Minha Loja — Assinaturas digitais" },
+      { property: "og:title", content: "FDM store — Assinaturas digitais" },
       { property: "og:description", content: "Streaming, contas e serviços premium com os melhores preços." },
       { property: "og:url", content: "/" },
     ],
