@@ -4,7 +4,7 @@ import { type Product, discount, formatBRL } from "@/lib/products";
 export function ProductCard({ product }: { product: Product }) {
   const off = discount(product.oldPrice, product.price);
   return (
-    <div className="group relative rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50 hover:shadow-[0_0_30px_rgba(99,140,255,0.18)]">
+    <div className="glow-card group relative rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50">
       <button
         aria-label="Compartilhar"
         className="absolute right-5 top-5 z-10 grid h-8 w-8 place-items-center rounded-full border border-border bg-background/70 text-muted-foreground backdrop-blur transition hover:text-foreground"
