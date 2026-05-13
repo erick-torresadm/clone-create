@@ -139,7 +139,7 @@ function Carrinho() {
                         className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground transition hover:brightness-110"
                         aria-label="Adicionar"
                       >
-                        <PlusIcon className="h-4 w-4" />
+                        <Plus className="h-4 w-4" />
                       </button>
                     </div>
                   ))}
