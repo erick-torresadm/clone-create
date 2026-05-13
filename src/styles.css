@@ -178,7 +178,7 @@
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-  opacity: 0;
+  opacity: 0.85;
   transition: opacity 0.4s ease;
   animation: glow-spin 4s linear infinite;
   pointer-events: none;
@@ -203,7 +203,7 @@
     transparent 360deg
   );
   filter: blur(18px);
-  opacity: 0;
+  opacity: 0.45;
   transition: opacity 0.4s ease;
   animation: glow-spin 4s linear infinite;
   pointer-events: none;
@@ -211,6 +211,6 @@
 }
 
 .glow-card:hover::after {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
