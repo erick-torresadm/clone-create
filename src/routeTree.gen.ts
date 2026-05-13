@@ -18,6 +18,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
+import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
 
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
@@ -64,6 +65,12 @@ const AdminProdutosRoute = AdminProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicSyncMaxviaStockRoute =
+  ApiPublicSyncMaxviaStockRouteImport.update({
+    id: '/api/public/sync-maxvia-stock',
+    path: '/api/public/sync-maxvia-stock',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +107,7 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/admin/produtos'
     | '/produto/$id'
+    | '/api/public/sync-maxvia-stock'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/admin/produtos'
     | '/produto/$id'
+    | '/api/public/sync-maxvia-stock'
   id:
     | '__root__'
     | '/'
@@ -133,6 +145,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/admin/produtos'
     | '/produto/$id'
+    | '/api/public/sync-maxvia-stock'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,6 +157,7 @@ export interface RootRouteChildren {
   ProdutosRoute: typeof ProdutosRoute
   SobreRoute: typeof SobreRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -211,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProdutosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/sync-maxvia-stock': {
+      id: '/api/public/sync-maxvia-stock'
+      path: '/api/public/sync-maxvia-stock'
+      fullPath: '/api/public/sync-maxvia-stock'
+      preLoaderRoute: typeof ApiPublicSyncMaxviaStockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -233,7 +254,18 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutosRoute: ProdutosRoute,
   SobreRoute: SobreRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
