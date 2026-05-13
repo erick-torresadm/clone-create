@@ -14,8 +14,8 @@ export const Route = createFileRoute("/produto/$id")({
     const p = loaderData?.product;
     return {
       meta: [
-        { title: p ? `${p.name} — Brenin Store` : "Produto — Brenin Store" },
-        { name: "description", content: p?.description?.slice(0, 150) ?? "Produto Brenin Store" },
+        { title: p ? `${p.name} — FDM store` : "Produto — FDM store" },
+        { name: "description", content: p?.description?.slice(0, 150) ?? "Produto FDM store" },
         { property: "og:title", content: p?.name ?? "Produto" },
         { property: "og:description", content: p?.description?.slice(0, 150) ?? "" },
         { property: "og:type", content: "product" },

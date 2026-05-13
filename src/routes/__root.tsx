@@ -72,15 +72,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Brenin Store — Assinaturas" },
-      { name: "description", content: "Loja de assinaturas Brenin Store" },
-      { name: "author", content: "Brenin Store" },
-      { property: "og:title", content: "Brenin Store" },
-      { property: "og:description", content: "Loja de assinaturas Brenin Store" },
+      { title: "FDM store — Assinaturas" },
+      { name: "description", content: "Loja de assinaturas FDM store" },
+      { name: "author", content: "FDM store" },
+      { property: "og:title", content: "FDM store" },
+      { property: "og:description", content: "Loja de assinaturas FDM store" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Brenin Store" },
-      { name: "twitter:description", content: "Loja de assinaturas Brenin Store" },
+      { name: "twitter:title", content: "FDM store" },
+      { name: "twitter:description", content: "Loja de assinaturas FDM store" },
     ],
     links: [
       {
