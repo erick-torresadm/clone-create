@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
-import { ShoppingCart, ArrowRight, Trash2, Minus, Plus, Tag, ShieldCheck, Zap, Plus as PlusIcon } from "lucide-react";
+import { ShoppingCart, ArrowRight, Trash2, Minus, Plus, Tag, ShieldCheck, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useCart } from "@/lib/use-cart";
 import { ALL_PRODUCTS, formatBRL } from "@/lib/products";
