@@ -16,7 +16,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold tracking-tight text-foreground">FDM store</span>
           <BadgeCheck className="h-5 w-5 text-primary" />
@@ -73,7 +73,7 @@ export function Header() {
 
       {open && (
         <div className="border-t border-border/60 bg-background/95 md:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-6 py-3">
+          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
             {NAV.map((item) => (
               <Link
                 key={item.to}
