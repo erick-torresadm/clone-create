@@ -78,12 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "FDM store — Assinaturas" },
       { name: "description", content: "Loja de assinaturas FDM store" },
       { name: "author", content: "FDM store" },
-      { property: "og:title", content: "FDM store" },
+      { property: "og:title", content: "FDM store — Assinaturas" },
       { property: "og:description", content: "Loja de assinaturas FDM store" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "FDM store" },
+      { name: "twitter:title", content: "FDM store — Assinaturas" },
       { name: "twitter:description", content: "Loja de assinaturas FDM store" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0fbc7b23-5829-47d7-9422-98756d185813/id-preview-2946e26e--15e1ab37-295e-420d-956f-97ff29d001b0.lovable.app-1778715886209.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0fbc7b23-5829-47d7-9422-98756d185813/id-preview-2946e26e--15e1ab37-295e-420d-956f-97ff29d001b0.lovable.app-1778715886209.png" },
     ],
     links: [
       {
