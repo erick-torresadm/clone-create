@@ -22,14 +22,21 @@ function Index() {
   const featured = SECTIONS[0].products.slice(0, 3);
   return (
     <Layout>
-      <section className="mx-auto max-w-7xl px-6 pb-16 pt-16 sm:pt-24">
-        <div className="mx-auto max-w-3xl text-center">
+      <section className="relative mx-auto max-w-7xl overflow-hidden px-6 pb-16 pt-16 sm:pt-24">
+        {/* Animated aurora blobs */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
+          <div className="aurora-blob aurora-blob-1 left-[10%] top-[5%] h-72 w-72" />
+          <div className="aurora-blob aurora-blob-2 right-[8%] top-[15%] h-80 w-80" />
+          <div className="aurora-blob aurora-blob-3 left-[40%] top-[40%] h-64 w-64" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             ✦ Loja oficial verificada
           </span>
           <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
             Assinaturas premium <br />
-            <span className="bg-gradient-to-r from-primary to-foreground bg-clip-text text-transparent">
+            <span className="shine-text inline-block bg-gradient-to-r from-primary via-foreground to-primary bg-[length:200%_auto] bg-clip-text text-transparent [animation:shine-sweep_4s_linear_infinite]">
               pelo melhor preço.
             </span>
           </h1>
