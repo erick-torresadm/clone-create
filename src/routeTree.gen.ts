@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as ProdutosRouteImport } from './routes/produtos'
+import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
@@ -18,6 +19,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
+import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
+import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
+import { Route as AdminAparenciaRouteImport } from './routes/admin.aparencia'
 import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
 
 const SobreRoute = SobreRouteImport.update({
@@ -28,6 +33,11 @@ const SobreRoute = SobreRouteImport.update({
 const ProdutosRoute = ProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinhaContaRoute = MinhaContaRouteImport.update({
+  id: '/minha-conta',
+  path: '/minha-conta',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EntrarRoute = EntrarRouteImport.update({
@@ -65,6 +75,26 @@ const AdminProdutosRoute = AdminProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPopupsRoute = AdminPopupsRouteImport.update({
+  id: '/popups',
+  path: '/popups',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPedidosRoute = AdminPedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCuponsRoute = AdminCuponsRouteImport.update({
+  id: '/cupons',
+  path: '/cupons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAparenciaRoute = AdminAparenciaRouteImport.update({
+  id: '/aparencia',
+  path: '/aparencia',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicSyncMaxviaStockRoute =
   ApiPublicSyncMaxviaStockRouteImport.update({
     id: '/api/public/sync-maxvia-stock',
@@ -78,8 +108,13 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
+  '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
   '/sobre': typeof SobreRoute
+  '/admin/aparencia': typeof AdminAparenciaRoute
+  '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
+  '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -90,8 +125,13 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
+  '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
   '/sobre': typeof SobreRoute
+  '/admin/aparencia': typeof AdminAparenciaRoute
+  '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
+  '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -103,8 +143,13 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
+  '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
   '/sobre': typeof SobreRoute
+  '/admin/aparencia': typeof AdminAparenciaRoute
+  '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
+  '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -117,8 +162,13 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/contato'
     | '/entrar'
+    | '/minha-conta'
     | '/produtos'
     | '/sobre'
+    | '/admin/aparencia'
+    | '/admin/cupons'
+    | '/admin/pedidos'
+    | '/admin/popups'
     | '/admin/produtos'
     | '/produto/$id'
     | '/api/public/sync-maxvia-stock'
@@ -129,8 +179,13 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/contato'
     | '/entrar'
+    | '/minha-conta'
     | '/produtos'
     | '/sobre'
+    | '/admin/aparencia'
+    | '/admin/cupons'
+    | '/admin/pedidos'
+    | '/admin/popups'
     | '/admin/produtos'
     | '/produto/$id'
     | '/api/public/sync-maxvia-stock'
@@ -141,8 +196,13 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/contato'
     | '/entrar'
+    | '/minha-conta'
     | '/produtos'
     | '/sobre'
+    | '/admin/aparencia'
+    | '/admin/cupons'
+    | '/admin/pedidos'
+    | '/admin/popups'
     | '/admin/produtos'
     | '/produto/$id'
     | '/api/public/sync-maxvia-stock'
@@ -154,6 +214,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   ContatoRoute: typeof ContatoRoute
   EntrarRoute: typeof EntrarRoute
+  MinhaContaRoute: typeof MinhaContaRoute
   ProdutosRoute: typeof ProdutosRoute
   SobreRoute: typeof SobreRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
@@ -174,6 +235,13 @@ declare module '@tanstack/react-router' {
       path: '/produtos'
       fullPath: '/produtos'
       preLoaderRoute: typeof ProdutosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/minha-conta': {
+      id: '/minha-conta'
+      path: '/minha-conta'
+      fullPath: '/minha-conta'
+      preLoaderRoute: typeof MinhaContaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entrar': {
@@ -225,6 +293,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProdutosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/popups': {
+      id: '/admin/popups'
+      path: '/popups'
+      fullPath: '/admin/popups'
+      preLoaderRoute: typeof AdminPopupsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/pedidos': {
+      id: '/admin/pedidos'
+      path: '/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AdminPedidosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/cupons': {
+      id: '/admin/cupons'
+      path: '/cupons'
+      fullPath: '/admin/cupons'
+      preLoaderRoute: typeof AdminCuponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/aparencia': {
+      id: '/admin/aparencia'
+      path: '/aparencia'
+      fullPath: '/admin/aparencia'
+      preLoaderRoute: typeof AdminAparenciaRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/sync-maxvia-stock': {
       id: '/api/public/sync-maxvia-stock'
       path: '/api/public/sync-maxvia-stock'
@@ -236,10 +332,18 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAparenciaRoute: typeof AdminAparenciaRoute
+  AdminCuponsRoute: typeof AdminCuponsRoute
+  AdminPedidosRoute: typeof AdminPedidosRoute
+  AdminPopupsRoute: typeof AdminPopupsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAparenciaRoute: AdminAparenciaRoute,
+  AdminCuponsRoute: AdminCuponsRoute,
+  AdminPedidosRoute: AdminPedidosRoute,
+  AdminPopupsRoute: AdminPopupsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
 }
 
@@ -251,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   ContatoRoute: ContatoRoute,
   EntrarRoute: EntrarRoute,
+  MinhaContaRoute: MinhaContaRoute,
   ProdutosRoute: ProdutosRoute,
   SobreRoute: SobreRoute,
   ProdutoIdRoute: ProdutoIdRoute,
@@ -259,3 +364,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
