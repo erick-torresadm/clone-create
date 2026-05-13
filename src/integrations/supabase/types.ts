@@ -143,6 +143,11 @@ export type Database = {
           badge: string | null
           created_at: string
           description: string | null
+          external_currency: string | null
+          external_id: string | null
+          external_price: number | null
+          external_provider: string | null
+          external_quantity: number | null
           id: string
           image_url: string | null
           name: string
@@ -154,6 +159,7 @@ export type Database = {
           slug: string | null
           sold: number
           sort_order: number
+          source: string
           updated_at: string
         }
         Insert: {
@@ -161,6 +167,11 @@ export type Database = {
           badge?: string | null
           created_at?: string
           description?: string | null
+          external_currency?: string | null
+          external_id?: string | null
+          external_price?: number | null
+          external_provider?: string | null
+          external_quantity?: number | null
           id?: string
           image_url?: string | null
           name: string
@@ -172,6 +183,7 @@ export type Database = {
           slug?: string | null
           sold?: number
           sort_order?: number
+          source?: string
           updated_at?: string
         }
         Update: {
@@ -179,6 +191,11 @@ export type Database = {
           badge?: string | null
           created_at?: string
           description?: string | null
+          external_currency?: string | null
+          external_id?: string | null
+          external_price?: number | null
+          external_provider?: string | null
+          external_quantity?: number | null
           id?: string
           image_url?: string | null
           name?: string
@@ -190,6 +207,7 @@ export type Database = {
           slug?: string | null
           sold?: number
           sort_order?: number
+          source?: string
           updated_at?: string
         }
         Relationships: [
@@ -254,6 +272,8 @@ export type Database = {
         Row: {
           accent_color: string
           announcement_bar: string | null
+          brl_per_usd: number
+          brl_per_vnd: number
           hero_subtitle: string
           hero_title: string
           id: number
@@ -267,6 +287,8 @@ export type Database = {
         Insert: {
           accent_color?: string
           announcement_bar?: string | null
+          brl_per_usd?: number
+          brl_per_vnd?: number
           hero_subtitle?: string
           hero_title?: string
           id?: number
@@ -280,6 +302,8 @@ export type Database = {
         Update: {
           accent_color?: string
           announcement_bar?: string | null
+          brl_per_usd?: number
+          brl_per_vnd?: number
           hero_subtitle?: string
           hero_title?: string
           id?: number
