@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { BadgeCheck, ShoppingCart, User, Menu, X } from "lucide-react";
+import { BadgeCheck, ShoppingCart, User, Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/lib/use-auth";
 
 const NAV = [
   { to: "/", label: "Início" },
@@ -11,6 +12,7 @@ const NAV = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
@@ -35,6 +37,11 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Link to="/admin" className="hidden items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary/20 sm:flex">
+              <Shield className="h-4 w-4" /> Admin
+            </Link>
+          )}
           <Link
             to="/entrar"
             className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 sm:flex"
