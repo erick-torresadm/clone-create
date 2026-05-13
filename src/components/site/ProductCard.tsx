@@ -1,11 +1,20 @@
 import { Link } from "@tanstack/react-router";
 import { Share2, ShoppingCart } from "lucide-react";
 import { type Product, discount, formatBRL } from "@/lib/products";
+import { useCart } from "@/lib/use-cart";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = discount(product.oldPrice, product.price);
+  const { add } = useCart();
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+  };
+
   return (
-    <div className="glow-card group relative rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50">
+    <div className="group relative rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50 hover:shadow-[0_8px_30px_-10px_rgba(99,140,255,0.5)]">
       <button
         aria-label="Compartilhar"
         onClick={(e) => e.preventDefault()}
@@ -55,18 +64,18 @@ export function ProductCard({ product }: { product: Product }) {
       </Link>
       <div className="mt-2 flex items-center gap-2 px-1 pb-1">
         <button
+          onClick={handleAdd}
           aria-label="Adicionar ao carrinho"
           className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border bg-background text-foreground transition hover:border-primary"
         >
           <ShoppingCart className="h-4 w-4" />
         </button>
-        <Link
-          to="/produto/$id"
-          params={{ id: product.id }}
+        <button
+          onClick={handleAdd}
           className="grid h-10 flex-1 place-items-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_rgba(99,140,255,0.7)] transition hover:brightness-110"
         >
           Comprar
-        </Link>
+        </button>
       </div>
     </div>
   );
