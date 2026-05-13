@@ -22,21 +22,12 @@ function Index() {
   const featured = SECTIONS[0].products.slice(0, 3);
   return (
     <Layout>
-      <section className="relative mx-auto max-w-7xl overflow-hidden px-6 pb-16 pt-16 sm:pt-24">
-        {/* Animated mesh + grid background */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-0 overflow-hidden">
-          <div className="bg-animated-mesh" />
-          <div className="bg-animated-grid" />
-          <div className="aurora-blob aurora-blob-1 left-[10%] top-[5%] h-72 w-72" />
-          <div className="aurora-blob aurora-blob-2 right-[8%] top-[15%] h-80 w-80" />
-          <div className="aurora-blob aurora-blob-3 left-[40%] top-[40%] h-64 w-64" />
-        </div>
-
+      <section className="relative mx-auto w-full max-w-7xl overflow-hidden px-4 pb-12 pt-12 sm:px-6 sm:pt-20 lg:pt-24">
         <div className="relative z-10 mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
             ✦ Loja oficial verificada
           </span>
-          <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-foreground sm:text-6xl">
+          <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Assinaturas premium <br />
             <span className="text-primary">
               pelo melhor preço.
@@ -61,7 +52,7 @@ function Index() {
           </div>
         </div>
 
-        <div className="mx-auto mt-16 grid max-w-5xl gap-4 sm:grid-cols-3">
+        <div className="mx-auto mt-12 grid max-w-5xl gap-4 sm:mt-16 sm:grid-cols-3">
           {[
             { icon: Zap, title: "Entrega imediata", desc: "Receba seu acesso em segundos após a compra." },
             { icon: ShieldCheck, title: "100% garantido", desc: "Reposição grátis e suporte durante toda a assinatura." },
@@ -76,7 +67,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20">
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/30 shadow-[0_0_12px_rgba(99,140,255,0.6)]" />
