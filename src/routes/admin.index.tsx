@@ -4,7 +4,7 @@ import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { Package, Tag, Bell, Settings, LogOut } from "lucide-react";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/admin/")({
   component: AdminHome,
 });
 

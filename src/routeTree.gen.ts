@@ -15,8 +15,8 @@ import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
@@ -55,14 +55,14 @@ const CarrinhoRoute = CarrinhoRouteImport.update({
   path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
@@ -104,7 +104,6 @@ const ApiPublicSyncMaxviaStockRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/carrinho': typeof CarrinhoRoute
   '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
@@ -117,11 +116,11 @@ export interface FileRoutesByFullPath {
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/carrinho': typeof CarrinhoRoute
   '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
@@ -134,12 +133,12 @@ export interface FileRoutesByTo {
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/carrinho': typeof CarrinhoRoute
   '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
@@ -152,13 +151,13 @@ export interface FileRoutesById {
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/carrinho'
     | '/contato'
     | '/entrar'
@@ -171,11 +170,11 @@ export interface FileRouteTypes {
     | '/admin/popups'
     | '/admin/produtos'
     | '/produto/$id'
+    | '/admin/'
     | '/api/public/sync-maxvia-stock'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/carrinho'
     | '/contato'
     | '/entrar'
@@ -188,11 +187,11 @@ export interface FileRouteTypes {
     | '/admin/popups'
     | '/admin/produtos'
     | '/produto/$id'
+    | '/admin'
     | '/api/public/sync-maxvia-stock'
   id:
     | '__root__'
     | '/'
-    | '/admin'
     | '/carrinho'
     | '/contato'
     | '/entrar'
@@ -205,12 +204,12 @@ export interface FileRouteTypes {
     | '/admin/popups'
     | '/admin/produtos'
     | '/produto/$id'
+    | '/admin/'
     | '/api/public/sync-maxvia-stock'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
   CarrinhoRoute: typeof CarrinhoRoute
   ContatoRoute: typeof ContatoRoute
   EntrarRoute: typeof EntrarRoute
@@ -218,6 +217,7 @@ export interface RootRouteChildren {
   ProdutosRoute: typeof ProdutosRoute
   SobreRoute: typeof SobreRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
 }
 
@@ -265,18 +265,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produto/$id': {
@@ -331,27 +331,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AdminRouteChildren {
-  AdminAparenciaRoute: typeof AdminAparenciaRoute
-  AdminCuponsRoute: typeof AdminCuponsRoute
-  AdminPedidosRoute: typeof AdminPedidosRoute
-  AdminPopupsRoute: typeof AdminPopupsRoute
-  AdminProdutosRoute: typeof AdminProdutosRoute
-}
-
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminAparenciaRoute: AdminAparenciaRoute,
-  AdminCuponsRoute: AdminCuponsRoute,
-  AdminPedidosRoute: AdminPedidosRoute,
-  AdminPopupsRoute: AdminPopupsRoute,
-  AdminProdutosRoute: AdminProdutosRoute,
-}
-
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
   CarrinhoRoute: CarrinhoRoute,
   ContatoRoute: ContatoRoute,
   EntrarRoute: EntrarRoute,
@@ -359,8 +340,19 @@ const rootRouteChildren: RootRouteChildren = {
   ProdutosRoute: ProdutosRoute,
   SobreRoute: SobreRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
