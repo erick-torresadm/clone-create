@@ -9,14 +9,14 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminHome() {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, roleLoading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/entrar" });
   }, [loading, user, navigate]);
 
-  if (loading) return <Layout><div className="p-12 text-center text-muted-foreground">Carregando...</div></Layout>;
+  if (loading || (user && roleLoading)) return <Layout><div className="p-12 text-center text-muted-foreground">Carregando...</div></Layout>;
   if (!user) return null;
   if (!isAdmin) {
     return (
