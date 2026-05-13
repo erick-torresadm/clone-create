@@ -7,10 +7,10 @@ import { SECTIONS } from "@/lib/products";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FDM store — Assinaturas" },
-      { name: "description", content: "Assinaturas digitais com entrega automática, suporte 24/7 e os melhores preços." },
-      { property: "og:title", content: "FDM store — Assinaturas digitais" },
-      { property: "og:description", content: "Streaming, contas e serviços premium com os melhores preços." },
+      { title: "BluePrime — Contas Facebook & BM Premium" },
+      { name: "description", content: "Contas Facebook, BMs e ativos digitais premium com entrega automática, garantia e suporte 24/7." },
+      { property: "og:title", content: "BluePrime — Contas Facebook & BM Premium" },
+      { property: "og:description", content: "Contas Facebook, Business Managers e ativos digitais premium." },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
@@ -28,13 +28,11 @@ function Index() {
             ✦ Loja oficial verificada
           </span>
           <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Assinaturas premium <br />
-            <span className="text-primary">
-              pelo melhor preço.
-            </span>
+            Contas Facebook & BMs <br />
+            <span className="text-primary">com entrega imediata.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-            Streaming, música, contas e ferramentas premium com entrega automática e suporte 24/7.
+            Perfis BR e USA, Business Managers e ativos digitais — com garantia, reposição e suporte 24/7.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
