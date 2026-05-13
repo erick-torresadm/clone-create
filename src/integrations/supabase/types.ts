@@ -57,8 +57,10 @@ export type Database = {
         Row: {
           coupon_code: string | null
           created_at: string
+          delivered_data: Json | null
           discount: number
           email: string | null
+          external_order_id: string | null
           id: string
           items: Json
           status: string
@@ -70,8 +72,10 @@ export type Database = {
         Insert: {
           coupon_code?: string | null
           created_at?: string
+          delivered_data?: Json | null
           discount?: number
           email?: string | null
+          external_order_id?: string | null
           id?: string
           items: Json
           status?: string
@@ -83,8 +87,10 @@ export type Database = {
         Update: {
           coupon_code?: string | null
           created_at?: string
+          delivered_data?: Json | null
           discount?: number
           email?: string | null
+          external_order_id?: string | null
           id?: string
           items?: Json
           status?: string
@@ -140,6 +146,7 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          auto_sync: boolean
           badge: string | null
           created_at: string
           description: string | null
@@ -164,6 +171,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          auto_sync?: boolean
           badge?: string | null
           created_at?: string
           description?: string | null
@@ -188,6 +196,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          auto_sync?: boolean
           badge?: string | null
           created_at?: string
           description?: string | null
