@@ -81,10 +81,25 @@ function ProductPage() {
         {/* 3-column hero */}
         <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr_0.85fr]">
           {/* Image */}
-          <div className="glow-card relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary via-card to-background">
-            <div className="absolute inset-0 grid place-items-center text-sm uppercase tracking-[0.3em] text-muted-foreground/40">
-              {product.name.split(" - ")[0]}
-            </div>
+          <div className="glow-card relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary via-card to-background">
+            {product.image ? (
+              <img
+                src={product.image}
+                alt={product.name}
+                width={800}
+                height={800}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 grid place-items-center text-sm uppercase tracking-[0.3em] text-muted-foreground/40">
+                {product.name.split(" - ")[0]}
+              </div>
+            )}
+            {product.badge && (
+              <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
+                {product.badge}
+              </span>
+            )}
           </div>
 
           {/* Main info + CTA */}

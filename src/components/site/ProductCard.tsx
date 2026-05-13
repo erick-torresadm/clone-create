@@ -20,9 +20,25 @@ export function ProductCard({ product }: { product: Product }) {
         aria-label={`Ver ${product.name}`}
       >
         <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gradient-to-br from-secondary via-card to-background ring-1 ring-border">
-          <div className="absolute inset-0 grid place-items-center text-xs uppercase tracking-widest text-muted-foreground/40">
-            {product.name.split(" - ")[0]}
-          </div>
+          {product.image ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              loading="lazy"
+              width={800}
+              height={800}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="absolute inset-0 grid place-items-center text-xs uppercase tracking-widest text-muted-foreground/40">
+              {product.name.split(" - ")[0]}
+            </div>
+          )}
+          {product.badge && (
+            <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
+              {product.badge}
+            </span>
+          )}
         </div>
         <div className="px-1 pb-1 pt-4">
           <h3 className="text-base font-semibold tracking-tight text-foreground group-hover:text-primary">{product.name}</h3>
