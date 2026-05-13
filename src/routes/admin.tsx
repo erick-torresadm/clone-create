@@ -31,10 +31,11 @@ function AdminHome() {
   }
 
   const cards = [
-    { to: "/admin/produtos", icon: Package, title: "Produtos & Seções", desc: "Adicionar, editar, ativar/desativar." },
+    { to: "/admin/produtos", icon: Package, title: "Produtos & API", desc: "Manuais + importar do fornecedor." },
     { to: "/admin/cupons", icon: Tag, title: "Cupons", desc: "Crie códigos de desconto." },
     { to: "/admin/popups", icon: Bell, title: "Popups & Notícias", desc: "Avisos no site." },
-    { to: "/admin/aparencia", icon: Settings, title: "Aparência", desc: "Cores, logo, hero, faixa de aviso." },
+    { to: "/admin/aparencia", icon: Settings, title: "Aparência & Config", desc: "Cores, logo, hero, câmbio." },
+    { to: "/admin/pedidos", icon: Package, title: "Pedidos", desc: "Acompanhe e atualize status." },
   ];
 
   return (
@@ -50,7 +51,7 @@ function AdminHome() {
           </button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (
             <Link key={c.to} to={c.to as any}
               className="group rounded-2xl border border-border bg-card p-6 transition hover:border-primary/50">
