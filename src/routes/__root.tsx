@@ -7,6 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/use-auth";
+import { useSettings } from "@/lib/site-data";
 
 import appCss from "../styles.css?url";
 
@@ -114,7 +117,21 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <AuthProvider>
+        <SiteThemeBridge />
+        <Outlet />
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+function SiteThemeBridge() {
+  const { data } = useSettings();
+  if (typeof document !== "undefined" && data) {
+    const root = document.documentElement;
+    if (data.primary_color) root.style.setProperty("--brand-primary", data.primary_color);
+    if (data.accent_color) root.style.setProperty("--brand-accent", data.accent_color);
+  }
+  return null;
 }
