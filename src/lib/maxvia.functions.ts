@@ -16,6 +16,30 @@ function key() {
   return k;
 }
 
+async function translateToPT(texts: string[]): Promise<string[]> {
+  const apiKey = process.env.LOVABLE_API_KEY;
+  if (!apiKey || !texts.length) return texts;
+  try {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          { role: "system", content: "Traduza cada linha do usuário para português brasileiro de forma natural, curta e comercial. Mantenha números, siglas e símbolos. NÃO mencione fornecedores, marcas vietnamitas/inglesas específicas. Substitua menções a 'via', 'BM' por 'conta'/'gerenciador'. Responda APENAS as traduções, uma por linha, na mesma ordem, sem numeração." },
+          { role: "user", content: texts.join("\n") },
+        ],
+      }),
+    });
+    if (!r.ok) return texts;
+    const j = await r.json();
+    const out = (j.choices?.[0]?.message?.content ?? "").split("\n").map((s: string) => s.trim()).filter(Boolean);
+    return out.length === texts.length ? out : texts;
+  } catch {
+    return texts;
+  }
+}
+
 export const maxviaBalance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -35,7 +59,9 @@ export const maxviaCategories = createServerFn({ method: "POST" })
     const r = await fetch(`${BASE}/categories`);
     if (!r.ok) throw new Error(`MaxVia categories ${r.status}`);
     const j = await r.json();
-    return (j?.data ?? []) as Array<{ id: number; name: string; icon: string | null }>;
+    const cats = (j?.data ?? []) as Array<{ id: number; name: string; icon: string | null }>;
+    const translated = await translateToPT(cats.map((c) => c.name));
+    return cats.map((c, i) => ({ ...c, name: translated[i] ?? c.name, original_name: c.name }));
   });
 
 export const maxviaProducts = createServerFn({ method: "POST" })
@@ -46,7 +72,16 @@ export const maxviaProducts = createServerFn({ method: "POST" })
     const r = await fetch(`${BASE}/category/${data.categoryId}`);
     if (!r.ok) throw new Error(`MaxVia products ${r.status}`);
     const j = await r.json();
-    return (j?.data ?? []) as Array<{ id_product: number; name: string; desc: string; price: number; quantity: number }>;
+    const items = (j?.data ?? []) as Array<{ id_product: number; name: string; desc: string; price: number; quantity: number }>;
+    const lines = items.flatMap((p) => [p.name, p.desc || ""]);
+    const tr = await translateToPT(lines);
+    return items.map((p, i) => ({
+      ...p,
+      original_name: p.name,
+      original_desc: p.desc,
+      name: tr[i * 2] ?? p.name,
+      desc: tr[i * 2 + 1] ?? p.desc,
+    }));
   });
 
 const importSchema = z.object({
@@ -74,9 +109,9 @@ export const maxviaImportProduct = createServerFn({ method: "POST" })
       price: data.price_brl,
       old_price: data.old_price_brl ?? null,
       section_id: data.section_id ?? null,
-      badge: data.badge ?? "API",
+      badge: data.badge ?? null,
       image_url: data.image_url ?? null,
-      active: true,
+      active: (data.external_quantity ?? 0) > 0,
       source: "api",
       external_provider: "maxvia",
       external_id: data.external_id,

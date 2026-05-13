@@ -12,7 +12,7 @@ const NAV = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
@@ -42,12 +42,15 @@ export function Header() {
               <Shield className="h-4 w-4" /> Admin
             </Link>
           )}
-          <Link
-            to="/entrar"
-            className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 sm:flex"
-          >
-            <User className="h-4 w-4" /> Entrar
-          </Link>
+          {user ? (
+            <Link to="/minha-conta" className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 sm:flex">
+              <User className="h-4 w-4" /> Minha conta
+            </Link>
+          ) : (
+            <Link to="/entrar" className="hidden items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 sm:flex">
+              <User className="h-4 w-4" /> Entrar
+            </Link>
+          )}
           <Link
             to="/carrinho"
             aria-label="Carrinho"
