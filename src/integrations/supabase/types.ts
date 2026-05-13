@@ -14,16 +14,322 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          min_order: number
+          used_count: number
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order?: number
+          used_count?: number
+          value: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order?: number
+          used_count?: number
+          value?: number
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          coupon_code: string | null
+          created_at: string
+          discount: number
+          email: string | null
+          id: string
+          items: Json
+          status: string
+          stripe_session_id: string | null
+          subtotal: number
+          total: number
+          user_id: string | null
+        }
+        Insert: {
+          coupon_code?: string | null
+          created_at?: string
+          discount?: number
+          email?: string | null
+          id?: string
+          items: Json
+          status?: string
+          stripe_session_id?: string | null
+          subtotal: number
+          total: number
+          user_id?: string | null
+        }
+        Update: {
+          coupon_code?: string | null
+          created_at?: string
+          discount?: number
+          email?: string | null
+          id?: string
+          items?: Json
+          status?: string
+          stripe_session_id?: string | null
+          subtotal?: number
+          total?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      popups: {
+        Row: {
+          active: boolean
+          audience: string
+          body: string | null
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          starts_at: string | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string
+          body?: string | null
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          starts_at?: string | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string
+          body?: string | null
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          starts_at?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean
+          badge: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          old_price: number | null
+          price: number
+          rating: number | null
+          reviews: number
+          section_id: string | null
+          slug: string | null
+          sold: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          old_price?: number | null
+          price: number
+          rating?: number | null
+          reviews?: number
+          section_id?: string | null
+          slug?: string | null
+          sold?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          old_price?: number | null
+          price?: number
+          rating?: number | null
+          reviews?: number
+          section_id?: string | null
+          slug?: string | null
+          sold?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      sections: {
+        Row: {
+          active: boolean
+          created_at: string
+          emoji: string | null
+          id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          accent_color: string
+          announcement_bar: string | null
+          hero_subtitle: string
+          hero_title: string
+          id: number
+          logo_url: string | null
+          primary_color: string
+          store_name: string
+          telegram: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          accent_color?: string
+          announcement_bar?: string | null
+          hero_subtitle?: string
+          hero_title?: string
+          id?: number
+          logo_url?: string | null
+          primary_color?: string
+          store_name?: string
+          telegram?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          accent_color?: string
+          announcement_bar?: string | null
+          hero_subtitle?: string
+          hero_title?: string
+          id?: number
+          logo_url?: string | null
+          primary_color?: string
+          store_name?: string
+          telegram?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      discount_type: "percent" | "fixed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +456,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      discount_type: ["percent", "fixed"],
+    },
   },
 } as const
