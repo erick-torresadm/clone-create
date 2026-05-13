@@ -15,9 +15,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/popups")({ component: AdminPopups });
 
 function AdminPopups() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, roleLoading } = useAuth();
   const navigate = useNavigate();
-  useEffect(() => { if (!loading && (!user || !isAdmin)) navigate({ to: "/entrar" }); }, [loading, user, isAdmin, navigate]);
+  useEffect(() => { if (!loading && !roleLoading && (!user || !isAdmin)) navigate({ to: "/entrar" }); }, [loading, roleLoading, user, isAdmin, navigate]);
   if (!user || !isAdmin) return null;
 
   const { data: popups = [] } = usePopups();

@@ -14,9 +14,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/aparencia")({ component: AdminAparencia });
 
 function AdminAparencia() {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading, roleLoading } = useAuth();
   const navigate = useNavigate();
-  useEffect(() => { if (!loading && (!user || !isAdmin)) navigate({ to: "/entrar" }); }, [loading, user, isAdmin, navigate]);
+  useEffect(() => { if (!loading && !roleLoading && (!user || !isAdmin)) navigate({ to: "/entrar" }); }, [loading, roleLoading, user, isAdmin, navigate]);
 
   const { data: s } = useSettings();
   const qc = useQueryClient();
