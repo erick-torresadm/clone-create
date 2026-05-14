@@ -229,8 +229,13 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
   });
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold text-foreground">Editar produto</h3>
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">Editar produto</h3>
+          <Button variant="outline" size="sm" onClick={runAi} disabled={aiLoading}>
+            ✨ {aiLoading ? "Gerando..." : "Melhorar com IA"}
+          </Button>
+        </div>
         <div className="mt-4 space-y-3">
           <div><Label>Nome</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-3">
