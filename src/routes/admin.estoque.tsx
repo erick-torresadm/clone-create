@@ -387,46 +387,203 @@ function StockPanel({ product }: { product: any }) {
         <Button onClick={addBulk} className="mt-2 w-full"><Plus className="mr-2 h-4 w-4" />Adicionar ao estoque</Button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card">
-        <div className="flex items-center justify-between border-b border-border p-4">
-          <h4 className="text-sm font-semibold text-foreground">Disponíveis ({available.length})</h4>
-          {available.length > 0 && (
+      <AccountList
+        title="Disponíveis"
+        items={available}
+        emptyText="Nenhum item disponível."
+        accent="emerald"
+        onRemove={removeOne}
+        rightAction={
+          available.length > 0 ? (
             <Button variant="ghost" size="sm" onClick={clearAvailable}>
               <Trash2 className="mr-2 h-3.5 w-3.5" /> Limpar disponíveis
             </Button>
-          )}
+          ) : null
+        }
+      />
+
+      {sold.length > 0 && (
+        <AccountList
+          title="Entregues"
+          items={sold}
+          emptyText="Nenhum item entregue ainda."
+          accent="muted"
+          delivered
+        />
+      )}
+    </div>
+  );
+}
+
+function fmtDate(d?: string | null) {
+  if (!d) return "";
+  return new Date(d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
+function AccountList({
+  title,
+  items,
+  emptyText,
+  accent,
+  delivered,
+  onRemove,
+  rightAction,
+}: {
+  title: string;
+  items: any[];
+  emptyText: string;
+  accent: "emerald" | "muted";
+  delivered?: boolean;
+  onRemove?: (id: string) => void;
+  rightAction?: React.ReactNode;
+}) {
+  const [q, setQ] = useState("");
+  const [limit, setLimit] = useState(50);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [sortDesc, setSortDesc] = useState(true);
+
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    let arr = items;
+    if (term) arr = arr.filter((r) => String(r.content).toLowerCase().includes(term));
+    arr = [...arr].sort((a, b) => {
+      const da = new Date(delivered ? a.delivered_at ?? a.created_at : a.created_at).getTime();
+      const db = new Date(delivered ? b.delivered_at ?? b.created_at : b.created_at).getTime();
+      return sortDesc ? db - da : da - db;
+    });
+    return arr;
+  }, [items, q, sortDesc, delivered]);
+
+  const visible = filtered.slice(0, limit);
+  const dotColor = accent === "emerald" ? "bg-emerald-500" : "bg-muted-foreground/40";
+
+  function copyOne(text: string) {
+    navigator.clipboard.writeText(text).then(() => toast.success("Copiado"));
+  }
+
+  function copyAll() {
+    const txt = filtered.map((r) => r.content).join("\n\n---\n\n");
+    navigator.clipboard.writeText(txt).then(() => toast.success(`${filtered.length} conta(s) copiada(s)`));
+  }
+
+  function downloadAll() {
+    const txt = filtered.map((r) => r.content).join("\n\n---\n\n");
+    const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.toLowerCase()}-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-card">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
+        <div className="flex items-center gap-2">
+          <span className={`inline-block h-2 w-2 rounded-full ${dotColor}`} />
+          <h4 className="text-sm font-semibold text-foreground">
+            {title} <span className="text-muted-foreground">({items.length}{q && filtered.length !== items.length ? ` · ${filtered.length} filtrado` : ""})</span>
+          </h4>
         </div>
-        <div className="max-h-[400px] divide-y divide-border overflow-auto">
-          {isLoading && <p className="p-3 text-xs text-muted-foreground">Carregando...</p>}
-          {!isLoading && !available.length && <p className="p-6 text-center text-xs text-muted-foreground">Nenhum item disponível.</p>}
-          {available.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 p-2 font-mono text-xs">
-              <span className="flex-1 break-all whitespace-pre-wrap text-foreground">{r.content}</span>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeOne(r.id)}>
-                <Trash2 className="h-3.5 w-3.5" />
+        <div className="flex items-center gap-2">
+          {filtered.length > 0 && (
+            <>
+              <Button variant="ghost" size="sm" onClick={copyAll}>
+                <Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar
               </Button>
-            </div>
-          ))}
+              <Button variant="ghost" size="sm" onClick={downloadAll}>
+                <Download className="mr-1.5 h-3.5 w-3.5" /> .txt
+              </Button>
+            </>
+          )}
+          {rightAction}
         </div>
       </div>
 
-      {sold.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card">
-          <div className="border-b border-border p-4">
-            <h4 className="text-sm font-semibold text-foreground">Entregues ({sold.length})</h4>
-          </div>
-          <div className="max-h-[300px] divide-y divide-border overflow-auto">
-            {sold.map((r) => (
-              <div key={r.id} className="p-2 font-mono text-xs text-muted-foreground">
-                <span className="break-all whitespace-pre-wrap">{r.content}</span>
-                {r.delivered_at && (
-                  <span className="ml-2 text-[10px]">· {new Date(r.delivered_at).toLocaleString("pt-BR")}</span>
-                )}
-              </div>
-            ))}
-          </div>
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            className="h-8 pl-8 text-xs"
+            placeholder="Buscar (email, login, qualquer texto da conta)..."
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setLimit(50); }}
+          />
         </div>
-      )}
+        <Button variant="outline" size="sm" className="h-8" onClick={() => setSortDesc((s) => !s)}>
+          <Calendar className="mr-1.5 h-3.5 w-3.5" />
+          {sortDesc ? "Mais recentes" : "Mais antigas"}
+        </Button>
+      </div>
+
+      <div className="max-h-[500px] divide-y divide-border overflow-auto">
+        {!filtered.length && (
+          <p className="p-6 text-center text-xs text-muted-foreground">
+            {q ? "Nenhuma conta corresponde à busca." : emptyText}
+          </p>
+        )}
+        {visible.map((r, i) => {
+          const isOpen = !!expanded[r.id];
+          const lines = String(r.content).split(/\r?\n/);
+          const isMulti = lines.length > 1;
+          const preview = lines[0];
+          const idx = sortDesc ? filtered.length - i : i + 1;
+          const date = delivered ? r.delivered_at ?? r.created_at : r.created_at;
+
+          return (
+            <div key={r.id} className="group p-2 text-xs hover:bg-muted/30">
+              <div className="flex items-start gap-2">
+                <button
+                  onClick={() => isMulti && setExpanded((s) => ({ ...s, [r.id]: !s[r.id] }))}
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] text-muted-foreground ${isMulti ? "hover:bg-muted" : "cursor-default"}`}
+                  title={isMulti ? `${lines.length} linhas` : ""}
+                >
+                  {isMulti ? (isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />) : <Hash className="h-3 w-3 opacity-40" />}
+                </button>
+                <div className="flex w-12 shrink-0 flex-col items-end pt-0.5 text-[10px] text-muted-foreground">
+                  <span className="font-mono">#{idx}</span>
+                  {isMulti && <span className="opacity-70">{lines.length}L</span>}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <pre className="whitespace-pre-wrap break-all font-mono text-foreground">
+                    {isOpen || !isMulti ? r.content : `${preview}${isMulti ? " …" : ""}`}
+                  </pre>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+                    {date && <span>📅 {fmtDate(date)}</span>}
+                    {delivered && r.order_id && (
+                      <Link
+                        to="/admin/pedidos"
+                        search={{ q: r.order_id }}
+                        className="underline hover:text-foreground"
+                      >
+                        Pedido {String(r.order_id).slice(0, 8)}…
+                      </Link>
+                    )}
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyOne(r.content)} title="Copiar">
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                  {onRemove && (
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onRemove(r.id)} title="Remover">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length > visible.length && (
+          <div className="p-3 text-center">
+            <Button variant="outline" size="sm" onClick={() => setLimit((l) => l + 100)}>
+              Mostrar mais ({filtered.length - visible.length} restantes)
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
