@@ -389,6 +389,29 @@ async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
   return delivered;
 }
 
+async function beginFulfillment(orderId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .update({ status: "processing" })
+    .eq("id", orderId)
+    .is("delivered_data", null)
+    .in("status", ["pending", "paid"])
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.id);
+}
+
+async function getCachedDelivery(orderId: string) {
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("status,delivered_data")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
   .inputValidator((d) => fulfillSchema.parse(d))
   .handler(async ({ data }) => {
