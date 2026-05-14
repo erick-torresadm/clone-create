@@ -6,27 +6,20 @@ import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { fulfillCheckoutOrder } from "@/lib/checkout.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
-import { useCart } from "@/lib/use-cart";
+import { checkPaymentStatus } from "@/lib/checkout.functions";
 import { LogOut, Package, Eye, EyeOff, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+const ENV = (import.meta.env.MODE === "production" ? "live" : "sandbox") as "sandbox" | "live";
+
 export const Route = createFileRoute("/minha-conta")({
-  validateSearch: (s: Record<string, unknown>): { checkout?: string; session_id?: string } => ({
-    checkout: typeof s.checkout === "string" ? s.checkout : undefined,
-    session_id: typeof s.session_id === "string" ? s.session_id : undefined,
-  }),
   component: MinhaConta,
 });
 
 function MinhaConta() {
   const { user, loading, signOut } = useAuth();
-  const { session_id } = Route.useSearch();
   const navigate = useNavigate();
-  const fulfill = useServerFn(fulfillCheckoutOrder);
-  const { clear } = useCart();
-  const [processingSession, setProcessingSession] = useState(false);
+  const check = useServerFn(checkPaymentStatus);
   useEffect(() => { if (!loading && !user) navigate({ to: "/entrar" }); }, [loading, user, navigate]);
 
   const { data: orders = [], isLoading, refetch } = useQuery({
@@ -37,52 +30,23 @@ function MinhaConta() {
       if (error) throw error;
       return data as any[];
     },
-    refetchInterval: (query) => ((query.state.data as any[] | undefined)?.some((o) => ["pending", "processing", "paid"].includes(o.status) && !o.delivered_data) ? 3000 : false),
+    refetchInterval: (query) => ((query.state.data as any[] | undefined)?.some((o) => ["pending", "processing", "paid"].includes(o.status) && !o.delivered_data) ? 4000 : false),
   });
 
-  const handledSessions = useRef<Set<string>>(new Set());
+  // Em background, confirma com o Asaas eventuais pedidos pendentes
+  const handled = useRef<Set<string>>(new Set());
   useEffect(() => {
-    if (!user || !session_id) return;
-    if (handledSessions.current.has(session_id)) return;
-    handledSessions.current.add(session_id);
-    let cancelled = false;
-    setProcessingSession(true);
-    fulfill({ data: { sessionId: session_id, environment: getStripeEnvironment() } })
-      .then((res) => {
-        if (cancelled) return;
-        if (res.status === "paid") {
-          clear();
-          toast.success("Pagamento confirmado. Entrega processada.");
-        }
-        refetch();
-        // limpa o session_id da URL para não reprocessar em refetches
-        navigate({ to: "/minha-conta", replace: true });
-      })
-      .catch((e: any) => !cancelled && toast.error(e?.message || "Erro ao processar entrega."))
-      .finally(() => !cancelled && setProcessingSession(false));
-    return () => { cancelled = true; };
-  }, [user, session_id, fulfill, clear, refetch, navigate]);
-
-  const backgroundFulfilling = useRef(false);
-  useEffect(() => {
-    if (!user || session_id || backgroundFulfilling.current) return;
-    const pendingSessions = orders
-      .filter((o) => ["pending", "paid"].includes(o.status) && o.stripe_session_id && !o.delivered_data)
-      .filter((o) => !handledSessions.current.has(o.stripe_session_id))
-      .slice(0, 3);
-    if (!pendingSessions.length) return;
-    backgroundFulfilling.current = true;
-    pendingSessions.forEach((o) => handledSessions.current.add(o.stripe_session_id));
-    let cancelled = false;
+    if (!user) return;
+    const pend = orders.filter((o) => o.asaas_payment_id && !o.delivered_data && ["pending", "paid"].includes(o.status) && !handled.current.has(o.asaas_payment_id));
+    if (!pend.length) return;
+    pend.forEach((o) => handled.current.add(o.asaas_payment_id));
     (async () => {
-      for (const order of pendingSessions) {
-        if (cancelled) return;
-        await fulfill({ data: { sessionId: order.stripe_session_id, environment: getStripeEnvironment() } }).catch(() => null);
+      for (const o of pend.slice(0, 3)) {
+        await check({ data: { paymentId: o.asaas_payment_id, environment: ENV } }).catch(() => null);
       }
-      if (!cancelled) await refetch();
-    })().finally(() => { backgroundFulfilling.current = false; });
-    return () => { cancelled = true; };
-  }, [user, session_id, orders, fulfill, refetch]);
+      refetch();
+    })();
+  }, [user, orders, check, refetch]);
 
   if (!user) return null;
 
@@ -98,12 +62,6 @@ function MinhaConta() {
         </div>
 
         <h2 className="mt-10 flex items-center gap-2 text-xl font-bold text-foreground"><Package className="h-5 w-5 text-primary" />Meus pedidos</h2>
-        {processingSession && (
-          <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            Verificando pagamento... Se você pagou via Pix, pode levar alguns segundos para confirmar.
-          </div>
-        )}
         <div className="mt-4 space-y-4">
           {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
           {!isLoading && !orders.length && (
@@ -125,8 +83,18 @@ function OrderCard({ order }: { order: any }) {
   const statusColor: Record<string, string> = {
     pending: "bg-yellow-500/15 text-yellow-600",
     paid: "bg-blue-500/15 text-blue-600",
+    processing: "bg-blue-500/15 text-blue-600",
     delivered: "bg-emerald-500/15 text-emerald-600",
     canceled: "bg-red-500/15 text-red-600",
+    refunded: "bg-red-500/15 text-red-600",
+  };
+  const statusLabel: Record<string, string> = {
+    pending: "Aguardando Pix",
+    paid: "Pago · processando",
+    processing: "Processando",
+    delivered: "Entregue",
+    canceled: "Cancelado",
+    refunded: "Estornado",
   };
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -135,7 +103,9 @@ function OrderCard({ order }: { order: any }) {
           <p className="font-mono text-xs text-muted-foreground">#{String(order.id).slice(0, 8)}</p>
           <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString("pt-BR")}</p>
         </div>
-        <span className={`rounded px-2 py-0.5 text-xs font-semibold ${statusColor[order.status] ?? "bg-muted text-foreground"}`}>{order.status}</span>
+        <span className={`rounded px-2 py-0.5 text-xs font-semibold ${statusColor[order.status] ?? "bg-muted text-foreground"}`}>
+          {statusLabel[order.status] ?? order.status}
+        </span>
       </div>
       <ul className="mt-3 space-y-1 text-sm text-foreground">
         {items.map((it: any, i: number) => (
@@ -149,6 +119,25 @@ function OrderCard({ order }: { order: any }) {
         <span className="text-muted-foreground">Total</span>
         <span className="font-bold text-foreground">R$ {Number(order.total).toFixed(2)}</span>
       </div>
+
+      {order.status === "pending" && order.pix_payload && (
+        <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" /> Aguardando pagamento Pix
+          </p>
+          {order.pix_qr_base64 && (
+            <div className="mt-3 flex justify-center">
+              <img src={`data:image/png;base64,${order.pix_qr_base64}`} alt="Pix QR" className="h-40 w-40 rounded-lg bg-white p-2" />
+            </div>
+          )}
+          <div className="mt-3 flex items-center gap-2 rounded bg-background p-2">
+            <code className="flex-1 truncate font-mono text-xs">{order.pix_payload}</code>
+            <button onClick={() => { navigator.clipboard.writeText(order.pix_payload); toast.success("Copiado"); }} className="text-primary hover:underline">
+              <Copy className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {Array.isArray(delivered) && delivered.length > 0 && (
         <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
