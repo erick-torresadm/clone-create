@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
+import { notifyOrderStatus } from "@/lib/telegram.server";
 import type { AsaasEnv } from "@/lib/asaas.server";
 
 // Webhook do Asaas. Configure em "Integrações > Webhooks" apontando para
@@ -43,10 +44,16 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
             console.error(`[asaas-webhook] fulfill error: ${e?.message}`),
           );
         } else if (event === "PAYMENT_OVERDUE" || event === "PAYMENT_DELETED" || event === "PAYMENT_REFUNDED") {
-          await supabaseAdmin
+          const newStatus = event === "PAYMENT_REFUNDED" ? "refunded" : "canceled";
+          const { data: row } = await supabaseAdmin
             .from("orders")
-            .update({ status: event === "PAYMENT_REFUNDED" ? "refunded" : "canceled" })
-            .eq("asaas_payment_id", paymentId);
+            .update({ status: newStatus })
+            .eq("asaas_payment_id", paymentId)
+            .select("id")
+            .maybeSingle();
+          if (row?.id) {
+            await notifyOrderStatus({ orderId: row.id, status: newStatus, paymentId });
+          }
         }
 
         return Response.json({ received: true });

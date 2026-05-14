@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { type AsaasEnv, getPayment, isPaid } from "@/lib/asaas.server";
+import { notifyOrderPaid } from "@/lib/telegram.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
@@ -131,6 +132,15 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
         : null,
     })
     .eq("id", order.id);
+
+  await notifyOrderPaid({
+    orderId: order.id,
+    email: order.email,
+    total: Number(order.total),
+    items: (order.items as any[]) ?? [],
+    paymentId: order.asaas_payment_id,
+    delivered,
+  });
 
   return delivered;
 }
