@@ -334,24 +334,38 @@ function StockPanel({ product }: { product: any }) {
           Os perfis enviados são entregues automaticamente ao cliente após o pagamento, em ordem de chegada.
         </p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-          <span className="text-muted-foreground">Para arquivos .zip:</span>
+        <div className="mt-3 grid gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-muted-foreground">Como dividir as contas:</span>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="splitmode" checked={splitMode === "lines"} onChange={() => setSplitMode("lines")} />
+              <FileText className="h-3.5 w-3.5" /> 1 linha = 1 conta
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="splitmode" checked={splitMode === "blank-line"} onChange={() => setSplitMode("blank-line")} />
+              <FileText className="h-3.5 w-3.5" /> bloco separado por linha em branco
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="splitmode" checked={splitMode === "file-per-account"} onChange={() => setSplitMode("file-per-account")} />
+              <FileArchive className="h-3.5 w-3.5" /> .zip: 1 arquivo = 1 conta
+            </label>
+          </div>
           <label className="flex items-center gap-1.5">
-            <input type="radio" name="zipmode" checked={zipMode === "file-per-account"} onChange={() => setZipMode("file-per-account")} />
-            <FileArchive className="h-3.5 w-3.5" /> 1 arquivo = 1 conta
-          </label>
-          <label className="flex items-center gap-1.5">
-            <input type="radio" name="zipmode" checked={zipMode === "lines"} onChange={() => setZipMode("lines")} />
-            <FileText className="h-3.5 w-3.5" /> dividir por linhas
+            <input type="checkbox" checked={dedupe} onChange={(e) => setDedupe(e.target.checked)} />
+            <span>Ignorar duplicadas (no lote e contra estoque atual)</span>
           </label>
         </div>
 
         <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-background px-4 py-8 text-sm font-medium text-foreground transition hover:border-primary hover:bg-primary/10">
           <Upload className="h-4 w-4" />
-          {uploading ? "Processando..." : "Selecionar arquivos (.txt / .zip)"}
+          {uploading
+            ? progress
+              ? `Inserindo ${progress.done}/${progress.total}...`
+              : "Processando arquivos..."
+            : "Selecionar arquivos (.txt / .zip — múltiplos, aceita .zip aninhado)"}
           <input
             type="file"
-            accept=".txt,.zip,text/plain,application/zip"
+            accept=".txt,.csv,.log,.zip,text/plain,application/zip"
             multiple
             className="hidden"
             disabled={uploading}
