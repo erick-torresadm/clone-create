@@ -32,7 +32,7 @@ function Index() {
       .filter((s) => s.products.length > 0);
   }, [query, SECTIONS]);
 
-  const clientCount = 2134;
+
 
   return (
     <Layout>
