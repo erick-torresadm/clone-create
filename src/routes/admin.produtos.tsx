@@ -383,7 +383,7 @@ function ApiTab() {
                         value={ov.price ?? ""}
                         onChange={(e) => setOverrides((s) => ({ ...s, [key]: { ...s[key], price: e.target.value } }))}
                       />
-                      <Button size="sm" onClick={() => importItem.mutate(p)} disabled={importItem.isPending}>
+                      <Button size="sm" onClick={() => openReview(p)}>
                         <Download className="mr-2 h-4 w-4" />Importar
                       </Button>
                     </div>
