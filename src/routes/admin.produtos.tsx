@@ -8,7 +8,7 @@ import { useProducts, useSections, useSettings } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
 import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct } from "@/lib/maxvia.functions";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,7 @@ function ManualTab() {
   const { data: sections = [] } = useSections();
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: "", price: "", old_price: "", section_id: "", badge: "", image_url: "", description: "" });
+  const [editing, setEditing] = useState<any | null>(null);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -107,6 +108,7 @@ function ManualTab() {
                 <p className="text-xs text-muted-foreground">R$ {Number(p.price).toFixed(2)} · {p.badge ?? "—"}</p>
               </div>
               <Switch checked={p.active} onCheckedChange={(v) => toggleActive.mutate({ id: p.id, active: v })} />
+              <Button variant="ghost" size="icon" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
               <Button variant="ghost" size="icon" onClick={() => { if (confirm("Remover?")) remove.mutate(p.id); }}><Trash2 className="h-4 w-4" /></Button>
             </div>
           ))}
@@ -139,6 +141,67 @@ function ManualTab() {
           <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full"><Plus className="mr-2 h-4 w-4" />Criar produto</Button>
         </div>
       </div>
+      {editing && <EditProductDialog product={editing} sections={sections} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["products"] }); }} />}
+    </div>
+  );
+}
+
+function EditProductDialog({ product, sections, onClose, onSaved }: { product: any; sections: any[]; onClose: () => void; onSaved: () => void }) {
+  const [f, setF] = useState({
+    name: product.name ?? "",
+    price: String(product.price ?? ""),
+    old_price: product.old_price != null ? String(product.old_price) : "",
+    section_id: product.section_id ?? "",
+    badge: product.badge ?? "",
+    image_url: product.image_url ?? "",
+    description: product.description ?? "",
+  });
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("products").update({
+        name: f.name,
+        price: Number(f.price),
+        old_price: f.old_price ? Number(f.old_price) : null,
+        section_id: f.section_id || null,
+        badge: f.badge || null,
+        image_url: f.image_url || null,
+        description: f.description || null,
+      }).eq("id", product.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Produto atualizado"); onSaved(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-foreground">Editar produto</h3>
+        <div className="mt-4 space-y-3">
+          <div><Label>Nome</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Preço (R$)</Label><Input type="number" step="0.01" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} /></div>
+            <div><Label>De (R$)</Label><Input type="number" step="0.01" value={f.old_price} onChange={(e) => setF({ ...f, old_price: e.target.value })} /></div>
+          </div>
+          <div>
+            <Label>Seção</Label>
+            <select className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={f.section_id} onChange={(e) => setF({ ...f, section_id: e.target.value })}>
+              <option value="">— sem seção —</option>
+              {sections.map((s: any) => <option key={s.id} value={s.id}>{s.title}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Badge</Label><Input value={f.badge} onChange={(e) => setF({ ...f, badge: e.target.value })} /></div>
+            <div><Label>Imagem URL</Label><Input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} /></div>
+          </div>
+          <div><Label>Descrição</Label>
+            <textarea className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
+            <Button className="flex-1" onClick={() => save.mutate()} disabled={save.isPending}>Salvar</Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -152,21 +215,20 @@ function ApiTab() {
   const importFn = useServerFn(maxviaImportProduct);
   const qc = useQueryClient();
 
-  const [selectedCat, setSelectedCat] = useState<number | null>(null);
+  const [selectedCat, setSelectedCat] = useState<{ id: number; name: string } | null>(null);
   const [markup, setMarkup] = useState<number>(80);
   const [section, setSection] = useState<string>("");
+  const [overrides, setOverrides] = useState<Record<string, { price?: string; name?: string }>>({});
 
   const balance = useQuery({ queryKey: ["mv-balance"], queryFn: () => balanceFn({}) });
   const cats = useQuery({ queryKey: ["mv-cats"], queryFn: () => catFn({}) });
   const prods = useQuery({
-    queryKey: ["mv-prods", selectedCat],
-    queryFn: () => prodFn({ data: { categoryId: selectedCat! } }),
+    queryKey: ["mv-prods", selectedCat?.id],
+    queryFn: () => prodFn({ data: { categoryId: selectedCat!.id } }),
     enabled: !!selectedCat,
   });
 
   const rateVnd = Number(settings?.brl_per_vnd ?? 0.00024);
-  const rateUsd = Number(settings?.brl_per_usd ?? 5.5);
-  // MaxVia price seems to be in VND (e.g. 25000 = ~6 BRL). Use VND rate.
   function suggestedBRL(extPrice: number) {
     const base = extPrice * rateVnd;
     return Number((base * (1 + markup / 100)).toFixed(2));
@@ -174,22 +236,25 @@ function ApiTab() {
 
   const importItem = useMutation({
     mutationFn: async (p: any) => {
-      const price_brl = suggestedBRL(p.price);
+      const ov = overrides[String(p.id_product)] ?? {};
+      const price_brl = ov.price ? Number(ov.price) : suggestedBRL(p.price);
+      if (!price_brl || price_brl <= 0) throw new Error("Preço inválido");
       return importFn({
         data: {
           external_id: String(p.id_product),
-          name: p.name,
+          name: (ov.name?.trim() || p.name),
           description: p.desc || undefined,
           price_brl,
           external_price: p.price,
           external_currency: "VND",
           external_quantity: p.quantity ?? 0,
           section_id: section || null,
+          category_name: !section ? (selectedCat?.name ?? null) : null,
           badge: "API",
         },
       });
     },
-    onSuccess: () => { toast.success("Produto importado!"); qc.invalidateQueries({ queryKey: ["products"] }); },
+    onSuccess: () => { toast.success("Produto importado!"); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["sections"] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -209,12 +274,12 @@ function ApiTab() {
             <Input className="h-8 w-20" type="number" value={markup} onChange={(e) => setMarkup(Number(e.target.value) || 0)} />
             <Label className="text-xs">Seção</Label>
             <select className="h-8 rounded-md border border-border bg-background px-2 text-sm" value={section} onChange={(e) => setSection(e.target.value)}>
-              <option value="">—</option>
+              <option value="">Auto (categoria do fornecedor)</option>
               {sections.map((s: any) => <option key={s.id} value={s.id}>{s.title}</option>)}
             </select>
           </div>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">Conversão atual: 1 VND ≈ R$ {rateVnd}. Edite a taxa em Aparência → Configurações.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Conversão atual: 1 VND ≈ R$ {rateVnd}. Quando "Auto", criamos/usamos uma seção com o nome da categoria do fornecedor.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-[260px,1fr]">
@@ -223,8 +288,8 @@ function ApiTab() {
           <div className="max-h-[520px] overflow-auto">
             {cats.isLoading && <div className="p-4 text-sm text-muted-foreground">Carregando...</div>}
             {(cats.data as any[] | undefined)?.map((c) => (
-              <button key={c.id} onClick={() => setSelectedCat(c.id)}
-                className={`flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-sm ${selectedCat === c.id ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/50"}`}>
+              <button key={c.id} onClick={() => setSelectedCat({ id: c.id, name: c.name })}
+                className={`flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-sm ${selectedCat?.id === c.id ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted/50"}`}>
                 {c.icon && <img src={`https://maxvia88.com${c.icon}`} alt="" className="h-4 w-4" />}
                 <span className="truncate">{c.name}</span>
               </button>
@@ -233,27 +298,46 @@ function ApiTab() {
         </div>
 
         <div className="rounded-xl border border-border bg-card">
-          <div className="border-b border-border p-3 text-sm font-semibold text-foreground">Produtos {selectedCat ? `(cat ${selectedCat})` : ""}</div>
-          <div className="max-h-[520px] divide-y divide-border overflow-auto">
+          <div className="border-b border-border p-3 text-sm font-semibold text-foreground">Produtos {selectedCat ? `· ${selectedCat.name}` : ""}</div>
+          <div className="max-h-[620px] divide-y divide-border overflow-auto">
             {!selectedCat && <div className="p-6 text-sm text-muted-foreground">Selecione uma categoria.</div>}
             {prods.isLoading && <div className="p-6 text-sm text-muted-foreground">Carregando...</div>}
-            {(prods.data as any[] | undefined)?.map((p) => (
-              <div key={p.id_product} className="flex items-start gap-3 p-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">{p.name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{p.desc}</p>
-                  <p className="mt-1 text-xs">
-                    <span className="text-muted-foreground">{Number(p.price).toLocaleString()} VND</span>
-                    <span className="mx-1 text-muted-foreground">→</span>
-                    <span className="font-semibold text-primary">R$ {suggestedBRL(p.price).toFixed(2)}</span>
-                    <span className="ml-2 text-muted-foreground">estoque: {p.quantity}</span>
-                  </p>
+            {(prods.data as any[] | undefined)?.map((p) => {
+              const key = String(p.id_product);
+              const ov = overrides[key] ?? {};
+              const suggested = suggestedBRL(p.price);
+              return (
+                <div key={p.id_product} className="space-y-2 p-3">
+                  <div className="flex items-start gap-3">
+                    <div className="min-w-0 flex-1">
+                      <Input
+                        className="h-8 text-sm font-medium"
+                        value={ov.name ?? p.name}
+                        onChange={(e) => setOverrides((s) => ({ ...s, [key]: { ...s[key], name: e.target.value } }))}
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">{p.desc}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {Number(p.price).toLocaleString()} VND · sugerido R$ {suggested.toFixed(2)} · estoque: {p.quantity}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Label className="text-[10px] text-muted-foreground">Preço R$</Label>
+                      <Input
+                        className="h-8 w-24 text-sm"
+                        type="number"
+                        step="0.01"
+                        placeholder={suggested.toFixed(2)}
+                        value={ov.price ?? ""}
+                        onChange={(e) => setOverrides((s) => ({ ...s, [key]: { ...s[key], price: e.target.value } }))}
+                      />
+                      <Button size="sm" onClick={() => importItem.mutate(p)} disabled={importItem.isPending}>
+                        <Download className="mr-2 h-4 w-4" />Importar
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <Button size="sm" onClick={() => importItem.mutate(p)} disabled={importItem.isPending}>
-                  <Download className="mr-2 h-4 w-4" />Importar
-                </Button>
-              </div>
-            ))}
+              );
+            })}
             {selectedCat && !prods.isLoading && !(prods.data as any[] | undefined)?.length && (
               <div className="p-6 text-sm text-muted-foreground">Nenhum produto.</div>
             )}

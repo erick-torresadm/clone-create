@@ -94,21 +94,44 @@ const importSchema = z.object({
   external_currency: z.string().min(1).max(8),
   external_quantity: z.number().int().nonnegative().optional(),
   section_id: z.string().uuid().nullable().optional(),
+  category_name: z.string().min(1).max(120).nullable().optional(),
   badge: z.string().max(40).nullable().optional(),
   image_url: z.string().url().nullable().optional(),
 });
+
+async function findOrCreateSectionByName(name: string): Promise<string> {
+  const trimmed = name.trim();
+  const { data: existing } = await supabaseAdmin
+    .from("sections")
+    .select("id,title")
+    .ilike("title", trimmed)
+    .limit(1)
+    .maybeSingle();
+  if (existing?.id) return existing.id as string;
+  const { data: created, error } = await supabaseAdmin
+    .from("sections")
+    .insert({ title: trimmed, emoji: "📦", active: true })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return created!.id as string;
+}
 
 export const maxviaImportProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => importSchema.parse(d))
   .handler(async ({ data, context }) => {
     await ensureAdmin(context.supabase, context.userId);
+    let sectionId: string | null = data.section_id ?? null;
+    if (!sectionId && data.category_name) {
+      sectionId = await findOrCreateSectionByName(data.category_name);
+    }
     const row = {
       name: data.name,
       description: data.description ?? null,
       price: data.price_brl,
       old_price: data.old_price_brl ?? null,
-      section_id: data.section_id ?? null,
+      section_id: sectionId,
       badge: data.badge ?? null,
       image_url: data.image_url ?? null,
       active: (data.external_quantity ?? 0) > 0,
