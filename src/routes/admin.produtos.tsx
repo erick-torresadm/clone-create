@@ -98,19 +98,14 @@ function ManualTab() {
         </div>
         <div className="max-h-[640px] divide-y divide-border overflow-auto">
           {products.map((p: any) => (
-            <div key={p.id} className="flex items-center gap-3 p-3">
-              {p.image_url ? <img src={p.image_url} alt="" className="h-12 w-12 rounded-md object-cover" /> : <div className="h-12 w-12 rounded-md bg-muted" />}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
-                  {p.source === "api" && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">API</span>}
-                </div>
-                <p className="text-xs text-muted-foreground">R$ {Number(p.price).toFixed(2)} · {p.badge ?? "—"}</p>
-              </div>
-              <Switch checked={p.active} onCheckedChange={(v) => toggleActive.mutate({ id: p.id, active: v })} />
-              <Button variant="ghost" size="icon" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => { if (confirm("Remover?")) remove.mutate(p.id); }}><Trash2 className="h-4 w-4" /></Button>
-            </div>
+            <ProductRow
+              key={p.id}
+              product={p}
+              onToggle={(v) => toggleActive.mutate({ id: p.id, active: v })}
+              onEdit={() => setEditing(p)}
+              onRemove={() => { if (confirm("Remover?")) remove.mutate(p.id); }}
+              onSavedQuick={() => qc.invalidateQueries({ queryKey: ["products"] })}
+            />
           ))}
           {!products.length && <div className="p-8 text-center text-sm text-muted-foreground">Nenhum produto.</div>}
         </div>
