@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Search, Users, Flame } from "lucide-react";
+import { Search, Flame } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -36,22 +36,7 @@ function Index() {
 
   return (
     <Layout>
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        {/* Title row + clients pill */}
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="mb-2 text-3xl font-bold text-foreground">Nossos Produtos</h1>
-            <p className="text-muted-foreground">Escolha o plano ideal para você</p>
-          </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 shadow-[0_0_18px_rgba(59,130,246,0.25)]">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-sm font-bold text-foreground">
-              +{clientCount.toLocaleString("pt-BR")}{" "}
-              <span className="font-medium text-muted-foreground">clientes atendidos</span>
-            </span>
-          </div>
-        </div>
-
+      <main className="mx-auto max-w-7xl px-6 py-6">
         {/* Search */}
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
