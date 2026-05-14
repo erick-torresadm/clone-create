@@ -143,6 +143,51 @@ export type Database = {
         }
         Relationships: []
       }
+      product_stock: {
+        Row: {
+          content: string
+          created_at: string
+          delivered: boolean
+          delivered_at: string | null
+          id: string
+          order_id: string | null
+          product_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          delivered?: boolean
+          delivered_at?: string | null
+          id?: string
+          order_id?: string | null
+          product_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          delivered?: boolean
+          delivered_at?: string | null
+          id?: string
+          order_id?: string | null
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_stock_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_stock_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean
@@ -363,6 +408,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_stock: {
+        Args: { _order_id: string; _product_id: string; _quantity: number }
+        Returns: {
+          content: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/entrar")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Entrar — FDM store" },
@@ -22,6 +25,7 @@ function Entrar() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,7 +43,7 @@ function Entrar() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Bem-vindo!");
-        navigate({ to: "/admin" });
+        navigate({ to: (redirect as any) || "/admin" });
       }
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao autenticar");

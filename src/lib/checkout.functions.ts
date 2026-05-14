@@ -327,8 +327,28 @@ export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
         quantity: it.quantity,
       };
 
+      // Internal stock (no external provider) — claim from product_stock
       if (it.provider !== "maxvia" || !it.externalId) {
-        delivered.push({ ...base, error: "Entrega manual: nossa equipe irá enviar por email." });
+        try {
+          const { data: claimed, error: claimErr } = await supabaseAdmin.rpc("claim_stock", {
+            _product_id: it.productId,
+            _quantity: it.quantity,
+            _order_id: order.id,
+          });
+          if (claimErr) throw claimErr;
+          const rows = (claimed ?? []) as Array<{ id: string; content: string }>;
+          if (rows.length < it.quantity) {
+            delivered.push({
+              ...base,
+              accounts: rows.map((r) => ({ full_info: r.content })),
+              error: `Estoque insuficiente: entregamos ${rows.length}/${it.quantity}. Nossa equipe entrará em contato para repor.`,
+            });
+          } else {
+            delivered.push({ ...base, accounts: rows.map((r) => ({ full_info: r.content })) });
+          }
+        } catch (e: any) {
+          delivered.push({ ...base, error: e?.message || "Falha ao reservar estoque." });
+        }
         continue;
       }
 

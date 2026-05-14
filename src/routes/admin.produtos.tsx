@@ -8,7 +8,7 @@ import { useProducts, useSections, useSettings } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
 import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct, maxviaAiSuggest } from "@/lib/maxvia.functions";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil, Boxes } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -144,8 +144,10 @@ function ManualTab() {
 function ProductRow({ product: p, onToggle, onEdit, onRemove, onSavedQuick }: { product: any; onToggle: (v: boolean) => void; onEdit: () => void; onRemove: () => void; onSavedQuick: () => void }) {
   const [price, setPrice] = useState<string>(String(p.price ?? ""));
   const [saving, setSaving] = useState(false);
+  const [stockOpen, setStockOpen] = useState(false);
   useEffect(() => { setPrice(String(p.price ?? "")); }, [p.price]);
   const dirty = Number(price) !== Number(p.price) && price !== "";
+  const isInternal = p.external_provider !== "maxvia";
   async function saveQuick() {
     const n = Number(price);
     if (!n || n <= 0) { toast.error("Preço inválido"); return; }
@@ -179,8 +181,107 @@ function ProductRow({ product: p, onToggle, onEdit, onRemove, onSavedQuick }: { 
         {dirty && <Button size="sm" onClick={saveQuick} disabled={saving} className="h-8">Salvar</Button>}
       </div>
       <Switch checked={p.active} onCheckedChange={onToggle} />
+      {isInternal && (
+        <Button variant="outline" size="sm" onClick={() => setStockOpen(true)} className="h-8">
+          <Boxes className="mr-1 h-3.5 w-3.5" />Estoque
+        </Button>
+      )}
       <Button variant="outline" size="sm" onClick={onEdit} className="h-8"><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button>
       <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4" /></Button>
+      {stockOpen && <StockDialog product={p} onClose={() => setStockOpen(false)} />}
+    </div>
+  );
+}
+
+function StockDialog({ product, onClose }: { product: any; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [bulk, setBulk] = useState("");
+  const { data: rows = [], isLoading, refetch } = useQuery({
+    queryKey: ["product-stock", product.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_stock")
+        .select("*")
+        .eq("product_id", product.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const available = rows.filter((r) => !r.delivered);
+  const sold = rows.filter((r) => r.delivered);
+
+  async function addBulk() {
+    const lines = bulk.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) { toast.error("Cole ao menos uma linha"); return; }
+    const payload = lines.map((content) => ({ product_id: product.id, content }));
+    const { error } = await supabase.from("product_stock").insert(payload);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${lines.length} item(ns) adicionados`);
+    setBulk("");
+    refetch();
+    qc.invalidateQueries({ queryKey: ["products"] });
+  }
+
+  async function removeOne(id: string) {
+    const { error } = await supabase.from("product_stock").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    refetch();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-5 max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-foreground">Estoque — {product.name}</h3>
+            <p className="text-xs text-muted-foreground">
+              Disponíveis: <b className="text-emerald-600">{available.length}</b> · Entregues: <b>{sold.length}</b>
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>Fechar</Button>
+        </div>
+
+        <div className="mt-4">
+          <Label>Adicionar contas (uma por linha — ex: <code>email|senha</code>)</Label>
+          <textarea
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs"
+            rows={6}
+            value={bulk}
+            onChange={(e) => setBulk(e.target.value)}
+            placeholder={"login1@dominio.com|senha123\nlogin2@dominio.com|senha456"}
+          />
+          <Button onClick={addBulk} className="mt-2 w-full"><Plus className="mr-2 h-4 w-4" />Adicionar ao estoque</Button>
+        </div>
+
+        <div className="mt-6">
+          <h4 className="text-sm font-semibold text-foreground">Disponíveis ({available.length})</h4>
+          <div className="mt-2 max-h-60 divide-y divide-border overflow-auto rounded-lg border border-border">
+            {isLoading && <p className="p-3 text-xs text-muted-foreground">Carregando...</p>}
+            {!isLoading && !available.length && <p className="p-3 text-xs text-muted-foreground">Nenhum item disponível.</p>}
+            {available.map((r) => (
+              <div key={r.id} className="flex items-center gap-2 p-2 font-mono text-xs">
+                <span className="flex-1 break-all text-foreground">{r.content}</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeOne(r.id)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {sold.length > 0 && (
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-foreground">Entregues ({sold.length})</h4>
+            <div className="mt-2 max-h-40 divide-y divide-border overflow-auto rounded-lg border border-border opacity-70">
+              {sold.map((r) => (
+                <div key={r.id} className="p-2 font-mono text-xs text-muted-foreground line-through">{r.content}</div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
