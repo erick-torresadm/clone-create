@@ -27,7 +27,7 @@ export type DBProduct = {
 export type DBSection = { id: string; title: string; emoji: string | null; sort_order: number; active: boolean };
 export type DBCoupon = { id: string; code: string; discount_type: "percent" | "fixed"; value: number; min_order: number; max_uses: number | null; used_count: number; expires_at: string | null; active: boolean };
 export type DBPopup = { id: string; title: string; body: string | null; image_url: string | null; cta_label: string | null; cta_url: string | null; audience: string; active: boolean; starts_at: string | null; ends_at: string | null };
-export type DBSettings = { id: number; store_name: string; hero_title: string; hero_subtitle: string; announcement_bar: string | null; primary_color: string; accent_color: string; logo_url: string | null; whatsapp: string | null; telegram: string | null; brl_per_vnd: number; brl_per_usd: number; home_max_products: number; home_show_categories: boolean; home_show_all_products: boolean; home_grid_cols: number; telegram_admin_chat_id: string | null };
+export type DBSettings = { id: number; store_name: string; hero_title: string; hero_subtitle: string; announcement_bar: string | null; primary_color: string; accent_color: string; logo_url: string | null; whatsapp: string | null; telegram: string | null; brl_per_vnd: number; brl_per_usd: number; home_max_products: number; home_show_categories: boolean; home_show_all_products: boolean; home_grid_cols: number };
 
 export function useProducts() {
   return useQuery({
