@@ -17,6 +17,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
+        <PaymentTestModeBanner />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
