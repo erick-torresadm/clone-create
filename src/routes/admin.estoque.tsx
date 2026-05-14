@@ -147,7 +147,7 @@ function StockPanel({ product }: { product: any }) {
   const qc = useQueryClient();
   const [bulk, setBulk] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [splitMode, setSplitMode] = useState<"lines" | "blank-line" | "file-per-account">("lines");
+  const [splitMode, setSplitMode] = useState<"lines" | "blank-line" | "file-per-account">("file-per-account");
   const [dedupe, setDedupe] = useState(true);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
