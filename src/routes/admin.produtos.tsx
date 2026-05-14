@@ -273,30 +273,6 @@ function ApiTab() {
     return Number((base * (1 + markup / 100)).toFixed(2));
   }
 
-  const importItem = useMutation({
-    mutationFn: async (p: any) => {
-      const ov = overrides[String(p.id_product)] ?? {};
-      const price_brl = ov.price ? Number(ov.price) : suggestedBRL(p.price);
-      if (!price_brl || price_brl <= 0) throw new Error("Preço inválido");
-      return importFn({
-        data: {
-          external_id: String(p.id_product),
-          name: (ov.name?.trim() || p.name),
-          description: p.desc || undefined,
-          price_brl,
-          external_price: p.price,
-          external_currency: "VND",
-          external_quantity: p.quantity ?? 0,
-          section_id: section || null,
-          category_name: !section ? (selectedCat?.name ?? null) : null,
-          badge: "API",
-        },
-      });
-    },
-    onSuccess: () => { toast.success("Produto importado!"); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["sections"] }); },
-    onError: (e: any) => toast.error(e.message),
-  });
-
   const [reviewing, setReviewing] = useState<{ p: any; price: number; sectionId: string | null; categoryName: string | null } | null>(null);
 
   function openReview(p: any) {
