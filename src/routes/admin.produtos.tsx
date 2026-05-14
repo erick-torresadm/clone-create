@@ -206,6 +206,8 @@ function ProductRow({ product: p, onToggle, onEdit, onRemove, onSavedQuick }: { 
 function StockDialog({ product, onClose }: { product: any; onClose: () => void }) {
   const qc = useQueryClient();
   const [bulk, setBulk] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [zipMode, setZipMode] = useState<"file-per-account" | "lines">("file-per-account");
   const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["product-stock", product.id],
     queryFn: async () => {
@@ -222,16 +224,60 @@ function StockDialog({ product, onClose }: { product: any; onClose: () => void }
   const available = rows.filter((r) => !r.delivered);
   const sold = rows.filter((r) => r.delivered);
 
-  async function addBulk() {
-    const lines = bulk.split("\n").map((l) => l.trim()).filter(Boolean);
-    if (!lines.length) { toast.error("Cole ao menos uma linha"); return; }
-    const payload = lines.map((content) => ({ product_id: product.id, content }));
-    const { error } = await supabase.from("product_stock").insert(payload);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`${lines.length} item(ns) adicionados`);
-    setBulk("");
+  async function insertStock(contents: string[]) {
+    const clean = contents.map((c) => c.trim()).filter(Boolean);
+    if (!clean.length) { toast.error("Nenhum conteúdo válido encontrado."); return 0; }
+    const payload = clean.map((content) => ({ product_id: product.id, content }));
+    // chunk to avoid request size limits
+    const CHUNK = 500;
+    for (let i = 0; i < payload.length; i += CHUNK) {
+      const { error } = await supabase.from("product_stock").insert(payload.slice(i, i + CHUNK));
+      if (error) throw error;
+    }
     refetch();
     qc.invalidateQueries({ queryKey: ["products"] });
+    return clean.length;
+  }
+
+  async function addBulk() {
+    try {
+      const lines = bulk.split("\n");
+      const n = await insertStock(lines);
+      if (n) { toast.success(`${n} conta(s) adicionada(s)`); setBulk(""); }
+    } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || !files.length) return;
+    setUploading(true);
+    try {
+      const accounts: string[] = [];
+      for (const file of Array.from(files)) {
+        const lower = file.name.toLowerCase();
+        if (lower.endsWith(".zip")) {
+          const zip = await JSZip.loadAsync(await file.arrayBuffer());
+          const entries = Object.values(zip.files).filter((e) => !e.dir);
+          for (const entry of entries) {
+            const txt = await entry.async("string");
+            if (zipMode === "lines") {
+              accounts.push(...txt.split(/\r?\n/));
+            } else {
+              accounts.push(txt);
+            }
+          }
+        } else {
+          // treat as text (.txt or anything readable)
+          const txt = await file.text();
+          accounts.push(...txt.split(/\r?\n/));
+        }
+      }
+      const n = await insertStock(accounts);
+      if (n) toast.success(`${n} conta(s) importada(s) de ${files.length} arquivo(s)`);
+    } catch (e: any) {
+      toast.error(e.message || "Falha ao processar arquivo");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function removeOne(id: string) {
