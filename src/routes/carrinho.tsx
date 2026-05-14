@@ -27,6 +27,7 @@ const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; min?: 
 
 function Carrinho() {
   const { items, subtotal, setQty, remove, add, clear } = useCart();
+  const { allProducts: ALL_PRODUCTS } = useCatalog();
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [applied, setApplied] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
