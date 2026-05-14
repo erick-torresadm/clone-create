@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { CartDrawer } from "./CartDrawer";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 export function Layout({ children }: { children: ReactNode }) {
