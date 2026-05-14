@@ -190,7 +190,7 @@ function Carrinho() {
             </div>
 
             <button
-              onClick={() => toast.info("Checkout em breve — Pix será integrado.")}
+              onClick={() => navigate({ to: "/checkout" })}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-[0_12px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110"
             >
               Finalizar compra <ArrowRight className="h-4 w-4" />
