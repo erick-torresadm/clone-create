@@ -16,12 +16,10 @@ export const Route = createFileRoute("/checkout")({
 
 function CheckoutPage() {
   const { items } = useCart();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const checkoutFn = useServerFn(createCartCheckout);
   const [coupon] = useState<string | undefined>(undefined);
-
-  const { loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;
