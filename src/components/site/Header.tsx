@@ -57,9 +57,10 @@ export function Header() {
               <User className="h-4 w-4" /> Entrar
             </Link>
           )}
-          <Link
-            to="/carrinho"
-            aria-label="Carrinho"
+          <button
+            type="button"
+            onClick={openDrawer}
+            aria-label="Abrir carrinho"
             className="relative grid h-10 w-10 place-items-center rounded-lg border border-border bg-card text-foreground transition hover:border-primary/50"
           >
             <ShoppingCart className="h-4 w-4" />
@@ -68,7 +69,7 @@ export function Header() {
                 {count}
               </span>
             )}
-          </Link>
+          </button>
           <button
             aria-label="Menu"
             onClick={() => setOpen((v) => !v)}
