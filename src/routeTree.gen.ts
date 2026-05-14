@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
+import { Route as GarantiaRouteImport } from './routes/garantia'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as DicasRouteImport } from './routes/dicas'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
@@ -42,9 +44,19 @@ const MinhaContaRoute = MinhaContaRouteImport.update({
   path: '/minha-conta',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GarantiaRoute = GarantiaRouteImport.update({
+  id: '/garantia',
+  path: '/garantia',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EntrarRoute = EntrarRouteImport.update({
   id: '/entrar',
   path: '/entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DicasRoute = DicasRouteImport.update({
+  id: '/dicas',
+  path: '/dicas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContatoRoute = ContatoRouteImport.update({
@@ -119,7 +131,9 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
+  '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
+  '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
   '/sobre': typeof SobreRoute
@@ -138,7 +152,9 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
+  '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
+  '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
   '/sobre': typeof SobreRoute
@@ -158,7 +174,9 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
+  '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
+  '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
   '/sobre': typeof SobreRoute
@@ -179,7 +197,9 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/contato'
+    | '/dicas'
     | '/entrar'
+    | '/garantia'
     | '/minha-conta'
     | '/produtos'
     | '/sobre'
@@ -198,7 +218,9 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/contato'
+    | '/dicas'
     | '/entrar'
+    | '/garantia'
     | '/minha-conta'
     | '/produtos'
     | '/sobre'
@@ -217,7 +239,9 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/contato'
+    | '/dicas'
     | '/entrar'
+    | '/garantia'
     | '/minha-conta'
     | '/produtos'
     | '/sobre'
@@ -237,7 +261,9 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
   ContatoRoute: typeof ContatoRoute
+  DicasRoute: typeof DicasRoute
   EntrarRoute: typeof EntrarRoute
+  GarantiaRoute: typeof GarantiaRoute
   MinhaContaRoute: typeof MinhaContaRoute
   ProdutosRoute: typeof ProdutosRoute
   SobreRoute: typeof SobreRoute
@@ -275,11 +301,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MinhaContaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/garantia': {
+      id: '/garantia'
+      path: '/garantia'
+      fullPath: '/garantia'
+      preLoaderRoute: typeof GarantiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/entrar': {
       id: '/entrar'
       path: '/entrar'
       fullPath: '/entrar'
       preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dicas': {
+      id: '/dicas'
+      path: '/dicas'
+      fullPath: '/dicas'
+      preLoaderRoute: typeof DicasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contato': {
@@ -381,7 +421,9 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
   ContatoRoute: ContatoRoute,
+  DicasRoute: DicasRoute,
   EntrarRoute: EntrarRoute,
+  GarantiaRoute: GarantiaRoute,
   MinhaContaRoute: MinhaContaRoute,
   ProdutosRoute: ProdutosRoute,
   SobreRoute: SobreRoute,
@@ -398,3 +440,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
