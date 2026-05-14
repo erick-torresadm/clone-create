@@ -3,7 +3,7 @@ import { Layout } from "@/components/site/Layout";
 import { ShoppingCart, ArrowRight, Trash2, Minus, Plus, Tag, ShieldCheck, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useCart } from "@/lib/use-cart";
-import { ALL_PRODUCTS, formatBRL } from "@/lib/products";
+import { useCatalog, formatBRL } from "@/lib/site-data";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/carrinho")({
@@ -27,6 +27,7 @@ const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; min?: 
 
 function Carrinho() {
   const { items, subtotal, setQty, remove, add, clear } = useCart();
+  const { allProducts: ALL_PRODUCTS } = useCatalog();
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [applied, setApplied] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);

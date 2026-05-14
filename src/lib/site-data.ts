@@ -86,3 +86,62 @@ export function discount(oldP: number | null, p: number) {
   if (!oldP || oldP <= p) return 0;
   return Math.round(((oldP - p) / oldP) * 100);
 }
+
+// ---- DB → UI catalog adapter ----
+import type { Product, Section } from "@/lib/products";
+
+const DEFAULT_DESC = `Entrega 100% automática após confirmação do pagamento.
+
+✅ Produto original e garantido
+✅ Suporte 24/7 via Telegram
+✅ Reposição em caso de problema nas primeiras 24h
+✅ Tutorial completo de uso
+
+Após o pagamento via Pix, o acesso é enviado em poucos minutos.`;
+
+function dbToProduct(p: DBProduct): Product {
+  return {
+    id: p.id,
+    name: p.name,
+    price: Number(p.price),
+    oldPrice: Number(p.old_price ?? p.price),
+    sold: p.sold ?? undefined,
+    description: p.description ?? DEFAULT_DESC,
+    rating: p.rating ?? undefined,
+    reviews: p.reviews ?? undefined,
+    image: p.image_url ?? undefined,
+    badge: p.badge ?? undefined,
+  };
+}
+
+export function useCatalog() {
+  const products = useProducts();
+  const sections = useSections();
+
+  const ready = !products.isLoading && !sections.isLoading;
+  const dbProducts = (products.data ?? []).filter((p) => p.active);
+  const dbSections = sections.data ?? [];
+
+  const allProducts: Product[] = dbProducts.map(dbToProduct);
+
+  const sectionsList: Section[] = dbSections
+    .filter((s) => s.active)
+    .map((s) => ({
+      title: s.emoji ? `${s.emoji} ${s.title}` : s.title,
+      products: dbProducts
+        .filter((p) => p.section_id === s.id)
+        .map(dbToProduct),
+    }))
+    .filter((s) => s.products.length > 0);
+
+  // Orphans (no section) grouped at end
+  const orphan = dbProducts.filter((p) => !p.section_id).map(dbToProduct);
+  if (orphan.length) sectionsList.push({ title: "Outros", products: orphan });
+
+  return {
+    isLoading: !ready,
+    sections: sectionsList,
+    allProducts,
+    getProduct: (id: string) => allProducts.find((p) => p.id === id),
+  };
+}

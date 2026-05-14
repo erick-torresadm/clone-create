@@ -3,8 +3,7 @@ import { ArrowRight, ShieldCheck, Zap, Headphones } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
-import { SECTIONS, ALL_PRODUCTS } from "@/lib/products";
-import { useSettings } from "@/lib/site-data";
+import { useSettings, useCatalog } from "@/lib/site-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +29,7 @@ const COL_CLASS: Record<number, string> = {
 
 function Index() {
   const { data: s } = useSettings();
+  const { sections: SECTIONS, allProducts: ALL_PRODUCTS, isLoading } = useCatalog();
   const showCategories = s?.home_show_categories ?? true;
   const showAll = s?.home_show_all_products ?? true;
   const maxProducts = s?.home_max_products ?? 12;
@@ -40,9 +40,9 @@ function Index() {
   const visible = useMemo(() => {
     if (active === "all") return SECTIONS;
     return SECTIONS.filter((sec) => sec.title === active);
-  }, [active]);
+  }, [active, SECTIONS]);
 
-  const flatLimited = useMemo(() => ALL_PRODUCTS.slice(0, maxProducts), [maxProducts]);
+  const flatLimited = useMemo(() => ALL_PRODUCTS.slice(0, maxProducts), [maxProducts, ALL_PRODUCTS]);
 
   return (
     <Layout>
@@ -138,6 +138,9 @@ function Index() {
           <div className={`grid gap-5 ${cols}`}>
             {flatLimited.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
+        )}
+        {!isLoading && ALL_PRODUCTS.length === 0 && (
+          <p className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">Nenhum produto cadastrado ainda.</p>
         )}
       </section>
     </Layout>

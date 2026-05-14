@@ -3,15 +3,15 @@ import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
-import { SECTIONS } from "@/lib/products";
+import { useCatalog } from "@/lib/site-data";
 
 export const Route = createFileRoute("/produtos")({
   head: () => ({
     meta: [
-      { title: "Produtos — Minha Loja" },
-      { name: "description", content: "Catálogo completo de assinaturas e contas premium." },
-      { property: "og:title", content: "Produtos — Minha Loja" },
-      { property: "og:description", content: "Streaming, música e contas premium." },
+      { title: "Produtos — BluePrime" },
+      { name: "description", content: "Catálogo completo de contas Facebook, BMs e ativos digitais." },
+      { property: "og:title", content: "Produtos — BluePrime" },
+      { property: "og:description", content: "Contas, BMs e ativos digitais premium." },
       { property: "og:url", content: "/produtos" },
     ],
     links: [{ rel: "canonical", href: "/produtos" }],
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/produtos")({
 
 function Produtos() {
   const [query, setQuery] = useState("");
+  const { sections: SECTIONS, isLoading } = useCatalog();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -29,7 +30,7 @@ function Produtos() {
       ...s,
       products: s.products.filter((p) => p.name.toLowerCase().includes(q)),
     })).filter((s) => s.products.length > 0);
-  }, [query]);
+  }, [query, SECTIONS]);
 
   return (
     <Layout>
@@ -67,7 +68,7 @@ function Produtos() {
           ))}
           {filtered.length === 0 && (
             <p className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
-              Nenhum produto encontrado.
+              {isLoading ? "Carregando..." : "Nenhum produto encontrado."}
             </p>
           )}
         </div>
