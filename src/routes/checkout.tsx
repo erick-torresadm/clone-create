@@ -39,7 +39,7 @@ function CheckoutPage() {
             couponCode: coupon,
             customerEmail: user?.email || undefined,
             userId: user?.id,
-            returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
+            returnUrl: `${window.location.origin}/minha-conta?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
             environment: getStripeEnvironment(),
           },
         });
@@ -52,7 +52,7 @@ function CheckoutPage() {
     };
   }, [items, user, coupon, checkoutFn]);
 
-  if (!items.length) return null;
+  if (authLoading || !user || !items.length) return null;
 
   return (
     <Layout>
