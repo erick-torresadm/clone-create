@@ -348,7 +348,7 @@ function StockPanel({ product }: { product: any }) {
             </label>
             <label className="flex items-center gap-1.5">
               <input type="radio" name="splitmode" checked={splitMode === "file-per-account"} onChange={() => setSplitMode("file-per-account")} />
-              <FileArchive className="h-3.5 w-3.5" /> .zip: 1 arquivo = 1 conta
+              <FileArchive className="h-3.5 w-3.5" /> 1 arquivo = 1 conta (.txt ou item do .zip)
             </label>
           </div>
           <label className="flex items-center gap-1.5">
