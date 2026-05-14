@@ -9,9 +9,9 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
-      { title: "Carrinho — FarmFy" },
+      { title: "Carrinho — Ativosfy" },
       { name: "description", content: "Revise os itens do seu carrinho." },
-      { property: "og:title", content: "Carrinho — FarmFy" },
+      { property: "og:title", content: "Carrinho — Ativosfy" },
       { property: "og:url", content: "/carrinho" },
     ],
     links: [{ rel: "canonical", href: "/carrinho" }],

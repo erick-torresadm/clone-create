@@ -14,7 +14,7 @@ export function Header() {
           <span className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-lg font-extrabold text-primary-foreground shadow-[0_0_18px_rgba(59,130,246,0.5)]">
             F
           </span>
-          <span className="text-xl font-bold text-foreground">FarmFy</span>
+          <span className="text-xl font-bold text-foreground">Ativosfy</span>
           <BadgeCheck className="h-5 w-5 fill-primary text-primary-foreground" />
         </Link>
 

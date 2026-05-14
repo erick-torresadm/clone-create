@@ -5,7 +5,7 @@ import { ShieldCheck, AlertTriangle, RefreshCcw, Clock, BookOpen } from "lucide-
 export const Route = createFileRoute("/garantia")({
   head: () => ({
     meta: [
-      { title: "Política de Garantia e Reembolso — FarmFy" },
+      { title: "Política de Garantia e Reembolso — Ativosfy" },
       { name: "description", content: "Garantia de login de 7 dias, política de reembolso e regras de uso dos perfis e contas premium." },
       { property: "og:title", content: "Política de Garantia e Reembolso" },
       { property: "og:description", content: "Garantia de login de 7 dias, política de reembolso e regras de uso." },

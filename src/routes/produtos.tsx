@@ -8,9 +8,9 @@ import { useCatalog } from "@/lib/site-data";
 export const Route = createFileRoute("/produtos")({
   head: () => ({
     meta: [
-      { title: "Produtos — FarmFy" },
+      { title: "Produtos — Ativosfy" },
       { name: "description", content: "Catálogo completo de contas Facebook, BMs e ativos digitais." },
-      { property: "og:title", content: "Produtos — FarmFy" },
+      { property: "og:title", content: "Produtos — Ativosfy" },
       { property: "og:description", content: "Contas, BMs e ativos digitais premium." },
       { property: "og:url", content: "/produtos" },
     ],

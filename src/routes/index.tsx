@@ -8,9 +8,9 @@ import { useSettings, useCatalog } from "@/lib/site-data";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FarmFy — Contas Facebook & BM Premium" },
+      { title: "Ativosfy — Contas Facebook & BM Premium" },
       { name: "description", content: "Contas Facebook, BMs e ativos digitais premium com entrega automática, garantia e suporte 24/7." },
-      { property: "og:title", content: "FarmFy — Contas Facebook & BM Premium" },
+      { property: "og:title", content: "Ativosfy — Contas Facebook & BM Premium" },
       { property: "og:description", content: "Contas Facebook, Business Managers e ativos digitais premium." },
       { property: "og:url", content: "/" },
     ],
