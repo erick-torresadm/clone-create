@@ -415,6 +415,7 @@ export type Database = {
           id: string
         }[]
       }
+      get_db_size: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
