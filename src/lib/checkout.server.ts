@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { type AsaasEnv, getPayment, isPaid } from "@/lib/asaas.server";
 import { notifyOrderPaid } from "@/lib/telegram.server";
+import { sendOrderDeliveredEmail } from "@/lib/resend.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
