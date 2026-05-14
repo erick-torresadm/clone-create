@@ -227,7 +227,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
-      ui_mode: "embedded_page",
+      ui_mode: "embedded",
       return_url: data.returnUrl,
       ...(customerId && { customer: customerId }),
       ...(discounts.length && { discounts }),
