@@ -1,8 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
-import { Package, Tag, Bell, Settings, LogOut } from "lucide-react";
+import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive } from "lucide-react";
+import { getPlatformStats } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminHome,
