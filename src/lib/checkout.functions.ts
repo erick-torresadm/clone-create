@@ -302,6 +302,10 @@ function normalizeMaxviaAccounts(payload: any): Array<{ uid?: string; full_info?
     ? payload.data.accounts
     : Array.isArray(payload?.accounts)
     ? payload.accounts
+    : payload?.data && typeof payload.data === "object"
+    ? [payload.data]
+    : payload?.account
+    ? [payload.account]
     : [];
   return raw.map((account: any) => {
     if (typeof account === "string") return { full_info: account };
