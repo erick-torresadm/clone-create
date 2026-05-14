@@ -55,6 +55,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          asaas_customer_id: string | null
+          asaas_payment_id: string | null
           coupon_code: string | null
           created_at: string
           delivered_data: Json | null
@@ -63,6 +65,9 @@ export type Database = {
           external_order_id: string | null
           id: string
           items: Json
+          pix_expires_at: string | null
+          pix_payload: string | null
+          pix_qr_base64: string | null
           status: string
           stripe_session_id: string | null
           subtotal: number
@@ -70,6 +75,8 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
           coupon_code?: string | null
           created_at?: string
           delivered_data?: Json | null
@@ -78,6 +85,9 @@ export type Database = {
           external_order_id?: string | null
           id?: string
           items: Json
+          pix_expires_at?: string | null
+          pix_payload?: string | null
+          pix_qr_base64?: string | null
           status?: string
           stripe_session_id?: string | null
           subtotal: number
@@ -85,6 +95,8 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
           coupon_code?: string | null
           created_at?: string
           delivered_data?: Json | null
@@ -93,6 +105,9 @@ export type Database = {
           external_order_id?: string | null
           id?: string
           items?: Json
+          pix_expires_at?: string | null
+          pix_payload?: string | null
+          pix_qr_base64?: string | null
           status?: string
           stripe_session_id?: string | null
           subtotal?: number
