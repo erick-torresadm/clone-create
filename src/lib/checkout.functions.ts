@@ -293,6 +293,102 @@ type DeliveredItem = {
   error?: string;
 };
 
+function normalizeMaxviaAccounts(payload: any): Array<{ uid?: string; full_info?: string; link_backup?: string | null }> {
+  const raw = Array.isArray(payload?.data)
+    ? payload.data
+    : Array.isArray(payload?.data?.accounts)
+    ? payload.data.accounts
+    : Array.isArray(payload?.accounts)
+    ? payload.accounts
+    : [];
+  return raw.map((account: any) => {
+    if (typeof account === "string") return { full_info: account };
+    return {
+      uid: account?.uid != null ? String(account.uid) : undefined,
+      full_info: account?.full_info ?? account?.info ?? account?.account ?? account?.data ?? JSON.stringify(account),
+      link_backup: account?.link_backup ?? account?.backup ?? null,
+    };
+  });
+}
+
+async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
+  const apiKey = process.env.MAXVIA_API_KEY;
+  const items = (order.items as any[]) ?? [];
+  const delivered: DeliveredItem[] = [];
+
+  for (const it of items) {
+    const base: DeliveredItem = {
+      productId: it.productId,
+      name: it.name,
+      quantity: it.quantity,
+    };
+
+    if (it.provider !== "maxvia" || !it.externalId) {
+      try {
+        const { data: claimed, error: claimErr } = await supabaseAdmin.rpc("claim_stock", {
+          _product_id: it.productId,
+          _quantity: it.quantity,
+          _order_id: order.id,
+        });
+        if (claimErr) throw claimErr;
+        const rows = (claimed ?? []) as Array<{ id: string; content: string }>;
+        delivered.push({
+          ...base,
+          accounts: rows.map((r) => ({ full_info: r.content })),
+          ...(rows.length < it.quantity
+            ? { error: `Estoque insuficiente: entregamos ${rows.length}/${it.quantity}. Nossa equipe entrará em contato para repor.` }
+            : {}),
+        });
+      } catch (e: any) {
+        delivered.push({ ...base, error: e?.message || "Falha ao reservar estoque." });
+      }
+      continue;
+    }
+
+    if (!apiKey) {
+      delivered.push({ ...base, error: "Provedor não configurado." });
+      continue;
+    }
+
+    try {
+      const buyRes = await fetch(`${MAXVIA_BASE}/buy`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: apiKey, id_product: Number(it.externalId), quantity: it.quantity }),
+      });
+      const buyJson: any = await buyRes.json().catch(() => ({}));
+      const externalOrderId = buyJson?.order_id ?? buyJson?.data?.order_id ?? buyJson?.data?.id ?? null;
+      if (!buyRes.ok || !externalOrderId) {
+        delivered.push({ ...base, error: `Falha ao processar pedido (${buyRes.status}). Suporte foi notificado.` });
+        continue;
+      }
+
+      const detRes = await fetch(`${MAXVIA_BASE}/order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: apiKey, order_id: externalOrderId }),
+      });
+      const detJson: any = await detRes.json().catch(() => ({}));
+      delivered.push({ ...base, externalOrderId, accounts: normalizeMaxviaAccounts(detJson) });
+    } catch (e: any) {
+      delivered.push({ ...base, error: e?.message || "Erro inesperado." });
+    }
+  }
+
+  await supabaseAdmin
+    .from("orders")
+    .update({
+      status: "delivered",
+      delivered_data: delivered,
+      external_order_id: delivered.find((d) => d.externalOrderId)?.externalOrderId
+        ? String(delivered.find((d) => d.externalOrderId)!.externalOrderId)
+        : null,
+    })
+    .eq("id", order.id);
+
+  return delivered;
+}
+
 export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
   .inputValidator((d) => fulfillSchema.parse(d))
   .handler(async ({ data }) => {
