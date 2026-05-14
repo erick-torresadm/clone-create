@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/use-auth";
 import { CartProvider } from "@/lib/use-cart";
 import { useSettings } from "@/lib/site-data";
+import { RouteProgress } from "@/components/site/RouteProgress";
 
 import appCss from "../styles.css?url";
 
