@@ -60,6 +60,24 @@ function MinhaConta() {
     return () => { cancelled = true; };
   }, [user, session_id, fulfill, clear, refetch]);
 
+  useEffect(() => {
+    if (!user || session_id || processingSession) return;
+    const pendingSessions = orders
+      .filter((o) => ["pending", "paid"].includes(o.status) && o.stripe_session_id && !o.delivered_data)
+      .slice(0, 3);
+    if (!pendingSessions.length) return;
+    let cancelled = false;
+    setProcessingSession(true);
+    (async () => {
+      for (const order of pendingSessions) {
+        if (cancelled) return;
+        await fulfill({ data: { sessionId: order.stripe_session_id, environment: getStripeEnvironment() } }).catch(() => null);
+      }
+      if (!cancelled) await refetch();
+    })().finally(() => !cancelled && setProcessingSession(false));
+    return () => { cancelled = true; };
+  }, [user, session_id, orders, processingSession, fulfill, refetch]);
+
   if (!user) return null;
 
   return (
