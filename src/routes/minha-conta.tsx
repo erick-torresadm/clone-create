@@ -74,7 +74,10 @@ function OrderCard({ order }: { order: any }) {
       </div>
       <ul className="mt-3 space-y-1 text-sm text-foreground">
         {items.map((it: any, i: number) => (
-          <li key={i} className="flex justify-between"><span>{it.name} × {it.quantity ?? 1}</span><span>R$ {Number(it.price ?? 0).toFixed(2)}</span></li>
+          <li key={i} className="flex justify-between">
+            <span>{it.name} × {it.quantity ?? 1}</span>
+            <span>R$ {Number(it.unitPriceBrl ?? it.price ?? 0).toFixed(2)}</span>
+          </li>
         ))}
       </ul>
       <div className="mt-3 flex justify-between border-t border-border pt-3 text-sm">
@@ -82,7 +85,7 @@ function OrderCard({ order }: { order: any }) {
         <span className="font-bold text-foreground">R$ {Number(order.total).toFixed(2)}</span>
       </div>
 
-      {delivered && (
+      {Array.isArray(delivered) && delivered.length > 0 && (
         <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-foreground">🔓 Dados entregues</p>
@@ -92,11 +95,25 @@ function OrderCard({ order }: { order: any }) {
             </Button>
           </div>
           {show && (
-            <div className="mt-3 space-y-2">
-              {(Array.isArray(delivered) ? delivered : [delivered]).map((d: any, i: number) => (
-                <div key={i} className="flex items-center gap-2 rounded bg-background p-2 font-mono text-xs text-foreground">
-                  <span className="flex-1 break-all">{typeof d === "string" ? d : (d.full_info ?? d.uid ?? JSON.stringify(d))}</span>
-                  <button onClick={() => { navigator.clipboard.writeText(typeof d === "string" ? d : (d.full_info ?? JSON.stringify(d))); toast.success("Copiado"); }} className="text-primary hover:underline"><Copy className="h-3 w-3" /></button>
+            <div className="mt-3 space-y-3">
+              {delivered.map((d: any, i: number) => (
+                <div key={i}>
+                  <p className="mb-1 text-xs font-semibold text-muted-foreground">{d.name} {d.error ? "· ⚠ " + d.error : ""}</p>
+                  <div className="space-y-1.5">
+                    {(d.accounts ?? []).map((a: any, j: number) => {
+                      const text = a.full_info ?? a.uid ?? "";
+                      return (
+                        <div key={j} className="flex items-center gap-2 rounded bg-background p-2 font-mono text-xs text-foreground">
+                          <span className="flex-1 break-all">{text || "—"}</span>
+                          {text && (
+                            <button onClick={() => { navigator.clipboard.writeText(text); toast.success("Copiado"); }} className="text-primary hover:underline">
+                              <Copy className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))}
             </div>
