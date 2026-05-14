@@ -415,8 +415,9 @@ async function getCachedDelivery(orderId: string) {
 }
 
 export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) => fulfillSchema.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     // 1. Load order
     const { data: order, error: orderErr } = await supabaseAdmin
       .from("orders")
@@ -425,6 +426,7 @@ export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
       .maybeSingle();
     if (orderErr) throw new Error(orderErr.message);
     if (!order) throw new Error("Pedido não encontrado.");
+    if (order.user_id && order.user_id !== context.userId) throw new Error("Pedido não pertence à sua conta.");
 
     // 2. If already fulfilled, return cached result
     if ((order.status === "paid" || order.status === "delivered") && order.delivered_data) {
