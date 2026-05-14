@@ -21,9 +21,16 @@ function CheckoutPage() {
   const checkoutFn = useServerFn(createCartCheckout);
   const [coupon] = useState<string | undefined>(undefined);
 
+  const { loading: authLoading } = useAuth();
+
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate({ to: "/entrar", search: { redirect: "/checkout" } as any });
+      return;
+    }
     if (!items.length) navigate({ to: "/carrinho" });
-  }, [items.length, navigate]);
+  }, [items.length, navigate, user, authLoading]);
 
   const fetchClientSecret = useMemo(() => {
     return async (): Promise<string> => {
