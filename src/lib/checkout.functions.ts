@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fulfillByAsaasPaymentId, fulfillPaidOrder } from "@/lib/checkout.server";
 import { type AsaasEnv, createPixPayment, findOrCreateCustomer, getPixQr, getPayment, isPaid } from "@/lib/asaas.server";
+import { notifyOrderCreated } from "@/lib/telegram.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
@@ -199,6 +200,15 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         pix_expires_at: qr.expirationDate,
       })
       .eq("id", orderRow.id);
+
+    await notifyOrderCreated({
+      orderId: orderRow.id,
+      email: data.customerEmail,
+      total: totalBrl,
+      items: orderItems,
+      paymentId: payment.id,
+      environment: env,
+    });
 
     return {
       orderId: orderRow.id,
