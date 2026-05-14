@@ -236,6 +236,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       mode: "payment",
       ui_mode: "embedded_page",
       return_url: data.returnUrl,
+      redirect_on_completion: "always",
       ...(customerId && { customer: customerId }),
       ...(discounts.length && { discounts }),
       metadata: {
