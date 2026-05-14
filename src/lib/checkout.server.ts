@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { type AsaasEnv, getPayment, isPaid } from "@/lib/asaas.server";
 import { notifyOrderPaid } from "@/lib/telegram.server";
+import { sendOrderDeliveredEmail } from "@/lib/resend.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
@@ -141,6 +142,20 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
     paymentId: order.asaas_payment_id,
     delivered,
   });
+
+  if (order.email) {
+    await sendOrderDeliveredEmail({
+      to: order.email,
+      orderId: order.id,
+      total: Number(order.total),
+      delivered: delivered.map((d) => ({
+        name: d.name,
+        quantity: d.quantity,
+        accounts: d.accounts,
+        error: d.error,
+      })),
+    });
+  }
 
   return delivered;
 }
