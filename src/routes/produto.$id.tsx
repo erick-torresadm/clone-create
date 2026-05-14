@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ShieldCheck,
   Zap,
@@ -13,54 +13,51 @@ import {
 } from "lucide-react";
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
-import { ALL_PRODUCTS, discount, formatBRL, getProduct } from "@/lib/products";
+import { useCatalog, formatBRL, discount } from "@/lib/site-data";
 import { useCart } from "@/lib/use-cart";
 
 export const Route = createFileRoute("/produto/$id")({
-  loader: ({ params }) => {
-    const product = getProduct(params.id);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => {
-    const p = loaderData?.product;
-    return {
-      meta: [
-        { title: p ? `${p.name} — FDM store` : "Produto — FDM store" },
-        { name: "description", content: p?.description?.slice(0, 150) ?? "Produto FDM store" },
-        { property: "og:title", content: p?.name ?? "Produto" },
-        { property: "og:description", content: p?.description?.slice(0, 150) ?? "" },
-        { property: "og:type", content: "product" },
-        { property: "og:url", content: `/produto/${p?.id ?? ""}` },
-      ],
-      links: [{ rel: "canonical", href: `/produto/${p?.id ?? ""}` }],
-    };
-  },
-  notFoundComponent: () => (
-    <Layout>
-      <div className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <h1 className="text-3xl font-bold text-foreground">Produto não encontrado</h1>
-        <p className="mt-3 text-muted-foreground">
-          O produto que você procura não existe ou foi removido.
-        </p>
-        <Link
-          to="/produtos"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
-        >
-          Ver todos os produtos
-        </Link>
-      </div>
-    </Layout>
-  ),
+  head: ({ params }) => ({
+    meta: [
+      { title: `Produto ${params.id} — BluePrime` },
+      { property: "og:url", content: `/produto/${params.id}` },
+    ],
+    links: [{ rel: "canonical", href: `/produto/${params.id}` }],
+  }),
   component: ProductPage,
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
-  const off = discount(product.oldPrice, product.price);
-  const related = ALL_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const { id } = Route.useParams();
+  const { getProduct, allProducts, isLoading } = useCatalog();
+  const product = getProduct(id);
   const { add } = useCart();
   const navigate = useNavigate();
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-3xl px-6 py-24 text-center text-muted-foreground">Carregando...</div>
+      </Layout>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-3xl px-6 py-24 text-center">
+          <h1 className="text-3xl font-bold text-foreground">Produto não encontrado</h1>
+          <p className="mt-3 text-muted-foreground">O produto que você procura não existe ou foi removido.</p>
+          <Link to="/produtos" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
+            Ver todos os produtos
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
+  const off = discount(product.oldPrice, product.price);
+  const related = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
   const handleAdd = () =>
     add({ id: product.id, name: product.name, price: product.price, image: product.image });
