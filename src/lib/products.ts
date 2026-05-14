@@ -14,6 +14,7 @@ export type Product = {
   reviews?: number;
   image?: string;
   badge?: string;
+  stock?: number | null;
 };
 
 export type Section = {

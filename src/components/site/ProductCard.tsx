@@ -60,6 +60,14 @@ export function ProductCard({ product }: { product: Product }) {
               -{off}%
             </span>
           </div>
+          {typeof product.stock === "number" && (
+            <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium">
+              <span className={`inline-block h-1.5 w-1.5 rounded-full ${product.stock > 0 ? "bg-emerald-500" : "bg-destructive"}`} />
+              <span className={product.stock > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}>
+                {product.stock > 0 ? `${product.stock} em estoque` : "Esgotado"}
+              </span>
+            </div>
+          )}
         </div>
       </Link>
       <div className="mt-2 flex items-center gap-2 px-1 pb-1">
