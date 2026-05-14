@@ -24,6 +24,7 @@ import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
+import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminAparenciaRouteImport } from './routes/admin.aparencia'
 import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
@@ -104,6 +105,11 @@ const AdminPedidosRoute = AdminPedidosRouteImport.update({
   path: '/admin/pedidos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEstoqueRoute = AdminEstoqueRouteImport.update({
+  id: '/admin/estoque',
+  path: '/admin/estoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCuponsRoute = AdminCuponsRouteImport.update({
   id: '/admin/cupons',
   path: '/admin/cupons',
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/estoque': typeof AdminEstoqueRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
+    | '/admin/estoque'
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
+    | '/admin/estoque'
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
+    | '/admin/estoque'
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
+  AdminEstoqueRoute: typeof AdminEstoqueRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminPopupsRoute: typeof AdminPopupsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPedidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/estoque': {
+      id: '/admin/estoque'
+      path: '/admin/estoque'
+      fullPath: '/admin/estoque'
+      preLoaderRoute: typeof AdminEstoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/cupons': {
       id: '/admin/cupons'
       path: '/admin/cupons'
@@ -429,6 +449,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
+  AdminEstoqueRoute: AdminEstoqueRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminPopupsRoute: AdminPopupsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
@@ -440,3 +461,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
