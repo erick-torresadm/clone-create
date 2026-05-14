@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="group relative rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50 hover:shadow-[0_8px_30px_-10px_rgba(99,140,255,0.5)]">
+    <div className="glow-card group relative rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50">
       <button
         aria-label="Compartilhar"
         onClick={(e) => e.preventDefault()}
