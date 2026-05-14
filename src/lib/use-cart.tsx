@@ -23,14 +23,15 @@ const Ctx = createContext<CartCtx | null>(null);
 const KEY = "blueprime_cart_v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
     try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setItems(JSON.parse(raw));
-    } catch {}
-  }, []);
+      const raw = window.localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     try {
