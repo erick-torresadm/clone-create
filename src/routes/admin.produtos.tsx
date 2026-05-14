@@ -251,7 +251,6 @@ function ApiTab() {
   const balanceFn = useServerFn(maxviaBalance);
   const catFn = useServerFn(maxviaCategories);
   const prodFn = useServerFn(maxviaProducts);
-  const importFn = useServerFn(maxviaImportProduct);
   const qc = useQueryClient();
 
   const [selectedCat, setSelectedCat] = useState<{ id: number; name: string } | null>(null);
