@@ -14,14 +14,14 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="glow-border group relative flex h-full flex-col overflow-hidden rounded-xl border-2 border-transparent bg-card transition-shadow duration-300">
+    <div className="glow-border group relative flex h-full flex-col rounded-xl bg-card transition-shadow duration-300">
       <Link
         to="/produto/$id"
         params={{ id: product.id }}
         className="relative block"
         aria-label={`Ver ${product.name}`}
       >
-        <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-secondary via-card to-background">
+        <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-secondary via-card to-background">
           {product.image ? (
             <img
               src={product.image}
