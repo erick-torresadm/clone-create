@@ -6,7 +6,7 @@ import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { useProducts, useSections, useSettings } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
-import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct } from "@/lib/maxvia.functions";
+import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct, maxviaAiSuggest } from "@/lib/maxvia.functions";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
