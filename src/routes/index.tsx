@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, ShieldCheck, Zap, Headphones } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
-import { SECTIONS } from "@/lib/products";
+import { SECTIONS, ALL_PRODUCTS } from "@/lib/products";
+import { useSettings } from "@/lib/site-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,8 +20,30 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const COL_CLASS: Record<number, string> = {
+  2: "grid-cols-1 sm:grid-cols-2",
+  3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+  5: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5",
+  6: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6",
+};
+
 function Index() {
-  const featured = SECTIONS[0].products.slice(0, 3);
+  const { data: s } = useSettings();
+  const showCategories = s?.home_show_categories ?? true;
+  const showAll = s?.home_show_all_products ?? true;
+  const maxProducts = s?.home_max_products ?? 12;
+  const cols = COL_CLASS[s?.home_grid_cols ?? 4] ?? COL_CLASS[4];
+
+  const [active, setActive] = useState<string>("all");
+
+  const visible = useMemo(() => {
+    if (active === "all") return SECTIONS;
+    return SECTIONS.filter((sec) => sec.title === active);
+  }, [active]);
+
+  const flatLimited = useMemo(() => ALL_PRODUCTS.slice(0, maxProducts), [maxProducts]);
+
   return (
     <Layout>
       <section className="relative mx-auto w-full max-w-7xl overflow-hidden px-4 pb-12 pt-12 sm:px-6 sm:pt-20 lg:pt-24">
@@ -39,7 +63,7 @@ function Index() {
               to="/produtos"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_12px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110"
             >
-              Ver produtos <ArrowRight className="h-4 w-4" />
+              Ver catálogo completo <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/sobre"
@@ -65,20 +89,73 @@ function Index() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20">
-        <div className="mb-6 flex items-end justify-between gap-4">
+      {/* Catálogo */}
+      <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/30 shadow-[0_0_12px_rgba(99,140,255,0.6)]" />
-            <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Em destaque</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">Catálogo</h2>
           </div>
           <Link to="/produtos" className="text-sm font-medium text-primary hover:underline">
             Ver todos →
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+
+        {/* Filtros de categoria */}
+        {showCategories && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            <CategoryChip label="Todas" active={active === "all"} onClick={() => setActive("all")} />
+            {SECTIONS.map((sec) => (
+              <CategoryChip
+                key={sec.title}
+                label={sec.title}
+                active={active === sec.title}
+                onClick={() => setActive(sec.title)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Grids */}
+        {showAll ? (
+          <div className="space-y-12">
+            {visible.map((section) => (
+              <div key={section.title}>
+                <div className="mb-5 flex items-center gap-3">
+                  <h3 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">{section.title}</h3>
+                  <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                    {section.products.length}
+                  </span>
+                  <div className="hidden h-px flex-1 bg-gradient-to-r from-border to-transparent sm:block" />
+                </div>
+                <div className={`grid gap-5 ${cols}`}>
+                  {section.products.map((p) => <ProductCard key={p.id} product={p} />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={`grid gap-5 ${cols}`}>
+            {flatLimited.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        )}
       </section>
     </Layout>
+  );
+}
+
+function CategoryChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "rounded-full border px-4 py-2 text-xs font-semibold transition " +
+        (active
+          ? "border-primary bg-primary text-primary-foreground shadow-[0_8px_24px_-8px_rgba(99,140,255,0.7)]"
+          : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground")
+      }
+    >
+      {label}
+    </button>
   );
 }
