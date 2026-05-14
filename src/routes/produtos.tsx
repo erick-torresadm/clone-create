@@ -68,7 +68,7 @@ function Produtos() {
           ))}
           {filtered.length === 0 && (
             <p className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
-              Nenhum produto encontrado.
+              {isLoading ? "Carregando..." : "Nenhum produto encontrado."}
             </p>
           )}
         </div>
