@@ -281,8 +281,6 @@ export const createCartCheckout = createServerFn({ method: "POST" })
 
 // ---------- Fulfillment ----------
 
-import { fulfillBySessionId } from "@/lib/checkout.server";
-
 const fulfillSchema = z.object({
   sessionId: z.string().min(5).max(200),
   environment: z.enum(["sandbox", "live"]),
