@@ -51,24 +51,26 @@ function ManualTab() {
   const { data: products = [], refetch } = useProducts();
   const { data: sections = [] } = useSections();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ name: "", price: "", old_price: "", section_id: "", badge: "", image_url: "", description: "" });
+  const [form, setForm] = useState({ name: "", price: "", old_price: "", section_id: "", badge: "", image_url: "", description: "", tags: "" });
   const [editing, setEditing] = useState<any | null>(null);
 
   const create = useMutation({
     mutationFn: async () => {
       if (!form.name || !form.price) throw new Error("Nome e preço são obrigatórios.");
+      const tagsArr = form.tags.split(",").map((t) => t.trim()).filter(Boolean);
       const { error } = await supabase.from("products").insert({
         name: form.name, price: Number(form.price),
         old_price: form.old_price ? Number(form.old_price) : null,
         section_id: form.section_id || null,
         badge: form.badge || null, image_url: form.image_url || null,
         description: form.description || null, source: "manual",
+        tags: tagsArr,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Produto criado");
-      setForm({ name: "", price: "", old_price: "", section_id: "", badge: "", image_url: "", description: "" });
+      setForm({ name: "", price: "", old_price: "", section_id: "", badge: "", image_url: "", description: "", tags: "" });
       qc.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -134,6 +136,11 @@ function ManualTab() {
           </div>
           <div><Label>Descrição</Label>
             <textarea className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
+          <div>
+            <Label>Tags (separadas por vírgula)</Label>
+            <Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="Entrega manual, Entrega 30min" />
+            <p className="mt-1 text-[11px] text-muted-foreground">Aparecem como etiquetas no card do produto.</p>
           </div>
           <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full"><Plus className="mr-2 h-4 w-4" />Criar produto</Button>
         </div>
@@ -297,6 +304,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
     badge: product.badge ?? "",
     image_url: product.image_url ?? "",
     description: product.description ?? "",
+    tags: Array.isArray(product.tags) ? product.tags.join(", ") : "",
   });
   const suggestFn = useServerFn(maxviaAiSuggest);
   const [aiLoading, setAiLoading] = useState(false);
@@ -316,6 +324,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
   }
   const save = useMutation({
     mutationFn: async () => {
+      const tagsArr = f.tags.split(",").map((t) => t.trim()).filter(Boolean);
       const { error } = await supabase.from("products").update({
         name: f.name,
         price: Number(f.price),
@@ -324,6 +333,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
         badge: f.badge || null,
         image_url: f.image_url || null,
         description: f.description || null,
+        tags: tagsArr,
       }).eq("id", product.id);
       if (error) throw error;
     },
@@ -358,6 +368,10 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
           </div>
           <div><Label>Descrição</Label>
             <textarea className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+          </div>
+          <div>
+            <Label>Tags (separadas por vírgula)</Label>
+            <Input value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} placeholder="Entrega manual, Entrega 30min" />
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
