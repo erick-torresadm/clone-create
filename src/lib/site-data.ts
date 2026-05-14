@@ -100,7 +100,8 @@ const DEFAULT_DESC = `Entrega 100% automática após confirmação do pagamento.
 
 Após o pagamento via Pix, o acesso é enviado em poucos minutos.`;
 
-function dbToProduct(p: DBProduct): Product {
+function dbToProduct(p: DBProduct, manualStock?: number): Product {
+  const isExternal = !!p.source && p.source !== "manual";
   return {
     id: p.id,
     name: p.name,
@@ -112,33 +113,46 @@ function dbToProduct(p: DBProduct): Product {
     reviews: p.reviews ?? undefined,
     image: p.image_url ?? undefined,
     badge: p.badge ?? undefined,
-    stock: p.external_quantity ?? null,
+    stock: isExternal ? null : (manualStock ?? 0),
     tags: p.tags ?? [],
   };
+}
+
+export function useStockCounts() {
+  return useQuery({
+    queryKey: ["stock-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_stock_counts");
+      if (error) throw error;
+      const map = new Map<string, number>();
+      (data ?? []).forEach((r: any) => map.set(r.product_id, Number(r.available)));
+      return map;
+    },
+  });
 }
 
 export function useCatalog() {
   const products = useProducts();
   const sections = useSections();
+  const stock = useStockCounts();
 
   const ready = !products.isLoading && !sections.isLoading;
   const dbProducts = (products.data ?? []).filter((p) => p.active);
   const dbSections = sections.data ?? [];
+  const stockMap = stock.data ?? new Map<string, number>();
 
-  const allProducts: Product[] = dbProducts.map(dbToProduct);
+  const toProd = (p: DBProduct) => dbToProduct(p, stockMap.get(p.id));
+  const allProducts: Product[] = dbProducts.map(toProd);
 
   const sectionsList: Section[] = dbSections
     .filter((s) => s.active)
     .map((s) => ({
       title: s.emoji ? `${s.emoji} ${s.title}` : s.title,
-      products: dbProducts
-        .filter((p) => p.section_id === s.id)
-        .map(dbToProduct),
+      products: dbProducts.filter((p) => p.section_id === s.id).map(toProd),
     }))
     .filter((s) => s.products.length > 0);
 
-  // Orphans (no section) grouped at end
-  const orphan = dbProducts.filter((p) => !p.section_id).map(dbToProduct);
+  const orphan = dbProducts.filter((p) => !p.section_id).map(toProd);
   if (orphan.length) sectionsList.push({ title: "Outros", products: orphan });
 
   return {
