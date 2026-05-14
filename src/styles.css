@@ -170,7 +170,7 @@
     transparent 0deg,
     oklch(0.75 0.22 255) 60deg,
     oklch(0.65 0.28 290) 120deg,
-    transparent 180deg,
+    transparent 200deg,
     transparent 360deg
   );
   -webkit-mask:
@@ -178,15 +178,14 @@
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  opacity: 0.85;
   pointer-events: none;
+  animation: glow-spin 5s linear infinite;
   z-index: 1;
 }
 
 .glow-card:hover::before {
   opacity: 1;
-  animation: glow-spin 4s linear infinite;
 }
 
 

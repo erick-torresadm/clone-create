@@ -285,6 +285,10 @@ export type Database = {
           brl_per_vnd: number
           hero_subtitle: string
           hero_title: string
+          home_grid_cols: number
+          home_max_products: number
+          home_show_all_products: boolean
+          home_show_categories: boolean
           id: number
           logo_url: string | null
           primary_color: string
@@ -300,6 +304,10 @@ export type Database = {
           brl_per_vnd?: number
           hero_subtitle?: string
           hero_title?: string
+          home_grid_cols?: number
+          home_max_products?: number
+          home_show_all_products?: boolean
+          home_show_categories?: boolean
           id?: number
           logo_url?: string | null
           primary_color?: string
@@ -315,6 +323,10 @@ export type Database = {
           brl_per_vnd?: number
           hero_subtitle?: string
           hero_title?: string
+          home_grid_cols?: number
+          home_max_products?: number
+          home_show_all_products?: boolean
+          home_show_categories?: boolean
           id?: number
           logo_url?: string | null
           primary_color?: string
