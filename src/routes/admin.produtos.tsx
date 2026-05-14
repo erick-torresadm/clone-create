@@ -35,9 +35,11 @@ function AdminProdutos() {
         <Tabs defaultValue="manual" className="mt-6">
           <TabsList>
             <TabsTrigger value="manual">Manuais & lista</TabsTrigger>
+            <TabsTrigger value="sections">Seções</TabsTrigger>
             <TabsTrigger value="api">Importar da API (MaxVia)</TabsTrigger>
           </TabsList>
           <TabsContent value="manual" className="mt-6"><ManualTab /></TabsContent>
+          <TabsContent value="sections" className="mt-6"><SectionsTab /></TabsContent>
           <TabsContent value="api" className="mt-6"><ApiTab /></TabsContent>
         </Tabs>
       </div>
