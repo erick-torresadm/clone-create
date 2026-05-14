@@ -61,6 +61,19 @@ export function ProductCard({ product }: { product: Product }) {
           </h3>
         </Link>
 
+        {product.tags && product.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {product.tags.map((t) => (
+              <span
+                key={t}
+                className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="mt-auto pt-3">
           <span className="text-xs text-muted-foreground line-through">R$ {formatBRL(product.oldPrice)}</span>
           <div className="mt-0.5 flex items-center gap-2">

@@ -22,6 +22,7 @@ export type DBProduct = {
   external_price?: number | null;
   external_currency?: string | null;
   external_quantity?: number | null;
+  tags?: string[] | null;
 };
 export type DBSection = { id: string; title: string; emoji: string | null; sort_order: number; active: boolean };
 export type DBCoupon = { id: string; code: string; discount_type: "percent" | "fixed"; value: number; min_order: number; max_uses: number | null; used_count: number; expires_at: string | null; active: boolean };
@@ -112,6 +113,7 @@ function dbToProduct(p: DBProduct): Product {
     image: p.image_url ?? undefined,
     badge: p.badge ?? undefined,
     stock: p.external_quantity ?? null,
+    tags: p.tags ?? [],
   };
 }
 

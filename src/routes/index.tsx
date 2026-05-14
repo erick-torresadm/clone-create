@@ -103,45 +103,7 @@ function Index() {
           {filteredSections.map((section) => {
             const isPromo = /promo|oferta/i.test(section.title);
             return (
-              <section
-                key={section.title}
-                id={`sec-${slugify(section.title)}`}
-                className={
-                  isPromo
-                    ? "relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-orange-500/5 to-transparent p-5 shadow-[0_0_30px_rgba(234,179,8,0.15)] scroll-mt-24"
-                    : "scroll-mt-24"
-                }
-              >
-                <div className="mb-5 flex items-center gap-3">
-                  {isPromo ? (
-                    <Flame className="h-6 w-6 text-yellow-500" />
-                  ) : (
-                    <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40 shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
-                  )}
-                  <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                    {section.title}
-                  </h2>
-                  <span
-                    className={
-                      isPromo
-                        ? "rounded-full border border-yellow-500/40 bg-yellow-500/15 px-2.5 py-0.5 text-xs font-bold uppercase text-yellow-500 animate-pulse"
-                        : "rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary"
-                    }
-                  >
-                    {isPromo ? "Oferta limitada" : section.products.length}
-                  </span>
-                  <div
-                    className={`ml-2 hidden h-px flex-1 ${
-                      isPromo ? "bg-gradient-to-r from-yellow-500/40 to-transparent" : "bg-gradient-to-r from-border to-transparent"
-                    } sm:block`}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
-                  {section.products.map((p) => (
-                    <ProductCard key={p.id} product={p} />
-                  ))}
-                </div>
-              </section>
+              <SectionBlock key={section.title} section={section} isPromo={isPromo} />
             );
           })}
         </div>
@@ -158,5 +120,64 @@ function Index() {
         )}
       </main>
     </Layout>
+  );
+}
+
+function SectionBlock({ section, isPromo }: { section: { title: string; products: any[] }; isPromo: boolean }) {
+  const [expanded, setExpanded] = useState(false);
+  const LIMIT = 3;
+  const hasMore = section.products.length > LIMIT;
+  const visible = expanded || !hasMore ? section.products : section.products.slice(0, LIMIT);
+
+  return (
+    <section
+      id={`sec-${slugify(section.title)}`}
+      className={
+        isPromo
+          ? "relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-orange-500/5 to-transparent p-5 shadow-[0_0_30px_rgba(234,179,8,0.15)] scroll-mt-24"
+          : "scroll-mt-24"
+      }
+    >
+      <div className="mb-5 flex items-center gap-3">
+        {isPromo ? (
+          <Flame className="h-6 w-6 text-yellow-500" />
+        ) : (
+          <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40 shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
+        )}
+        <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+          {section.title}
+        </h2>
+        <span
+          className={
+            isPromo
+              ? "rounded-full border border-yellow-500/40 bg-yellow-500/15 px-2.5 py-0.5 text-xs font-bold uppercase text-yellow-500 animate-pulse"
+              : "rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary"
+          }
+        >
+          {isPromo ? "Oferta limitada" : section.products.length}
+        </span>
+        <div
+          className={`ml-2 hidden h-px flex-1 ${
+            isPromo ? "bg-gradient-to-r from-yellow-500/40 to-transparent" : "bg-gradient-to-r from-border to-transparent"
+          } sm:block`}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
+        {visible.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </div>
+      {hasMore && (
+        <div className="mt-5 flex justify-center">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-5 py-2 text-sm font-semibold text-primary shadow-[0_0_20px_-8px_rgba(59,130,246,0.6)] hover:bg-primary/20"
+          >
+            {expanded ? "Ver menos" : `Ver mais (${section.products.length - LIMIT})`}
+            <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      )}
+    </section>
   );
 }
