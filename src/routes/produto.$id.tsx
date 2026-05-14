@@ -19,7 +19,7 @@ import { useCart } from "@/lib/use-cart";
 export const Route = createFileRoute("/produto/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `Produto ${params.id} — BluePrime` },
+      { title: `Produto ${params.id} — FarmFy` },
       { property: "og:url", content: `/produto/${params.id}` },
     ],
     links: [{ rel: "canonical", href: `/produto/${params.id}` }],
