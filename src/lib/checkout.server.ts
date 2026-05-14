@@ -143,6 +143,20 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
     delivered,
   });
 
+  if (order.email) {
+    await sendOrderDeliveredEmail({
+      to: order.email,
+      orderId: order.id,
+      total: Number(order.total),
+      delivered: delivered.map((d) => ({
+        name: d.name,
+        quantity: d.quantity,
+        accounts: d.accounts,
+        error: d.error,
+      })),
+    });
+  }
+
   return delivered;
 }
 
