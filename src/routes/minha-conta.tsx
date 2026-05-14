@@ -94,7 +94,8 @@ function MinhaConta() {
         <h2 className="mt-10 flex items-center gap-2 text-xl font-bold text-foreground"><Package className="h-5 w-5 text-primary" />Meus pedidos</h2>
         {processingSession && (
           <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" /> Confirmando pagamento e buscando a conta no fornecedor...
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            Verificando pagamento... Se você pagou via Pix, pode levar alguns segundos para confirmar.
           </div>
         )}
         <div className="mt-4 space-y-4">
