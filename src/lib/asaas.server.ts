@@ -23,7 +23,7 @@ async function asaasFetch<T = any>(env: AsaasEnv, path: string, init?: RequestIn
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "User-Agent": "FarmFy/1.0",
+      "User-Agent": "Ativosfy/1.0",
       access_token: getApiKey(),
       ...(init?.headers || {}),
     },
