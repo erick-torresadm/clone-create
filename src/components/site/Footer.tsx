@@ -52,12 +52,12 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-semibold text-foreground">Conta</h4>
+          <h4 className="mb-3 text-sm font-semibold text-foreground">Suporte</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/entrar" className="hover:text-foreground">Entrar</Link></li>
-            <li><Link to="/carrinho" className="hover:text-foreground">Carrinho</Link></li>
-            <li><a href="#" className="hover:text-foreground">Suporte</a></li>
-            <li><a href="#" className="hover:text-foreground">Termos</a></li>
+            <li><Link to="/garantia" className="hover:text-foreground">Garantia & reembolso</Link></li>
+            <li><Link to="/dicas" className="hover:text-foreground">Dicas & tutoriais</Link></li>
+            <li><Link to="/contato" className="hover:text-foreground">Falar com suporte</Link></li>
+            <li><Link to="/entrar" className="hover:text-foreground">Minha conta</Link></li>
           </ul>
         </div>
       </div>
