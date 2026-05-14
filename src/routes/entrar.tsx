@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
-import { BadgeCheck, Eye, EyeOff, Check, X, Info } from "lucide-react";
+import { BadgeCheck, Eye, EyeOff, Check, X, Info, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
