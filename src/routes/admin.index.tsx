@@ -35,6 +35,7 @@ function AdminHome() {
 
   const cards = [
     { to: "/admin/produtos", icon: Package, title: "Produtos & API", desc: "Manuais + importar do fornecedor." },
+    { to: "/admin/estoque", icon: Upload, title: "Estoque & Upload", desc: "Envie .txt / .zip com perfis para entrega manual." },
     { to: "/admin/cupons", icon: Tag, title: "Cupons", desc: "Crie códigos de desconto." },
     { to: "/admin/popups", icon: Bell, title: "Popups & Notícias", desc: "Avisos no site." },
     { to: "/admin/aparencia", icon: Settings, title: "Aparência & Config", desc: "Cores, logo, hero, câmbio." },
