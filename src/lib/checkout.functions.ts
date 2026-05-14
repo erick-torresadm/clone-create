@@ -14,8 +14,8 @@ const itemSchema = z.object({
 const inputSchema = z.object({
   items: z.array(itemSchema).min(1).max(30),
   couponCode: z.string().max(40).optional(),
-  customerEmail: z.string().email().optional(),
-  userId: z.string().uuid().optional(),
+  customerEmail: z.string().email(),
+  userId: z.string().uuid(),
   returnUrl: z.string().url(),
   environment: z.enum(["sandbox", "live"]),
 });
@@ -130,8 +130,10 @@ function isPixActivationError(error: unknown) {
 // ---------- Create checkout session ----------
 
 export const createCartCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) => inputSchema.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    if (data.userId !== context.userId) throw new Error("Sessão inválida. Entre novamente para comprar.");
     const env: StripeEnv = data.environment;
     const stripe = createStripeClient(env);
 
