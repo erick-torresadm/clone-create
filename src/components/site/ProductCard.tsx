@@ -27,15 +27,21 @@ export function ProductCard({ product }: { product: Product }) {
               src={product.image}
               alt={product.name}
               loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${typeof product.stock === "number" && product.stock <= 0 ? "grayscale opacity-50" : ""}`}
             />
           ) : (
             <div className="absolute inset-0 grid place-items-center text-xs uppercase tracking-widest text-muted-foreground/40">
               {product.name.split(" - ")[0]}
             </div>
           )}
+          {typeof product.stock === "number" && (
+            <span className={`absolute left-3 top-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-lg ${product.stock > 0 ? "bg-emerald-500 text-white" : "bg-destructive text-destructive-foreground"}`}>
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-white/90" />
+              {product.stock > 0 ? `${product.stock} em estoque` : "Esgotado"}
+            </span>
+          )}
           {product.badge && (
-            <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg">
+            <span className={`absolute left-3 ${typeof product.stock === "number" ? "top-9" : "top-3"} rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground shadow-lg`}>
               {product.badge}
             </span>
           )}
