@@ -324,7 +324,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
   }
   const save = useMutation({
     mutationFn: async () => {
-      const tagsArr = f.tags.split(",").map((t) => t.trim()).filter(Boolean);
+      const tagsArr = f.tags.split(",").map((t: string) => t.trim()).filter(Boolean);
       const { error } = await supabase.from("products").update({
         name: f.name,
         price: Number(f.price),
