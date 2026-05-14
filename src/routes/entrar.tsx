@@ -42,7 +42,7 @@ function Entrar() {
 
   const checks = useMemo(() => checkPassword(password), [password]);
   const score = strengthScore(checks);
-  const canSubmit = mode === "login" ? password.length > 0 : score === 3;
+  const canSubmit = mode === "login" ? password.length > 0 : score >= 1 && password.length >= 6;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
