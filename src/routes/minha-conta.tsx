@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { checkPaymentStatus } from "@/lib/checkout.functions";
-import { LogOut, Package, Eye, EyeOff, Copy, Loader2 } from "lucide-react";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 
 const ENV = (import.meta.env.MODE === "production" ? "live" : "sandbox") as "sandbox" | "live";
