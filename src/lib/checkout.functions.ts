@@ -121,6 +121,11 @@ async function resolveOrCreateCustomer(
   return created.id;
 }
 
+function isPixActivationError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return message.toLowerCase().includes("payment method type provided: pix is invalid");
+}
+
 // ---------- Create checkout session ----------
 
 export const createCartCheckout = createServerFn({ method: "POST" })
@@ -223,12 +228,13 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       ? await resolveOrCreateCustomer(stripe, { email: data.customerEmail, userId: data.userId })
       : undefined;
 
-    // 5. Create Stripe session
-    const session = await stripe.checkout.sessions.create({
+    // 5. Create Stripe session. Live keeps Pix-only; sandbox retries with
+    // Stripe's default test methods if Pix is not enabled on the test account,
+    // so the checkout never renders as an empty panel during preview.
+    const checkoutSessionParams = {
       line_items,
       mode: "payment",
       ui_mode: "embedded_page",
-      payment_method_types: ["pix"],
       return_url: data.returnUrl,
       ...(customerId && { customer: customerId }),
       ...(discounts.length && { discounts }),
@@ -236,7 +242,21 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         ...(data.userId && { userId: data.userId }),
         env,
       },
-    });
+    } as const;
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        ...checkoutSessionParams,
+        payment_method_types: ["pix"],
+      });
+    } catch (error) {
+      if (env !== "sandbox" || !isPixActivationError(error)) throw error;
+      session = await stripe.checkout.sessions.create({
+        ...checkoutSessionParams,
+        metadata: { ...checkoutSessionParams.metadata, pix_test_fallback: "true" },
+      });
+    }
 
     // 6. Persist a pending order so fulfillment can resolve cart items by session id
     const totalCents = Math.max(0, subtotalCents - discountCents);
