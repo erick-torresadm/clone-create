@@ -112,6 +112,7 @@ function dbToProduct(p: DBProduct): Product {
     image: p.image_url ?? undefined,
     badge: p.badge ?? undefined,
     stock: p.external_quantity ?? null,
+    tags: p.tags ?? [],
   };
 }
 

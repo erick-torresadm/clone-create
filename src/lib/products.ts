@@ -15,6 +15,7 @@ export type Product = {
   image?: string;
   badge?: string;
   stock?: number | null;
+  tags?: string[];
 };
 
 export type Section = {
