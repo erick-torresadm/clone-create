@@ -228,7 +228,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
     onError: (e: any) => toast.error(e.message),
   });
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">Editar produto</h3>
