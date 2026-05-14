@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
+import { type AsaasEnv, getPayment, isPaid } from "@/lib/asaas.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
@@ -89,7 +89,6 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
       const buyJson: any = await buyRes.json().catch(() => ({}));
       console.log(`[fulfill] maxvia /buy status=${buyRes.status} body=${JSON.stringify(buyJson).slice(0, 400)}`);
 
-      // MaxVia retorna 200 com {status:false, msg:"..."} em erros de regra (ex: qtd mínima)
       if (!buyRes.ok || buyJson?.status === false) {
         const msg = buyJson?.msg || buyJson?.message || `HTTP ${buyRes.status}`;
         delivered.push({ ...base, error: `Fornecedor: ${msg}` });
@@ -97,7 +96,6 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
       }
 
       const externalOrderId = buyJson?.order_id ?? buyJson?.data?.order_id ?? buyJson?.data?.id ?? null;
-      // /buy já devolve as contas em `data`. Só caímos no /order se vier vazio.
       let accounts = normalizeMaxviaAccounts(buyJson);
       if (!accounts.length && externalOrderId) {
         const detRes = await withTimeout(
@@ -150,19 +148,16 @@ async function beginFulfillment(orderId: string): Promise<boolean> {
   return Boolean(data?.id);
 }
 
-/**
- * Verifies the Stripe session is paid, then claims/buys items and writes
- * delivered_data. Safe to call from both server functions and webhooks.
- */
-export async function fulfillBySessionId(
-  sessionId: string,
-  env: StripeEnv,
+/** Verifica status do pagamento Asaas. Se pago, executa fulfillment. */
+export async function fulfillByAsaasPaymentId(
+  paymentId: string,
+  env: AsaasEnv,
   opts?: { expectedUserId?: string },
 ): Promise<{ status: "paid" | "pending"; items: DeliveredItem[] }> {
   const { data: order, error: orderErr } = await supabaseAdmin
     .from("orders")
     .select("*")
-    .eq("stripe_session_id", sessionId)
+    .eq("asaas_payment_id", paymentId)
     .maybeSingle();
   if (orderErr) throw new Error(orderErr.message);
   if (!order) throw new Error("Pedido não encontrado.");
@@ -174,12 +169,9 @@ export async function fulfillBySessionId(
     return { status: "paid", items: order.delivered_data as DeliveredItem[] };
   }
 
-  const stripe = createStripeClient(env);
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
-  console.log(`[fulfill] session=${sessionId} payment_status=${session.payment_status} order_status=${order.status}`);
-  if (session.payment_status !== "paid") {
-    return { status: "pending", items: [] };
-  }
+  const payment = await getPayment(env, paymentId);
+  console.log(`[fulfill-asaas] payment=${paymentId} status=${payment.status} order=${order.status}`);
+  if (!isPaid(payment.status)) return { status: "pending", items: [] };
 
   const started = await beginFulfillment(order.id);
   if (!started) {

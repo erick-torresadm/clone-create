@@ -1,0 +1,2 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS asaas_payment_id text, ADD COLUMN IF NOT EXISTS asaas_customer_id text, ADD COLUMN IF NOT EXISTS pix_payload text, ADD COLUMN IF NOT EXISTS pix_qr_base64 text, ADD COLUMN IF NOT EXISTS pix_expires_at timestamptz;
+CREATE INDEX IF NOT EXISTS orders_asaas_payment_id_idx ON public.orders(asaas_payment_id);
