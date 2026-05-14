@@ -29,6 +29,7 @@ function AdminAparencia() {
         store_name: f.store_name, hero_title: f.hero_title, hero_subtitle: f.hero_subtitle,
         announcement_bar: f.announcement_bar || null, primary_color: f.primary_color, accent_color: f.accent_color,
         logo_url: f.logo_url || null, whatsapp: f.whatsapp || null, telegram: f.telegram || null,
+        telegram_admin_chat_id: (f.telegram_admin_chat_id || "").toString().trim() || null,
         brl_per_vnd: Number(f.brl_per_vnd) || 0.00024, brl_per_usd: Number(f.brl_per_usd) || 5.5,
         home_max_products: Math.max(1, Math.min(60, Number(f.home_max_products) || 12)),
         home_show_categories: !!f.home_show_categories,
@@ -65,6 +66,14 @@ function AdminAparencia() {
           <div className="grid grid-cols-2 gap-4">
             <div><Label>WhatsApp</Label><Input value={f.whatsapp ?? ""} onChange={(e) => setF({ ...f, whatsapp: e.target.value })} /></div>
             <div><Label>Telegram</Label><Input value={f.telegram ?? ""} onChange={(e) => setF({ ...f, telegram: e.target.value })} /></div>
+          </div>
+
+          <div className="rounded-lg border border-dashed border-border p-4">
+            <p className="mb-1 text-sm font-semibold text-foreground">Notificações no Telegram (admin)</p>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Receba avisos no bot conectado quando alguém comprar, gerar PIX ou pagar. Cole aqui seu <b>chat ID</b> do Telegram (envie <code>/start</code> para o bot e use <a className="underline" href="https://t.me/userinfobot" target="_blank" rel="noreferrer">@userinfobot</a> para descobrir seu ID). Pode ser um chat pessoal ou um grupo (com <code>-</code> na frente).
+            </p>
+            <div><Label>Telegram chat ID</Label><Input value={f.telegram_admin_chat_id ?? ""} onChange={(e) => setF({ ...f, telegram_admin_chat_id: e.target.value })} placeholder="123456789" /></div>
           </div>
 
           <div className="rounded-lg border border-dashed border-border p-4">
