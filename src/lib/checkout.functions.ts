@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
+import { fulfillByAsaasPaymentId, fulfillPaidOrder } from "@/lib/checkout.server";
 import { type AsaasEnv, createPixPayment, findOrCreateCustomer, getPixQr, getPayment, isPaid } from "@/lib/asaas.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
