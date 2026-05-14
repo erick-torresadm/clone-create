@@ -139,6 +139,9 @@ function Index() {
             {flatLimited.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
+        {!isLoading && ALL_PRODUCTS.length === 0 && (
+          <p className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">Nenhum produto cadastrado ainda.</p>
+        )}
       </section>
     </Layout>
   );
