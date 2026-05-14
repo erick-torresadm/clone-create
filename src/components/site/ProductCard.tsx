@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="glow-card group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/50">
+    <div className="glow-card group relative flex h-full flex-col overflow-hidden rounded-xl border-2 border-transparent bg-card transition-all">
       <Link
         to="/produto/$id"
         params={{ id: product.id }}
