@@ -182,9 +182,9 @@ function Entrar() {
                     </div>
                   )}
                   <ul className="mt-3 space-y-1 rounded-lg bg-muted/40 p-3 text-xs">
-                    <Req ok={checks.length} label="Pelo menos 8 caracteres" />
-                    <Req ok={checks.letter} label="Pelo menos 1 letra (a-z)" />
-                    <Req ok={checks.number} label="Pelo menos 1 número (0-9)" />
+                    <Req ok={checks.length} label="Pelo menos 6 caracteres" />
+                    <Req ok={checks.letter} label="Pelo menos 1 letra (recomendado)" />
+                    <Req ok={checks.number} label="Pelo menos 1 número (recomendado)" />
                     <li className="mt-2 flex items-start gap-1.5 text-muted-foreground">
                       <Info className="mt-0.5 h-3 w-3 shrink-0" />
                       <span>Dica: use uma frase fácil de lembrar, ex: <code className="rounded bg-background px-1">cafe-com-leite-2026</code></span>
