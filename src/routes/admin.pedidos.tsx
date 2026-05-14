@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { adminRedeliverOrder } from "@/lib/checkout.functions";
 
 export const Route = createFileRoute("/admin/pedidos")({ component: AdminPedidos });
 
@@ -31,6 +33,18 @@ function AdminPedidos() {
     onSuccess: () => { toast.success("Atualizado"); qc.invalidateQueries({ queryKey: ["all-orders"] }); },
   });
 
+  const redeliverFn = useServerFn(adminRedeliverOrder);
+  const redeliver = useMutation({
+    mutationFn: async (orderId: string) => await redeliverFn({ data: { orderId } }),
+    onSuccess: (res: any) => {
+      const errs = (res?.items ?? []).filter((i: any) => i.error);
+      if (errs.length) toast.warning(`Reentrega parcial: ${errs.map((e: any) => `${e.name}: ${e.error}`).join(" | ")}`);
+      else toast.success("Reentregue com sucesso");
+      qc.invalidateQueries({ queryKey: ["all-orders"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Falha na reentrega"),
+  });
+
   return (
     <Layout>
       <div className="mx-auto max-w-7xl px-6 py-10">
@@ -50,12 +64,25 @@ function AdminPedidos() {
                   <td className="p-3 text-xs">{o.coupon_code ?? "—"}</td>
                   <td className="p-3"><span className="rounded bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">{o.status}</span></td>
                   <td className="p-3">
-                    <select className="rounded-md border border-border bg-background px-2 py-1 text-xs" value={o.status} onChange={(e) => setStatus.mutate({ id: o.id, status: e.target.value })}>
-                      <option value="pending">pending</option>
-                      <option value="paid">paid</option>
-                      <option value="delivered">delivered</option>
-                      <option value="canceled">canceled</option>
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <select className="rounded-md border border-border bg-background px-2 py-1 text-xs" value={o.status} onChange={(e) => setStatus.mutate({ id: o.id, status: e.target.value })}>
+                        <option value="pending">pending</option>
+                        <option value="paid">paid</option>
+                        <option value="delivered">delivered</option>
+                        <option value="canceled">canceled</option>
+                      </select>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={redeliver.isPending}
+                        onClick={() => {
+                          if (confirm("Reentregar esse pedido? Vai chamar o fornecedor/estoque novamente.")) redeliver.mutate(o.id);
+                        }}
+                      >
+                        <RefreshCw className="mr-1 h-3 w-3" />
+                        Reentregar
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
