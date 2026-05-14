@@ -8,9 +8,9 @@ import { useSettings, useCatalog } from "@/lib/site-data";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "BluePrime — Contas Facebook & BM Premium" },
+      { title: "FarmFy — Contas Facebook & BM Premium" },
       { name: "description", content: "Contas Facebook, BMs e ativos digitais premium com entrega automática, garantia e suporte 24/7." },
-      { property: "og:title", content: "BluePrime — Contas Facebook & BM Premium" },
+      { property: "og:title", content: "FarmFy — Contas Facebook & BM Premium" },
       { property: "og:description", content: "Contas Facebook, Business Managers e ativos digitais premium." },
       { property: "og:url", content: "/" },
     ],
@@ -49,27 +49,29 @@ function Index() {
       <section className="relative mx-auto w-full max-w-7xl overflow-hidden px-4 pb-12 pt-12 sm:px-6 sm:pt-20 lg:pt-24">
         <div className="relative z-10 mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            ✦ Loja oficial verificada
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+            Farm verificado · entrega automática
           </span>
-          <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Contas Facebook & BMs <br />
-            <span className="text-primary">com entrega imediata.</span>
+          <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-7xl">
+            Contas que <span className="bg-gradient-to-r from-primary via-primary to-primary/60 bg-clip-text text-transparent">performam.</span>
+            <br />
+            <span className="text-foreground/90">Farm em que você confia.</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-            Perfis BR e USA, Business Managers e ativos digitais — com garantia, reposição e suporte 24/7.
+          <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+            Perfis BR e USA, Business Managers, redes sociais e ativos digitais — com farm próprio, garantia de reposição e suporte 24/7.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
               to="/produtos"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_12px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-[0_12px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110 hover:shadow-[0_18px_40px_-10px_rgba(99,140,255,0.9)]"
             >
-              Ver catálogo completo <ArrowRight className="h-4 w-4" />
+              Ver catálogo <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               to="/sobre"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition hover:border-primary/50"
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/60 px-6 py-3.5 text-sm font-semibold text-foreground backdrop-blur transition hover:border-primary/50"
             >
-              Sobre nós
+              Como funciona
             </Link>
           </div>
         </div>

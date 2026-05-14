@@ -64,7 +64,7 @@ export function Footer() {
 
       <div className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:px-6">
-          <span>© {new Date().getFullYear()} BluePrime. Todos os direitos reservados.</span>
+          <span>© {new Date().getFullYear()} FarmFy. Todos os direitos reservados.</span>
           <span>Feito com cuidado ✦</span>
         </div>
       </div>

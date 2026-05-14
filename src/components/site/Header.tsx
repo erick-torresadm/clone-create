@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingCart, User, Menu, X, Shield, Sparkles } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Shield, Sprout } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/use-auth";
 import { useCart } from "@/lib/use-cart";
@@ -14,17 +14,17 @@ const NAV = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const { user, isAdmin } = useAuth();
-  const { count } = useCart();
+  const { count, openDrawer } = useCart();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground shadow-[0_6px_20px_-6px_rgba(99,140,255,0.9)]">
-            <Sparkles className="h-4 w-4" />
+            <Sprout className="h-4 w-4" />
           </span>
           <span className="text-xl font-extrabold tracking-tight text-foreground">
-            Blue<span className="text-primary">Prime</span>
+            Farm<span className="text-primary">Fy</span>
           </span>
         </Link>
 
@@ -57,9 +57,10 @@ export function Header() {
               <User className="h-4 w-4" /> Entrar
             </Link>
           )}
-          <Link
-            to="/carrinho"
-            aria-label="Carrinho"
+          <button
+            type="button"
+            onClick={openDrawer}
+            aria-label="Abrir carrinho"
             className="relative grid h-10 w-10 place-items-center rounded-lg border border-border bg-card text-foreground transition hover:border-primary/50"
           >
             <ShoppingCart className="h-4 w-4" />
@@ -68,7 +69,7 @@ export function Header() {
                 {count}
               </span>
             )}
-          </Link>
+          </button>
           <button
             aria-label="Menu"
             onClick={() => setOpen((v) => !v)}

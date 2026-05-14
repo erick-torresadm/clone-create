@@ -1,8 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
-import { Package, Tag, Bell, Settings, LogOut } from "lucide-react";
+import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive } from "lucide-react";
+import { getPlatformStats } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminHome,
@@ -51,7 +54,9 @@ function AdminHome() {
           </button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <PlatformStats />
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (
             <Link key={c.to} to={c.to as any}
               className="group rounded-2xl border border-border bg-card p-6 transition hover:border-primary/50">
@@ -61,11 +66,77 @@ function AdminHome() {
             </Link>
           ))}
         </div>
-
-        <div className="mt-10 rounded-xl border border-dashed border-border bg-card/50 p-6 text-sm text-muted-foreground">
-          ⚠️ Os módulos completos de CRUD (produtos, cupons, popups, aparência) e o checkout Stripe serão entregues nas próximas mensagens. A base (banco + auth + admin shell) está pronta.
-        </div>
       </div>
     </Layout>
+  );
+}
+
+function formatBytes(bytes: number) {
+  if (!bytes) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  let n = bytes;
+  while (n >= 1024 && i < units.length - 1) {
+    n /= 1024;
+    i++;
+  }
+  return `${n.toFixed(n >= 10 || i === 0 ? 0 : 2)} ${units[i]}`;
+}
+
+function PlatformStats() {
+  const fetchStats = useServerFn(getPlatformStats);
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin", "platform-stats"],
+    queryFn: () => fetchStats(),
+    staleTime: 60_000,
+  });
+
+  const items = [
+    {
+      icon: Database,
+      label: "Banco de dados",
+      used: data?.db.used ?? 0,
+      limit: data?.db.limit ?? 0,
+    },
+    {
+      icon: HardDrive,
+      label: "Armazenamento de arquivos",
+      used: data?.storage.used ?? 0,
+      limit: data?.storage.limit ?? 0,
+    },
+  ];
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {items.map((it) => {
+        const pct = it.limit > 0 ? Math.min(100, (it.used / it.limit) * 100) : 0;
+        const danger = pct > 85;
+        return (
+          <div key={it.label} className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <it.icon className="h-4 w-4 text-primary" />
+                {it.label}
+              </div>
+              <span className={`text-xs font-bold ${danger ? "text-destructive" : "text-muted-foreground"}`}>
+                {pct.toFixed(1)}%
+              </span>
+            </div>
+            <div className="mt-3 text-2xl font-extrabold text-foreground">
+              {isLoading ? "…" : formatBytes(it.used)}
+              <span className="ml-1 text-xs font-medium text-muted-foreground">
+                de {formatBytes(it.limit)}
+              </span>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary">
+              <div
+                className={`h-full rounded-full transition-all ${danger ? "bg-destructive" : "bg-gradient-to-r from-primary to-primary/60"}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
