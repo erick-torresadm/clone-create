@@ -228,6 +228,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       line_items,
       mode: "payment",
       ui_mode: "embedded_page",
+      payment_method_types: ["pix"],
       return_url: data.returnUrl,
       ...(customerId && { customer: customerId }),
       ...(discounts.length && { discounts }),
