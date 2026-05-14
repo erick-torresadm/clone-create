@@ -122,12 +122,16 @@ export const maxviaImportProduct = createServerFn({ method: "POST" })
   .inputValidator((d) => importSchema.parse(d))
   .handler(async ({ data, context }) => {
     await ensureAdmin(context.supabase, context.userId);
+    let sectionId: string | null = data.section_id ?? null;
+    if (!sectionId && data.category_name) {
+      sectionId = await findOrCreateSectionByName(data.category_name);
+    }
     const row = {
       name: data.name,
       description: data.description ?? null,
       price: data.price_brl,
       old_price: data.old_price_brl ?? null,
-      section_id: data.section_id ?? null,
+      section_id: sectionId,
       badge: data.badge ?? null,
       image_url: data.image_url ?? null,
       active: (data.external_quantity ?? 0) > 0,
