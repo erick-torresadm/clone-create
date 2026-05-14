@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
-import { BadgeCheck, Eye, EyeOff, Check, X, Info } from "lucide-react";
+import { BadgeCheck, Eye, EyeOff, Check, X, Info, Sparkles, ShieldCheck, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/entrar")({
 
 function checkPassword(p: string) {
   return {
-    length: p.length >= 8,
+    length: p.length >= 6,
     letter: /[a-zA-Z]/.test(p),
     number: /\d/.test(p),
   };
@@ -42,12 +42,12 @@ function Entrar() {
 
   const checks = useMemo(() => checkPassword(password), [password]);
   const score = strengthScore(checks);
-  const canSubmit = mode === "login" ? password.length > 0 : score === 3;
+  const canSubmit = mode === "login" ? password.length > 0 : score >= 1 && password.length >= 6;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === "signup" && score < 3) {
-      toast.error("Sua senha precisa atender aos requisitos abaixo.");
+    if (mode === "signup" && password.length < 6) {
+      toast.error("A senha precisa ter pelo menos 6 caracteres.");
       return;
     }
     setLoading(true);
@@ -80,17 +80,52 @@ function Entrar() {
   return (
     <Layout>
       <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-6 py-16">
-        <div className="w-full rounded-2xl border border-border bg-card p-8">
+        <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-xl">
           <div className="mb-6 flex items-center justify-center gap-2">
             <span className="text-xl font-bold text-foreground">FDM store</span>
             <BadgeCheck className="h-5 w-5 text-primary" />
           </div>
+
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-muted/50 p-1">
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className={`rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className={`rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Criar conta
+            </button>
+          </div>
+
           <h1 className="text-center text-2xl font-bold text-foreground">
-            {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
+            {mode === "login" ? "Bem-vindo de volta" : "Crie sua conta grátis"}
           </h1>
           <p className="mt-1 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Acesse sua conta para continuar" : "Leva menos de 1 minuto"}
+            {mode === "login" ? "Acesse sua conta para continuar" : "Leva menos de 1 minuto — entrega instantânea"}
           </p>
+
+          {mode === "signup" && (
+            <div className="mt-5 grid grid-cols-3 gap-2 text-[11px]">
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-muted/30 p-2 text-center text-muted-foreground">
+                <Zap className="h-3.5 w-3.5 text-primary" />
+                <span>Entrega na hora</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-muted/30 p-2 text-center text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                <span>Pagamento seguro</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-muted/30 p-2 text-center text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span>Suporte 24/7</span>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
@@ -121,7 +156,7 @@ function Entrar() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   type={showPwd ? "text" : "password"}
-                  minLength={mode === "signup" ? 8 : 1}
+                  minLength={mode === "signup" ? 6 : 1}
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   placeholder={mode === "signup" ? "Crie uma senha forte" : "Sua senha"}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2.5 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -147,9 +182,9 @@ function Entrar() {
                     </div>
                   )}
                   <ul className="mt-3 space-y-1 rounded-lg bg-muted/40 p-3 text-xs">
-                    <Req ok={checks.length} label="Pelo menos 8 caracteres" />
-                    <Req ok={checks.letter} label="Pelo menos 1 letra (a-z)" />
-                    <Req ok={checks.number} label="Pelo menos 1 número (0-9)" />
+                    <Req ok={checks.length} label="Pelo menos 6 caracteres" />
+                    <Req ok={checks.letter} label="Pelo menos 1 letra (recomendado)" />
+                    <Req ok={checks.number} label="Pelo menos 1 número (recomendado)" />
                     <li className="mt-2 flex items-start gap-1.5 text-muted-foreground">
                       <Info className="mt-0.5 h-3 w-3 shrink-0" />
                       <span>Dica: use uma frase fácil de lembrar, ex: <code className="rounded bg-background px-1">cafe-com-leite-2026</code></span>
