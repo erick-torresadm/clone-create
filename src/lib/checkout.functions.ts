@@ -230,3 +230,31 @@ export const checkPaymentStatus = createServerFn({ method: "POST" })
     } catch { /* ignore */ }
     return { ...res, rawStatus: raw, paid: res.status === "paid" || (raw ? isPaid(raw) : false) };
   });
+
+// ---------- Admin: re-deliver an order ----------
+
+export const adminRedeliverOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ orderId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: roles } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", context.userId);
+    if (!(roles ?? []).some((r: any) => r.role === "admin")) {
+      throw new Error("Acesso negado.");
+    }
+    const { data: order, error } = await supabaseAdmin
+      .from("orders").select("*").eq("id", data.orderId).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!order) throw new Error("Pedido não encontrado.");
+
+    // Limpa estado anterior para permitir nova tentativa
+    await supabaseAdmin
+      .from("orders")
+      .update({ status: "paid", delivered_data: null, external_order_id: null })
+      .eq("id", order.id);
+
+    const fresh = { ...order, delivered_data: null, external_order_id: null, status: "paid" };
+    const delivered = await fulfillPaidOrder(fresh);
+    return { ok: true, items: delivered };
+  });
+
