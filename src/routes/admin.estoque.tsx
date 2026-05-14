@@ -267,7 +267,8 @@ function StockPanel({ product }: { product: any }) {
           await readZipRecursive(await file.arrayBuffer(), accounts);
         } else {
           const txt = await file.text();
-          accounts.push(...splitContent(txt));
+          if (splitMode === "file-per-account") accounts.push(txt);
+          else accounts.push(...splitContent(txt));
         }
       }
       const r = await insertStock(accounts);
