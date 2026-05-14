@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Layout } from "@/components/site/Layout";
@@ -40,8 +40,11 @@ function MinhaConta() {
     refetchInterval: (query) => ((query.state.data as any[] | undefined)?.some((o) => ["pending", "processing", "paid"].includes(o.status) && !o.delivered_data) ? 3000 : false),
   });
 
+  const handledSessions = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!user || !session_id) return;
+    if (handledSessions.current.has(session_id)) return;
+    handledSessions.current.add(session_id);
     let cancelled = false;
     setProcessingSession(true);
     fulfill({ data: { sessionId: session_id, environment: getStripeEnvironment() } })
@@ -50,33 +53,36 @@ function MinhaConta() {
         if (res.status === "paid") {
           clear();
           toast.success("Pagamento confirmado. Entrega processada.");
-        } else {
-          toast.info("Pagamento ainda aguardando confirmação.");
         }
         refetch();
+        // limpa o session_id da URL para não reprocessar em refetches
+        navigate({ to: "/minha-conta", replace: true });
       })
       .catch((e: any) => !cancelled && toast.error(e?.message || "Erro ao processar entrega."))
       .finally(() => !cancelled && setProcessingSession(false));
     return () => { cancelled = true; };
-  }, [user, session_id, fulfill, clear, refetch]);
+  }, [user, session_id, fulfill, clear, refetch, navigate]);
 
+  const backgroundFulfilling = useRef(false);
   useEffect(() => {
-    if (!user || session_id || processingSession) return;
+    if (!user || session_id || backgroundFulfilling.current) return;
     const pendingSessions = orders
       .filter((o) => ["pending", "paid"].includes(o.status) && o.stripe_session_id && !o.delivered_data)
+      .filter((o) => !handledSessions.current.has(o.stripe_session_id))
       .slice(0, 3);
     if (!pendingSessions.length) return;
+    backgroundFulfilling.current = true;
+    pendingSessions.forEach((o) => handledSessions.current.add(o.stripe_session_id));
     let cancelled = false;
-    setProcessingSession(true);
     (async () => {
       for (const order of pendingSessions) {
         if (cancelled) return;
         await fulfill({ data: { sessionId: order.stripe_session_id, environment: getStripeEnvironment() } }).catch(() => null);
       }
       if (!cancelled) await refetch();
-    })().finally(() => !cancelled && setProcessingSession(false));
+    })().finally(() => { backgroundFulfilling.current = false; });
     return () => { cancelled = true; };
-  }, [user, session_id, orders, processingSession, fulfill, refetch]);
+  }, [user, session_id, orders, fulfill, refetch]);
 
   if (!user) return null;
 
