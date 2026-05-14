@@ -150,3 +150,52 @@ export const maxviaImportProduct = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return out;
   });
+
+const suggestSchema = z.object({
+  name: z.string().min(1).max(255),
+  desc: z.string().max(2000).optional().default(""),
+  category: z.string().max(120).optional().default(""),
+});
+
+export const maxviaAiSuggest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => suggestSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.supabase, context.userId);
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) {
+      return { name: data.name, description: data.desc || "" };
+    }
+    const sys = `Você é redator de e-commerce brasileiro. Receberá nome e descrição de um produto digital (contas, BMs, perfis de Facebook etc.) em outro idioma. Devolva JSON com:
+- "name": título curto, comercial, em português brasileiro, sem mencionar fornecedor/marca vietnamita ou inglesa, sem emojis. Máx 80 caracteres.
+- "description": descrição comercial em português brasileiro, 4 a 8 linhas curtas com bullets usando ✅, destacando garantia, entrega automática, suporte, e o que está incluído. NÃO invente dados técnicos. Máx 800 caracteres.
+
+Responda APENAS o JSON, sem markdown.`;
+    const userMsg = `Categoria: ${data.category}\nNome original: ${data.name}\nDescrição original: ${data.desc || "(vazia)"}`;
+    try {
+      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "system", content: sys }, { role: "user", content: userMsg }],
+          response_format: { type: "json_object" },
+        }),
+      });
+      if (!r.ok) {
+        if (r.status === 429) throw new Error("Limite de uso da IA atingido. Tente novamente em alguns minutos.");
+        if (r.status === 402) throw new Error("Créditos da IA esgotados. Adicione créditos no workspace.");
+        throw new Error(`IA indisponível (${r.status})`);
+      }
+      const j = await r.json();
+      const content = j.choices?.[0]?.message?.content ?? "{}";
+      const parsed = JSON.parse(content);
+      return {
+        name: String(parsed.name || data.name).slice(0, 255),
+        description: String(parsed.description || data.desc || "").slice(0, 2000),
+      };
+    } catch (e: any) {
+      if (e?.message?.startsWith("Limite") || e?.message?.startsWith("Créditos")) throw e;
+      return { name: data.name, description: data.desc || "" };
+    }
+  });

@@ -6,7 +6,7 @@ import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { useProducts, useSections, useSettings } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
-import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct } from "@/lib/maxvia.functions";
+import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct, maxviaAiSuggest } from "@/lib/maxvia.functions";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -251,7 +251,6 @@ function ApiTab() {
   const balanceFn = useServerFn(maxviaBalance);
   const catFn = useServerFn(maxviaCategories);
   const prodFn = useServerFn(maxviaProducts);
-  const importFn = useServerFn(maxviaImportProduct);
   const qc = useQueryClient();
 
   const [selectedCat, setSelectedCat] = useState<{ id: number; name: string } | null>(null);
@@ -273,29 +272,19 @@ function ApiTab() {
     return Number((base * (1 + markup / 100)).toFixed(2));
   }
 
-  const importItem = useMutation({
-    mutationFn: async (p: any) => {
-      const ov = overrides[String(p.id_product)] ?? {};
-      const price_brl = ov.price ? Number(ov.price) : suggestedBRL(p.price);
-      if (!price_brl || price_brl <= 0) throw new Error("Preço inválido");
-      return importFn({
-        data: {
-          external_id: String(p.id_product),
-          name: (ov.name?.trim() || p.name),
-          description: p.desc || undefined,
-          price_brl,
-          external_price: p.price,
-          external_currency: "VND",
-          external_quantity: p.quantity ?? 0,
-          section_id: section || null,
-          category_name: !section ? (selectedCat?.name ?? null) : null,
-          badge: "API",
-        },
-      });
-    },
-    onSuccess: () => { toast.success("Produto importado!"); qc.invalidateQueries({ queryKey: ["products"] }); qc.invalidateQueries({ queryKey: ["sections"] }); },
-    onError: (e: any) => toast.error(e.message),
-  });
+  const [reviewing, setReviewing] = useState<{ p: any; price: number; sectionId: string | null; categoryName: string | null } | null>(null);
+
+  function openReview(p: any) {
+    const ov = overrides[String(p.id_product)] ?? {};
+    const price_brl = ov.price ? Number(ov.price) : suggestedBRL(p.price);
+    if (!price_brl || price_brl <= 0) { toast.error("Preço inválido"); return; }
+    setReviewing({
+      p: { ...p, name: ov.name?.trim() || p.name },
+      price: price_brl,
+      sectionId: section || null,
+      categoryName: !section ? (selectedCat?.name ?? null) : null,
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -369,7 +358,7 @@ function ApiTab() {
                         value={ov.price ?? ""}
                         onChange={(e) => setOverrides((s) => ({ ...s, [key]: { ...s[key], price: e.target.value } }))}
                       />
-                      <Button size="sm" onClick={() => importItem.mutate(p)} disabled={importItem.isPending}>
+                      <Button size="sm" onClick={() => openReview(p)}>
                         <Download className="mr-2 h-4 w-4" />Importar
                       </Button>
                     </div>
@@ -380,6 +369,116 @@ function ApiTab() {
             {selectedCat && !prods.isLoading && !(prods.data as any[] | undefined)?.length && (
               <div className="p-6 text-sm text-muted-foreground">Nenhum produto.</div>
             )}
+          </div>
+        </div>
+      </div>
+      {reviewing && (
+        <ImportReviewDialog
+          item={reviewing}
+          onClose={() => setReviewing(null)}
+          onImported={() => {
+            setReviewing(null);
+            qc.invalidateQueries({ queryKey: ["products"] });
+            qc.invalidateQueries({ queryKey: ["sections"] });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ImportReviewDialog({ item, onClose, onImported }: { item: { p: any; price: number; sectionId: string | null; categoryName: string | null }; onClose: () => void; onImported: () => void }) {
+  const suggestFn = useServerFn(maxviaAiSuggest);
+  const importFn = useServerFn(maxviaImportProduct);
+  const [name, setName] = useState(item.p.name);
+  const [description, setDescription] = useState(item.p.desc || "");
+  const [price, setPrice] = useState(String(item.price));
+  const [aiLoading, setAiLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res: any = await suggestFn({ data: { name: item.p.original_name || item.p.name, desc: item.p.original_desc || item.p.desc || "", category: item.categoryName || "" } });
+        if (cancelled) return;
+        if (res?.name) setName(res.name);
+        if (res?.description) setDescription(res.description);
+      } catch (e: any) {
+        toast.error(e.message || "IA indisponível");
+      } finally {
+        if (!cancelled) setAiLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  async function confirm() {
+    const n = Number(price);
+    if (!n || n <= 0) { toast.error("Preço inválido"); return; }
+    if (!name.trim()) { toast.error("Nome obrigatório"); return; }
+    setSaving(true);
+    try {
+      await importFn({
+        data: {
+          external_id: String(item.p.id_product),
+          name: name.trim(),
+          description: description.trim() || undefined,
+          price_brl: n,
+          external_price: item.p.price,
+          external_currency: "VND",
+          external_quantity: item.p.quantity ?? 0,
+          section_id: item.sectionId,
+          category_name: !item.sectionId ? item.categoryName : null,
+          badge: "API",
+        },
+      });
+      toast.success("Produto importado!");
+      onImported();
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao importar");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-xl rounded-2xl border border-border bg-card p-5" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">Revisar antes de importar</h3>
+          {aiLoading && <span className="text-xs text-primary">✨ IA gerando...</span>}
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">A IA traduziu e melhorou os textos. Edite o que quiser e confirme.</p>
+        <div className="mt-4 space-y-3">
+          <div>
+            <Label>Nome</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} disabled={aiLoading} />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <textarea
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+              rows={8}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={aiLoading}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Preço R$</Label>
+              <Input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
+            </div>
+            <div className="flex items-end">
+              <p className="text-xs text-muted-foreground">Estoque API: {item.p.quantity ?? 0}<br />Custo: {Number(item.p.price).toLocaleString()} VND</p>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
+            <Button className="flex-1" onClick={confirm} disabled={saving || aiLoading}>
+              <Download className="mr-2 h-4 w-4" />{saving ? "Importando..." : "Confirmar import"}
+            </Button>
           </div>
         </div>
       </div>
