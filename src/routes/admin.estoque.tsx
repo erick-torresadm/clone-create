@@ -147,7 +147,9 @@ function StockPanel({ product }: { product: any }) {
   const qc = useQueryClient();
   const [bulk, setBulk] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [zipMode, setZipMode] = useState<"file-per-account" | "lines">("file-per-account");
+  const [splitMode, setSplitMode] = useState<"lines" | "blank-line" | "file-per-account">("lines");
+  const [dedupe, setDedupe] = useState(true);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
   const { data: rows = [], isLoading, refetch } = useQuery({
     queryKey: ["product-stock", product.id],
@@ -166,25 +168,92 @@ function StockPanel({ product }: { product: any }) {
   const sold = rows.filter((r) => r.delivered);
 
   async function insertStock(contents: string[]) {
-    const clean = contents.map((c) => c.trim()).filter(Boolean);
-    if (!clean.length) { toast.error("Nenhum conteúdo válido encontrado."); return 0; }
+    let clean = contents.map((c) => c.trim()).filter(Boolean);
+    if (!clean.length) { toast.error("Nenhum conteúdo válido encontrado."); return { inserted: 0, dupes: 0 }; }
+
+    let dupes = 0;
+    if (dedupe) {
+      const seen = new Set<string>();
+      const unique: string[] = [];
+      for (const c of clean) {
+        if (seen.has(c)) { dupes++; continue; }
+        seen.add(c);
+        unique.push(c);
+      }
+      // dedupe contra estoque existente
+      const { data: existing } = await supabase
+        .from("product_stock")
+        .select("content")
+        .eq("product_id", product.id);
+      const existingSet = new Set((existing ?? []).map((r: any) => String(r.content).trim()));
+      const filtered = unique.filter((c) => {
+        if (existingSet.has(c)) { dupes++; return false; }
+        return true;
+      });
+      clean = filtered;
+    }
+
+    if (!clean.length) {
+      toast.warning(`Nada novo (${dupes} duplicada(s) ignorada(s)).`);
+      return { inserted: 0, dupes };
+    }
+
     const payload = clean.map((content) => ({ product_id: product.id, content }));
     const CHUNK = 500;
+    setProgress({ done: 0, total: payload.length });
     for (let i = 0; i < payload.length; i += CHUNK) {
-      const { error } = await supabase.from("product_stock").insert(payload.slice(i, i + CHUNK));
+      const slice = payload.slice(i, i + CHUNK);
+      const { error } = await supabase.from("product_stock").insert(slice);
       if (error) throw error;
+      setProgress({ done: Math.min(i + CHUNK, payload.length), total: payload.length });
     }
+    setProgress(null);
     refetch();
     qc.invalidateQueries({ queryKey: ["stock-counts"] });
-    return clean.length;
+    return { inserted: clean.length, dupes };
+  }
+
+  function splitContent(text: string): string[] {
+    if (splitMode === "blank-line") {
+      return text.split(/\r?\n\s*\r?\n/);
+    }
+    return text.split(/\r?\n/);
+  }
+
+  function isTextName(name: string) {
+    return /\.(txt|csv|log|json|md)$/i.test(name) || !/\.[a-z0-9]{1,5}$/i.test(name);
   }
 
   async function addBulk() {
     try {
-      const lines = bulk.split("\n");
-      const n = await insertStock(lines);
-      if (n) { toast.success(`${n} conta(s) adicionada(s)`); setBulk(""); }
+      const lines = splitContent(bulk);
+      const r = await insertStock(lines);
+      if (r.inserted) {
+        toast.success(`${r.inserted} conta(s) adicionada(s)${r.dupes ? ` · ${r.dupes} duplicada(s) ignorada(s)` : ""}`);
+        setBulk("");
+      }
     } catch (e: any) { toast.error(e.message); }
+  }
+
+  async function readZipRecursive(buffer: ArrayBuffer, accounts: string[]) {
+    const zip = await JSZip.loadAsync(buffer);
+    const entries = Object.values(zip.files).filter((e) => !e.dir);
+    for (const entry of entries) {
+      const lower = entry.name.toLowerCase();
+      if (lower.endsWith(".zip")) {
+        const buf = await entry.async("arraybuffer");
+        await readZipRecursive(buf, accounts);
+        continue;
+      }
+      if (splitMode === "file-per-account") {
+        const txt = await entry.async("string");
+        accounts.push(txt);
+      } else {
+        if (!isTextName(entry.name)) continue;
+        const txt = await entry.async("string");
+        accounts.push(...splitContent(txt));
+      }
+    }
   }
 
   async function handleFiles(files: FileList | null) {
@@ -195,24 +264,23 @@ function StockPanel({ product }: { product: any }) {
       for (const file of Array.from(files)) {
         const lower = file.name.toLowerCase();
         if (lower.endsWith(".zip")) {
-          const zip = await JSZip.loadAsync(await file.arrayBuffer());
-          const entries = Object.values(zip.files).filter((e) => !e.dir);
-          for (const entry of entries) {
-            const txt = await entry.async("string");
-            if (zipMode === "lines") accounts.push(...txt.split(/\r?\n/));
-            else accounts.push(txt);
-          }
+          await readZipRecursive(await file.arrayBuffer(), accounts);
         } else {
           const txt = await file.text();
-          accounts.push(...txt.split(/\r?\n/));
+          accounts.push(...splitContent(txt));
         }
       }
-      const n = await insertStock(accounts);
-      if (n) toast.success(`${n} conta(s) importada(s) de ${files.length} arquivo(s)`);
+      const r = await insertStock(accounts);
+      if (r.inserted) {
+        toast.success(
+          `${r.inserted} conta(s) importada(s) de ${files.length} arquivo(s)${r.dupes ? ` · ${r.dupes} duplicada(s) ignorada(s)` : ""}`,
+        );
+      }
     } catch (e: any) {
       toast.error(e.message || "Falha ao processar arquivo");
     } finally {
       setUploading(false);
+      setProgress(null);
     }
   }
 
@@ -266,24 +334,38 @@ function StockPanel({ product }: { product: any }) {
           Os perfis enviados são entregues automaticamente ao cliente após o pagamento, em ordem de chegada.
         </p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
-          <span className="text-muted-foreground">Para arquivos .zip:</span>
+        <div className="mt-3 grid gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-muted-foreground">Como dividir as contas:</span>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="splitmode" checked={splitMode === "lines"} onChange={() => setSplitMode("lines")} />
+              <FileText className="h-3.5 w-3.5" /> 1 linha = 1 conta
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="splitmode" checked={splitMode === "blank-line"} onChange={() => setSplitMode("blank-line")} />
+              <FileText className="h-3.5 w-3.5" /> bloco separado por linha em branco
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="splitmode" checked={splitMode === "file-per-account"} onChange={() => setSplitMode("file-per-account")} />
+              <FileArchive className="h-3.5 w-3.5" /> .zip: 1 arquivo = 1 conta
+            </label>
+          </div>
           <label className="flex items-center gap-1.5">
-            <input type="radio" name="zipmode" checked={zipMode === "file-per-account"} onChange={() => setZipMode("file-per-account")} />
-            <FileArchive className="h-3.5 w-3.5" /> 1 arquivo = 1 conta
-          </label>
-          <label className="flex items-center gap-1.5">
-            <input type="radio" name="zipmode" checked={zipMode === "lines"} onChange={() => setZipMode("lines")} />
-            <FileText className="h-3.5 w-3.5" /> dividir por linhas
+            <input type="checkbox" checked={dedupe} onChange={(e) => setDedupe(e.target.checked)} />
+            <span>Ignorar duplicadas (no lote e contra estoque atual)</span>
           </label>
         </div>
 
         <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-background px-4 py-8 text-sm font-medium text-foreground transition hover:border-primary hover:bg-primary/10">
           <Upload className="h-4 w-4" />
-          {uploading ? "Processando..." : "Selecionar arquivos (.txt / .zip)"}
+          {uploading
+            ? progress
+              ? `Inserindo ${progress.done}/${progress.total}...`
+              : "Processando arquivos..."
+            : "Selecionar arquivos (.txt / .zip — múltiplos, aceita .zip aninhado)"}
           <input
             type="file"
-            accept=".txt,.zip,text/plain,application/zip"
+            accept=".txt,.csv,.log,.zip,text/plain,application/zip"
             multiple
             className="hidden"
             disabled={uploading}
