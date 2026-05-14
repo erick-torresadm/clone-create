@@ -124,6 +124,7 @@ function RootComponent() {
       <AuthProvider>
         <CartProvider>
           <SiteThemeBridge />
+          <RouteProgress />
           <Outlet />
           <Toaster richColors position="top-right" />
         </CartProvider>
