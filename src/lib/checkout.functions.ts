@@ -3,6 +3,7 @@ import { z } from "zod";
 import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { fulfillBySessionId } from "@/lib/checkout.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
