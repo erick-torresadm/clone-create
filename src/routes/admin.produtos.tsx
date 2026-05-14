@@ -98,19 +98,14 @@ function ManualTab() {
         </div>
         <div className="max-h-[640px] divide-y divide-border overflow-auto">
           {products.map((p: any) => (
-            <div key={p.id} className="flex items-center gap-3 p-3">
-              {p.image_url ? <img src={p.image_url} alt="" className="h-12 w-12 rounded-md object-cover" /> : <div className="h-12 w-12 rounded-md bg-muted" />}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
-                  {p.source === "api" && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">API</span>}
-                </div>
-                <p className="text-xs text-muted-foreground">R$ {Number(p.price).toFixed(2)} · {p.badge ?? "—"}</p>
-              </div>
-              <Switch checked={p.active} onCheckedChange={(v) => toggleActive.mutate({ id: p.id, active: v })} />
-              <Button variant="ghost" size="icon" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
-              <Button variant="ghost" size="icon" onClick={() => { if (confirm("Remover?")) remove.mutate(p.id); }}><Trash2 className="h-4 w-4" /></Button>
-            </div>
+            <ProductRow
+              key={p.id}
+              product={p}
+              onToggle={(v) => toggleActive.mutate({ id: p.id, active: v })}
+              onEdit={() => setEditing(p)}
+              onRemove={() => { if (confirm("Remover?")) remove.mutate(p.id); }}
+              onSavedQuick={() => qc.invalidateQueries({ queryKey: ["products"] })}
+            />
           ))}
           {!products.length && <div className="p-8 text-center text-sm text-muted-foreground">Nenhum produto.</div>}
         </div>
@@ -142,6 +137,50 @@ function ManualTab() {
         </div>
       </div>
       {editing && <EditProductDialog product={editing} sections={sections} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["products"] }); }} />}
+    </div>
+  );
+}
+
+function ProductRow({ product: p, onToggle, onEdit, onRemove, onSavedQuick }: { product: any; onToggle: (v: boolean) => void; onEdit: () => void; onRemove: () => void; onSavedQuick: () => void }) {
+  const [price, setPrice] = useState<string>(String(p.price ?? ""));
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { setPrice(String(p.price ?? "")); }, [p.price]);
+  const dirty = Number(price) !== Number(p.price) && price !== "";
+  async function saveQuick() {
+    const n = Number(price);
+    if (!n || n <= 0) { toast.error("Preço inválido"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("products").update({ price: n }).eq("id", p.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Preço atualizado");
+    onSavedQuick();
+  }
+  return (
+    <div className="flex items-center gap-3 p-3">
+      {p.image_url ? <img src={p.image_url} alt="" className="h-12 w-12 rounded-md object-cover" /> : <div className="h-12 w-12 rounded-md bg-muted" />}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
+          {p.source === "api" && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">API</span>}
+        </div>
+        <p className="text-xs text-muted-foreground">{p.badge ?? "—"}</p>
+      </div>
+      <div className="flex items-center gap-1">
+        <span className="text-xs text-muted-foreground">R$</span>
+        <Input
+          type="number"
+          step="0.01"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && dirty) saveQuick(); }}
+          className="h-8 w-24"
+        />
+        {dirty && <Button size="sm" onClick={saveQuick} disabled={saving} className="h-8">Salvar</Button>}
+      </div>
+      <Switch checked={p.active} onCheckedChange={onToggle} />
+      <Button variant="outline" size="sm" onClick={onEdit} className="h-8"><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button>
+      <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4" /></Button>
     </div>
   );
 }
