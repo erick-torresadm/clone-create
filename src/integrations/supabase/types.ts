@@ -452,6 +452,13 @@ export type Database = {
         }[]
       }
       get_db_size: { Args: never; Returns: number }
+      get_stock_counts: {
+        Args: never
+        Returns: {
+          available: number
+          product_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
