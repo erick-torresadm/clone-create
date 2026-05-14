@@ -242,6 +242,25 @@
   opacity: 0.6;
 }
 
+@keyframes route-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.route-fade-in {
+  animation: route-fade-in 0.35s ease-out;
+}
+
+/* Make all anchors and buttons feel clickable */
+a, button, [role="button"] {
+  transition: transform 0.18s ease, opacity 0.18s ease, color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+a:active:not([aria-disabled="true"]),
+button:active:not(:disabled),
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .aurora-blob, .bg-animated-grid { animation: none !important; }
+  .aurora-blob, .bg-animated-grid, .route-fade-in { animation: none !important; }
+  a, button, [role="button"] { transition: none !important; transform: none !important; }
 }
