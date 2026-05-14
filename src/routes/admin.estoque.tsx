@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/use-auth";
 import { useProducts } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Upload, Plus, Trash2, FileArchive, FileText, Search, Boxes, RefreshCw } from "lucide-react";
+import { ArrowLeft, Upload, Plus, Trash2, FileArchive, FileText, Search, Boxes, RefreshCw, Copy, ChevronDown, ChevronRight, Download, Calendar, Hash } from "lucide-react";
 import JSZip from "jszip";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
