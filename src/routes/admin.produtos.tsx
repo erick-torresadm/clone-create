@@ -195,6 +195,22 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
     image_url: product.image_url ?? "",
     description: product.description ?? "",
   });
+  const suggestFn = useServerFn(maxviaAiSuggest);
+  const [aiLoading, setAiLoading] = useState(false);
+  async function runAi() {
+    setAiLoading(true);
+    try {
+      const sectionTitle = sections.find((s: any) => s.id === f.section_id)?.title || "";
+      const res: any = await suggestFn({ data: { name: f.name || product.name, desc: f.description || "", category: sectionTitle } });
+      if (res?.name) setF((s) => ({ ...s, name: res.name }));
+      if (res?.description) setF((s) => ({ ...s, description: res.description }));
+      toast.success("Texto melhorado pela IA");
+    } catch (e: any) {
+      toast.error(e.message || "IA indisponível");
+    } finally {
+      setAiLoading(false);
+    }
+  }
   const save = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("products").update({
