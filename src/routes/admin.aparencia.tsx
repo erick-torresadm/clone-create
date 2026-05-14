@@ -30,6 +30,10 @@ function AdminAparencia() {
         announcement_bar: f.announcement_bar || null, primary_color: f.primary_color, accent_color: f.accent_color,
         logo_url: f.logo_url || null, whatsapp: f.whatsapp || null, telegram: f.telegram || null,
         brl_per_vnd: Number(f.brl_per_vnd) || 0.00024, brl_per_usd: Number(f.brl_per_usd) || 5.5,
+        home_max_products: Math.max(1, Math.min(60, Number(f.home_max_products) || 12)),
+        home_show_categories: !!f.home_show_categories,
+        home_show_all_products: !!f.home_show_all_products,
+        home_grid_cols: Math.max(2, Math.min(6, Number(f.home_grid_cols) || 4)),
       };
       const { error } = await supabase.from("site_settings").update(payload).eq("id", 1);
       if (error) throw error;
@@ -61,6 +65,24 @@ function AdminAparencia() {
           <div className="grid grid-cols-2 gap-4">
             <div><Label>WhatsApp</Label><Input value={f.whatsapp ?? ""} onChange={(e) => setF({ ...f, whatsapp: e.target.value })} /></div>
             <div><Label>Telegram</Label><Input value={f.telegram ?? ""} onChange={(e) => setF({ ...f, telegram: e.target.value })} /></div>
+          </div>
+
+          <div className="rounded-lg border border-dashed border-border p-4">
+            <p className="mb-3 text-sm font-semibold text-foreground">Visibilidade da página inicial</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div><Label>Máximo de produtos</Label><Input type="number" min={1} max={60} value={f.home_max_products ?? 12} onChange={(e) => setF({ ...f, home_max_products: e.target.value })} /></div>
+              <div><Label>Colunas no grid (2-6)</Label><Input type="number" min={2} max={6} value={f.home_grid_cols ?? 4} onChange={(e) => setF({ ...f, home_grid_cols: e.target.value })} /></div>
+            </div>
+            <div className="mt-3 space-y-2">
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={!!f.home_show_categories} onChange={(e) => setF({ ...f, home_show_categories: e.target.checked })} />
+                Mostrar filtros de categorias na página inicial
+              </label>
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="checkbox" checked={!!f.home_show_all_products} onChange={(e) => setF({ ...f, home_show_all_products: e.target.checked })} />
+                Mostrar todos os produtos agrupados por categoria
+              </label>
+            </div>
           </div>
 
           <div className="rounded-lg border border-dashed border-border p-4">
