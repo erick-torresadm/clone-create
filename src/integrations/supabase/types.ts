@@ -357,6 +357,7 @@ export type Database = {
           primary_color: string
           store_name: string
           telegram: string | null
+          telegram_admin_chat_id: string | null
           updated_at: string
           whatsapp: string | null
         }
@@ -376,6 +377,7 @@ export type Database = {
           primary_color?: string
           store_name?: string
           telegram?: string | null
+          telegram_admin_chat_id?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -395,6 +397,7 @@ export type Database = {
           primary_color?: string
           store_name?: string
           telegram?: string | null
+          telegram_admin_chat_id?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
