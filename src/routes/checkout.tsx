@@ -37,8 +37,8 @@ function CheckoutPage() {
           data: {
             items: items.map((i) => ({ productId: i.id, quantity: i.qty })),
             couponCode: coupon,
-            customerEmail: user?.email || undefined,
-            userId: user?.id,
+            customerEmail: user.email!,
+            userId: user.id,
             returnUrl: `${window.location.origin}/minha-conta?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
             environment: getStripeEnvironment(),
           },
