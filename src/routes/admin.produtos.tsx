@@ -50,6 +50,7 @@ function ManualTab() {
   const { data: sections = [] } = useSections();
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: "", price: "", old_price: "", section_id: "", badge: "", image_url: "", description: "" });
+  const [editing, setEditing] = useState<any | null>(null);
 
   const create = useMutation({
     mutationFn: async () => {
