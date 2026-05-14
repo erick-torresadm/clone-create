@@ -121,38 +121,36 @@
   to { --glow-angle: 360deg; }
 }
 
+/* Brenin-style rotating border glow */
+.glow-border,
 .glow-card {
   position: relative;
   isolation: isolate;
 }
 
+.glow-border::before,
 .glow-card::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: -2px;
   border-radius: inherit;
-  padding: 1.5px;
+  padding: 2px;
   background: conic-gradient(
     from var(--glow-angle),
-    transparent 0deg,
-    oklch(0.75 0.22 255) 60deg,
-    oklch(0.65 0.28 290) 120deg,
-    transparent 200deg,
-    transparent 360deg
+    transparent 0%,
+    transparent 60%,
+    #3b82f6 80%,
+    #60a5fa 90%,
+    #3b82f6 100%
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
-  opacity: 0.85;
   pointer-events: none;
-  animation: glow-spin 5s linear infinite;
+  animation: glow-spin 3s linear infinite;
   z-index: 1;
-}
-
-.glow-card:hover::before {
-  opacity: 1;
 }
 
 
