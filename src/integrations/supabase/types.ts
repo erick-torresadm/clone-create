@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          id: number
+          telegram_admin_chat_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          telegram_admin_chat_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          telegram_admin_chat_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           active: boolean
@@ -357,7 +375,6 @@ export type Database = {
           primary_color: string
           store_name: string
           telegram: string | null
-          telegram_admin_chat_id: string | null
           updated_at: string
           whatsapp: string | null
         }
@@ -377,7 +394,6 @@ export type Database = {
           primary_color?: string
           store_name?: string
           telegram?: string | null
-          telegram_admin_chat_id?: string | null
           updated_at?: string
           whatsapp?: string | null
         }
@@ -397,7 +413,6 @@ export type Database = {
           primary_color?: string
           store_name?: string
           telegram?: string | null
-          telegram_admin_chat_id?: string | null
           updated_at?: string
           whatsapp?: string | null
         }

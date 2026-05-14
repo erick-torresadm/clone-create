@@ -4,7 +4,7 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/telegram";
 
 async function getChatId(): Promise<string | null> {
   const { data } = await supabaseAdmin
-    .from("site_settings")
+    .from("admin_settings")
     .select("telegram_admin_chat_id")
     .eq("id", 1)
     .maybeSingle();

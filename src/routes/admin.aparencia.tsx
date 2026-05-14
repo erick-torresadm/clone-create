@@ -21,7 +21,14 @@ function AdminAparencia() {
   const { data: s } = useSettings();
   const qc = useQueryClient();
   const [f, setF] = useState<any>({});
-  useEffect(() => { if (s) setF(s); }, [s]);
+  useEffect(() => {
+    if (s) {
+      setF(s);
+      // Carregar telegram chat id da tabela admin
+      supabase.from("admin_settings").select("telegram_admin_chat_id").eq("id", 1).maybeSingle()
+        .then(({ data }) => { if (data) setF((cur: any) => ({ ...cur, telegram_admin_chat_id: (data as any).telegram_admin_chat_id ?? "" })); });
+    }
+  }, [s]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -29,7 +36,6 @@ function AdminAparencia() {
         store_name: f.store_name, hero_title: f.hero_title, hero_subtitle: f.hero_subtitle,
         announcement_bar: f.announcement_bar || null, primary_color: f.primary_color, accent_color: f.accent_color,
         logo_url: f.logo_url || null, whatsapp: f.whatsapp || null, telegram: f.telegram || null,
-        telegram_admin_chat_id: (f.telegram_admin_chat_id || "").toString().trim() || null,
         brl_per_vnd: Number(f.brl_per_vnd) || 0.00024, brl_per_usd: Number(f.brl_per_usd) || 5.5,
         home_max_products: Math.max(1, Math.min(60, Number(f.home_max_products) || 12)),
         home_show_categories: !!f.home_show_categories,
@@ -38,6 +44,9 @@ function AdminAparencia() {
       };
       const { error } = await supabase.from("site_settings").update(payload).eq("id", 1);
       if (error) throw error;
+      const chatId = (f.telegram_admin_chat_id || "").toString().trim() || null;
+      const { error: e2 } = await supabase.from("admin_settings").upsert({ id: 1, telegram_admin_chat_id: chatId });
+      if (e2) throw e2;
     },
     onSuccess: () => { toast.success("Salvo"); qc.invalidateQueries({ queryKey: ["settings"] }); },
     onError: (e: any) => toast.error(e.message),
