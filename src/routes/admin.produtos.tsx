@@ -141,6 +141,67 @@ function ManualTab() {
           <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full"><Plus className="mr-2 h-4 w-4" />Criar produto</Button>
         </div>
       </div>
+      {editing && <EditProductDialog product={editing} sections={sections} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); qc.invalidateQueries({ queryKey: ["products"] }); }} />}
+    </div>
+  );
+}
+
+function EditProductDialog({ product, sections, onClose, onSaved }: { product: any; sections: any[]; onClose: () => void; onSaved: () => void }) {
+  const [f, setF] = useState({
+    name: product.name ?? "",
+    price: String(product.price ?? ""),
+    old_price: product.old_price != null ? String(product.old_price) : "",
+    section_id: product.section_id ?? "",
+    badge: product.badge ?? "",
+    image_url: product.image_url ?? "",
+    description: product.description ?? "",
+  });
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("products").update({
+        name: f.name,
+        price: Number(f.price),
+        old_price: f.old_price ? Number(f.old_price) : null,
+        section_id: f.section_id || null,
+        badge: f.badge || null,
+        image_url: f.image_url || null,
+        description: f.description || null,
+      }).eq("id", product.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Produto atualizado"); onSaved(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-semibold text-foreground">Editar produto</h3>
+        <div className="mt-4 space-y-3">
+          <div><Label>Nome</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Preço (R$)</Label><Input type="number" step="0.01" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} /></div>
+            <div><Label>De (R$)</Label><Input type="number" step="0.01" value={f.old_price} onChange={(e) => setF({ ...f, old_price: e.target.value })} /></div>
+          </div>
+          <div>
+            <Label>Seção</Label>
+            <select className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={f.section_id} onChange={(e) => setF({ ...f, section_id: e.target.value })}>
+              <option value="">— sem seção —</option>
+              {sections.map((s: any) => <option key={s.id} value={s.id}>{s.title}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Badge</Label><Input value={f.badge} onChange={(e) => setF({ ...f, badge: e.target.value })} /></div>
+            <div><Label>Imagem URL</Label><Input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} /></div>
+          </div>
+          <div><Label>Descrição</Label>
+            <textarea className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} />
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
+            <Button className="flex-1" onClick={() => save.mutate()} disabled={save.isPending}>Salvar</Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
