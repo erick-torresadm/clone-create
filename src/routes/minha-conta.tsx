@@ -1,21 +1,35 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, Eye, EyeOff, Copy } from "lucide-react";
+import { fulfillCheckoutOrder } from "@/lib/checkout.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
+import { useCart } from "@/lib/use-cart";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/minha-conta")({ component: MinhaConta });
+export const Route = createFileRoute("/minha-conta")({
+  validateSearch: (s: Record<string, unknown>): { checkout?: string; session_id?: string } => ({
+    checkout: typeof s.checkout === "string" ? s.checkout : undefined,
+    session_id: typeof s.session_id === "string" ? s.session_id : undefined,
+  }),
+  component: MinhaConta,
+});
 
 function MinhaConta() {
   const { user, loading, signOut } = useAuth();
+  const { session_id } = Route.useSearch();
   const navigate = useNavigate();
+  const fulfill = useServerFn(fulfillCheckoutOrder);
+  const { clear } = useCart();
+  const [processingSession, setProcessingSession] = useState(false);
   useEffect(() => { if (!loading && !user) navigate({ to: "/entrar" }); }, [loading, user, navigate]);
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading, refetch } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -23,7 +37,46 @@ function MinhaConta() {
       if (error) throw error;
       return data as any[];
     },
+    refetchInterval: (query) => ((query.state.data as any[] | undefined)?.some((o) => ["pending", "processing", "paid"].includes(o.status) && !o.delivered_data) ? 3000 : false),
   });
+
+  useEffect(() => {
+    if (!user || !session_id) return;
+    let cancelled = false;
+    setProcessingSession(true);
+    fulfill({ data: { sessionId: session_id, environment: getStripeEnvironment() } })
+      .then((res) => {
+        if (cancelled) return;
+        if (res.status === "paid") {
+          clear();
+          toast.success("Pagamento confirmado. Entrega processada.");
+        } else {
+          toast.info("Pagamento ainda aguardando confirmação.");
+        }
+        refetch();
+      })
+      .catch((e: any) => !cancelled && toast.error(e?.message || "Erro ao processar entrega."))
+      .finally(() => !cancelled && setProcessingSession(false));
+    return () => { cancelled = true; };
+  }, [user, session_id, fulfill, clear, refetch]);
+
+  useEffect(() => {
+    if (!user || session_id || processingSession) return;
+    const pendingSessions = orders
+      .filter((o) => ["pending", "paid"].includes(o.status) && o.stripe_session_id && !o.delivered_data)
+      .slice(0, 3);
+    if (!pendingSessions.length) return;
+    let cancelled = false;
+    setProcessingSession(true);
+    (async () => {
+      for (const order of pendingSessions) {
+        if (cancelled) return;
+        await fulfill({ data: { sessionId: order.stripe_session_id, environment: getStripeEnvironment() } }).catch(() => null);
+      }
+      if (!cancelled) await refetch();
+    })().finally(() => !cancelled && setProcessingSession(false));
+    return () => { cancelled = true; };
+  }, [user, session_id, orders, processingSession, fulfill, refetch]);
 
   if (!user) return null;
 
@@ -39,6 +92,11 @@ function MinhaConta() {
         </div>
 
         <h2 className="mt-10 flex items-center gap-2 text-xl font-bold text-foreground"><Package className="h-5 w-5 text-primary" />Meus pedidos</h2>
+        {processingSession && (
+          <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" /> Confirmando pagamento e buscando a conta no fornecedor...
+          </div>
+        )}
         <div className="mt-4 space-y-4">
           {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
           {!isLoading && !orders.length && (

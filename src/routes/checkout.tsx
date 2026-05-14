@@ -33,13 +33,14 @@ function CheckoutPage() {
   const fetchClientSecret = useMemo(() => {
     return async (): Promise<string> => {
       try {
+        if (!user?.email || !user?.id) throw new Error("Entre na sua conta para finalizar a compra.");
         const cs = await checkoutFn({
           data: {
             items: items.map((i) => ({ productId: i.id, quantity: i.qty })),
             couponCode: coupon,
-            customerEmail: user?.email || undefined,
-            userId: user?.id,
-            returnUrl: `${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
+            customerEmail: user.email,
+            userId: user.id,
+            returnUrl: `${window.location.origin}/minha-conta?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
             environment: getStripeEnvironment(),
           },
         });
@@ -52,7 +53,7 @@ function CheckoutPage() {
     };
   }, [items, user, coupon, checkoutFn]);
 
-  if (!items.length) return null;
+  if (authLoading || !user || !items.length) return null;
 
   return (
     <Layout>
