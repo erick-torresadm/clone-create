@@ -401,8 +401,8 @@ export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
     if (orderErr) throw new Error(orderErr.message);
     if (!order) throw new Error("Pedido não encontrado.");
 
-    // 2. If already paid+delivered, return cached result
-    if (order.status === "paid" && order.delivered_data) {
+    // 2. If already fulfilled, return cached result
+    if ((order.status === "paid" || order.status === "delivered") && order.delivered_data) {
       return { status: "paid" as const, items: order.delivered_data as DeliveredItem[] };
     }
 
@@ -413,91 +413,7 @@ export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
       return { status: "pending" as const, items: [] };
     }
 
-    // 4. For each MaxVia item, place a buy order
-    const apiKey = process.env.MAXVIA_API_KEY;
-    const items = (order.items as any[]) ?? [];
-    const delivered: DeliveredItem[] = [];
-
-    for (const it of items) {
-      const base: DeliveredItem = {
-        productId: it.productId,
-        name: it.name,
-        quantity: it.quantity,
-      };
-
-      // Internal stock (no external provider) — claim from product_stock
-      if (it.provider !== "maxvia" || !it.externalId) {
-        try {
-          const { data: claimed, error: claimErr } = await supabaseAdmin.rpc("claim_stock", {
-            _product_id: it.productId,
-            _quantity: it.quantity,
-            _order_id: order.id,
-          });
-          if (claimErr) throw claimErr;
-          const rows = (claimed ?? []) as Array<{ id: string; content: string }>;
-          if (rows.length < it.quantity) {
-            delivered.push({
-              ...base,
-              accounts: rows.map((r) => ({ full_info: r.content })),
-              error: `Estoque insuficiente: entregamos ${rows.length}/${it.quantity}. Nossa equipe entrará em contato para repor.`,
-            });
-          } else {
-            delivered.push({ ...base, accounts: rows.map((r) => ({ full_info: r.content })) });
-          }
-        } catch (e: any) {
-          delivered.push({ ...base, error: e?.message || "Falha ao reservar estoque." });
-        }
-        continue;
-      }
-
-      if (!apiKey) {
-        delivered.push({ ...base, error: "Provedor não configurado." });
-        continue;
-      }
-
-      try {
-        const buyRes = await fetch(`${MAXVIA_BASE}/buy`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            api_key: apiKey,
-            id_product: Number(it.externalId),
-            quantity: it.quantity,
-          }),
-        });
-        const buyJson: any = await buyRes.json().catch(() => ({}));
-        if (!buyRes.ok || !buyJson?.status || !buyJson?.order_id) {
-          delivered.push({ ...base, error: `Falha ao processar pedido (${buyRes.status}). Suporte foi notificado.` });
-          continue;
-        }
-        const externalOrderId = buyJson.order_id;
-
-        // Get delivery data
-        const detRes = await fetch(`${MAXVIA_BASE}/order`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ api_key: apiKey, order_id: externalOrderId }),
-        });
-        const detJson: any = await detRes.json().catch(() => ({}));
-        const accounts = Array.isArray(detJson?.data) ? detJson.data : [];
-
-        delivered.push({ ...base, externalOrderId, accounts });
-      } catch (e: any) {
-        delivered.push({ ...base, error: e?.message || "Erro inesperado." });
-      }
-    }
-
-    // 5. Update order
-    await supabaseAdmin
-      .from("orders")
-      .update({
-        status: "paid",
-        delivered_data: delivered,
-        external_order_id: delivered.find((d) => d.externalOrderId)?.externalOrderId
-          ? String(delivered.find((d) => d.externalOrderId)!.externalOrderId)
-          : null,
-      })
-      .eq("id", order.id);
-
+    // 4. Paid: buy from MaxVia / reserve internal stock and save delivery
+    const delivered = await fulfillPaidOrder(order);
     return { status: "paid" as const, items: delivered };
   });
