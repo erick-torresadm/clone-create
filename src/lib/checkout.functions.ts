@@ -3,6 +3,8 @@ import { z } from "zod";
 import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+const MAXVIA_BASE = "https://maxvia88.com/api/v1";
+
 const itemSchema = z.object({
   productId: z.string().uuid(),
   quantity: z.number().int().min(1).max(50),
@@ -22,6 +24,69 @@ const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; min?: 
   BLUE20: { type: "percent", value: 20, min: 200 },
   PRIME50: { type: "fixed", value: 50, min: 300 },
 };
+
+// ---------- MaxVia helpers ----------
+
+type LiveItem = { quantity: number; price: number };
+
+/**
+ * Just-in-time MaxVia stock sync. Scans every category once and updates
+ * `external_quantity / external_price / active` for every requested external_id.
+ * Returns a map external_id -> live data so the caller can re-check stock
+ * without doing another DB roundtrip.
+ */
+async function syncMaxviaForExternalIds(externalIds: string[]): Promise<Map<string, LiveItem>> {
+  const result = new Map<string, LiveItem>();
+  if (!externalIds.length) return result;
+
+  let cats: Array<{ id: number }> = [];
+  try {
+    const r = await fetch(`${MAXVIA_BASE}/categories`);
+    if (r.ok) {
+      const j = await r.json();
+      cats = (j?.data ?? []).map((c: any) => ({ id: c.id }));
+    }
+  } catch {
+    return result; // network failure — let caller fall back to DB values
+  }
+
+  const wanted = new Set(externalIds.map((s) => String(s)));
+
+  for (const c of cats) {
+    if (!wanted.size) break;
+    try {
+      const r = await fetch(`${MAXVIA_BASE}/category/${c.id}`);
+      if (!r.ok) continue;
+      const j = await r.json();
+      for (const p of (j?.data ?? []) as Array<{ id_product: number; quantity: number; price: number }>) {
+        const ext = String(p.id_product);
+        if (wanted.has(ext)) {
+          result.set(ext, { quantity: Number(p.quantity) || 0, price: Number(p.price) || 0 });
+          wanted.delete(ext);
+        }
+      }
+    } catch {
+      // skip category on transient failure
+    }
+  }
+
+  // Persist to DB so the catalog reflects reality
+  await Promise.all(
+    Array.from(result.entries()).map(([extId, live]) =>
+      supabaseAdmin
+        .from("products")
+        .update({
+          external_quantity: live.quantity,
+          external_price: live.price,
+          active: live.quantity > 0,
+        })
+        .eq("external_provider", "maxvia")
+        .eq("external_id", extId),
+    ),
+  );
+
+  return result;
+}
 
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
@@ -56,29 +121,75 @@ async function resolveOrCreateCustomer(
   return created.id;
 }
 
+// ---------- Create checkout session ----------
+
 export const createCartCheckout = createServerFn({ method: "POST" })
   .inputValidator((d) => inputSchema.parse(d))
   .handler(async ({ data }) => {
     const env: StripeEnv = data.environment;
     const stripe = createStripeClient(env);
 
-    // Buscar produtos do banco — preço/nome autoritativos no servidor
+    // 1. Load products from DB
     const ids = data.items.map((i) => i.productId);
     const { data: products, error } = await supabaseAdmin
       .from("products")
-      .select("id,name,price,image_url,active")
+      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity")
       .in("id", ids);
     if (error) throw new Error(error.message);
     if (!products || products.length !== ids.length) throw new Error("Produto não encontrado");
 
     const pmap = new Map(products.map((p: any) => [p.id, p]));
+
+    // 2. JIT stock sync for maxvia items (covers stale "indisponível" cases)
+    const maxviaExtIds = products
+      .filter((p: any) => p.external_provider === "maxvia" && p.external_id)
+      .map((p: any) => String(p.external_id));
+    const live = await syncMaxviaForExternalIds(maxviaExtIds);
+
+    // 3. Validate stock per cart item using freshest data available
     let subtotalCents = 0;
+    const orderItems: Array<{
+      productId: string;
+      name: string;
+      quantity: number;
+      unitPriceBrl: number;
+      provider: string | null;
+      externalId: string | null;
+    }> = [];
+
     const line_items = data.items.map((it) => {
       const p: any = pmap.get(it.productId);
-      if (!p?.active) throw new Error(`Produto indisponível: ${p?.name ?? it.productId}`);
+      if (!p) throw new Error("Produto não encontrado");
+
+      let availableQty: number | null = null;
+      if (p.external_provider === "maxvia" && p.external_id) {
+        const liveData = live.get(String(p.external_id));
+        availableQty = liveData ? liveData.quantity : (p.external_quantity ?? 0);
+      } else if (typeof p.external_quantity === "number") {
+        availableQty = p.external_quantity;
+      }
+
+      if (availableQty !== null && availableQty < it.quantity) {
+        throw new Error(`Estoque insuficiente para "${p.name}". Disponível: ${availableQty}.`);
+      }
+      // For non-API products without quantity tracking, just respect the active flag.
+      if (availableQty === null && !p.active) {
+        throw new Error(`Produto indisponível: ${p.name}`);
+      }
+
       const unit = Math.round(Number(p.price) * 100);
       if (!unit || unit < 50) throw new Error(`Preço inválido para ${p.name}`);
       subtotalCents += unit * it.quantity;
+
+      orderItems.push({
+        productId: p.id,
+        name: p.name,
+        quantity: it.quantity,
+        unitPriceBrl: Number(p.price),
+        provider: p.external_provider ?? null,
+        externalId: p.external_id ? String(p.external_id) : null,
+      });
+
       return {
         price_data: {
           currency: "brl",
@@ -92,8 +203,9 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       };
     });
 
-    // Cupom
+    // 4. Coupon
     let discounts: Array<{ coupon: string }> = [];
+    let discountCents = 0;
     if (data.couponCode) {
       const c = COUPONS[data.couponCode.trim().toUpperCase()];
       if (!c) throw new Error("Cupom inválido");
@@ -102,12 +214,16 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         ? await stripe.coupons.create({ percent_off: c.value, duration: "once", name: data.couponCode.toUpperCase() })
         : await stripe.coupons.create({ amount_off: c.value * 100, currency: "brl", duration: "once", name: data.couponCode.toUpperCase() });
       discounts = [{ coupon: coupon.id }];
+      discountCents = c.type === "percent"
+        ? Math.round((subtotalCents * c.value) / 100)
+        : c.value * 100;
     }
 
     const customerId = (data.customerEmail || data.userId)
       ? await resolveOrCreateCustomer(stripe, { email: data.customerEmail, userId: data.userId })
       : undefined;
 
+    // 5. Create Stripe session
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
@@ -115,8 +231,134 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       return_url: data.returnUrl,
       ...(customerId && { customer: customerId }),
       ...(discounts.length && { discounts }),
-      ...(data.userId && { metadata: { userId: data.userId } }),
+      metadata: {
+        ...(data.userId && { userId: data.userId }),
+        env,
+      },
+    });
+
+    // 6. Persist a pending order so fulfillment can resolve cart items by session id
+    const totalCents = Math.max(0, subtotalCents - discountCents);
+    await supabaseAdmin.from("orders").insert({
+      user_id: data.userId ?? null,
+      email: data.customerEmail ?? null,
+      items: orderItems,
+      subtotal: subtotalCents / 100,
+      discount: discountCents / 100,
+      total: totalCents / 100,
+      coupon_code: data.couponCode?.toUpperCase() ?? null,
+      stripe_session_id: session.id,
+      status: "pending",
     });
 
     return session.client_secret;
+  });
+
+// ---------- Fulfillment ----------
+
+const fulfillSchema = z.object({
+  sessionId: z.string().min(5).max(200),
+  environment: z.enum(["sandbox", "live"]),
+});
+
+type DeliveredItem = {
+  productId: string;
+  name: string;
+  quantity: number;
+  externalOrderId?: number | string | null;
+  accounts?: Array<{ uid?: string; full_info?: string; link_backup?: string | null }>;
+  error?: string;
+};
+
+export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
+  .inputValidator((d) => fulfillSchema.parse(d))
+  .handler(async ({ data }) => {
+    // 1. Load order
+    const { data: order, error: orderErr } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("stripe_session_id", data.sessionId)
+      .maybeSingle();
+    if (orderErr) throw new Error(orderErr.message);
+    if (!order) throw new Error("Pedido não encontrado.");
+
+    // 2. If already paid+delivered, return cached result
+    if (order.status === "paid" && order.delivered_data) {
+      return { status: "paid" as const, items: order.delivered_data as DeliveredItem[] };
+    }
+
+    // 3. Verify Stripe session is paid
+    const stripe = createStripeClient(data.environment);
+    const session = await stripe.checkout.sessions.retrieve(data.sessionId);
+    if (session.payment_status !== "paid") {
+      return { status: "pending" as const, items: [] };
+    }
+
+    // 4. For each MaxVia item, place a buy order
+    const apiKey = process.env.MAXVIA_API_KEY;
+    const items = (order.items as any[]) ?? [];
+    const delivered: DeliveredItem[] = [];
+
+    for (const it of items) {
+      const base: DeliveredItem = {
+        productId: it.productId,
+        name: it.name,
+        quantity: it.quantity,
+      };
+
+      if (it.provider !== "maxvia" || !it.externalId) {
+        delivered.push({ ...base, error: "Entrega manual: nossa equipe irá enviar por email." });
+        continue;
+      }
+
+      if (!apiKey) {
+        delivered.push({ ...base, error: "Provedor não configurado." });
+        continue;
+      }
+
+      try {
+        const buyRes = await fetch(`${MAXVIA_BASE}/buy`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            api_key: apiKey,
+            id_product: Number(it.externalId),
+            quantity: it.quantity,
+          }),
+        });
+        const buyJson: any = await buyRes.json().catch(() => ({}));
+        if (!buyRes.ok || !buyJson?.status || !buyJson?.order_id) {
+          delivered.push({ ...base, error: `Falha ao processar pedido (${buyRes.status}). Suporte foi notificado.` });
+          continue;
+        }
+        const externalOrderId = buyJson.order_id;
+
+        // Get delivery data
+        const detRes = await fetch(`${MAXVIA_BASE}/order`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ api_key: apiKey, order_id: externalOrderId }),
+        });
+        const detJson: any = await detRes.json().catch(() => ({}));
+        const accounts = Array.isArray(detJson?.data) ? detJson.data : [];
+
+        delivered.push({ ...base, externalOrderId, accounts });
+      } catch (e: any) {
+        delivered.push({ ...base, error: e?.message || "Erro inesperado." });
+      }
+    }
+
+    // 5. Update order
+    await supabaseAdmin
+      .from("orders")
+      .update({
+        status: "paid",
+        delivered_data: delivered,
+        external_order_id: delivered.find((d) => d.externalOrderId)?.externalOrderId
+          ? String(delivered.find((d) => d.externalOrderId)!.externalOrderId)
+          : null,
+      })
+      .eq("id", order.id);
+
+    return { status: "paid" as const, items: delivered };
   });
