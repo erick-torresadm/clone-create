@@ -21,7 +21,7 @@ export const Route = createFileRoute("/entrar")({
 
 function checkPassword(p: string) {
   return {
-    length: p.length >= 8,
+    length: p.length >= 6,
     letter: /[a-zA-Z]/.test(p),
     number: /\d/.test(p),
   };
