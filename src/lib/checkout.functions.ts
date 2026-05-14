@@ -436,6 +436,13 @@ export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
       return { status: "pending" as const, items: [] };
     }
 
+    const started = await beginFulfillment(order.id);
+    if (!started) {
+      const cached = await getCachedDelivery(order.id);
+      if (cached?.delivered_data) return { status: "paid" as const, items: cached.delivered_data as DeliveredItem[] };
+      return { status: "pending" as const, items: [] };
+    }
+
     // 4. Paid: buy from MaxVia / reserve internal stock and save delivery
     const delivered = await fulfillPaidOrder(order);
     return { status: "paid" as const, items: delivered };
