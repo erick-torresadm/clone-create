@@ -150,26 +150,54 @@ function OrderCard({ order }: { order: any }) {
           </div>
           {show && (
             <div className="mt-3 space-y-3">
-              {delivered.map((d: any, i: number) => (
-                <div key={i}>
-                  <p className="mb-1 text-xs font-semibold text-muted-foreground">{d.name} {d.error ? "· ⚠ " + d.error : ""}</p>
-                  <div className="space-y-1.5">
-                    {(d.accounts ?? []).map((a: any, j: number) => {
-                      const text = a.full_info ?? a.uid ?? "";
-                      return (
-                        <div key={j} className="flex items-center gap-2 rounded bg-background p-2 font-mono text-xs text-foreground">
-                          <span className="flex-1 break-all">{text || "—"}</span>
-                          {text && (
+              {delivered.map((d: any, i: number) => {
+                const accountsRaw: any[] = Array.isArray(d.accounts) ? d.accounts : [];
+                const lines = accountsRaw
+                  .map((a) => (typeof a === "string" ? a : a?.full_info ?? a?.uid ?? ""))
+                  .filter((s) => s && String(s).trim().length > 0);
+                const downloadTxt = () => {
+                  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${(d.name || "contas").replace(/[^\w-]+/g, "_")}-${String(order.id).slice(0, 8)}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                };
+                return (
+                  <div key={i}>
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-muted-foreground">
+                        {d.name} · {lines.length}/{d.quantity ?? lines.length} {d.error ? "· ⚠ " + d.error : ""}
+                      </p>
+                      {lines.length > 0 && (
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={downloadTxt}>
+                            <Download className="mr-1 h-3 w-3" /> .txt
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(lines.join("\n")); toast.success("Tudo copiado"); }}>
+                            <Copy className="mr-1 h-3 w-3" /> Copiar tudo
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {lines.length === 0 ? (
+                      <div className="rounded bg-background p-2 text-xs text-muted-foreground">Sem dados.</div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {lines.map((text, j) => (
+                          <div key={j} className="flex items-start gap-2 rounded bg-background p-2 font-mono text-xs text-foreground">
+                            <pre className="flex-1 whitespace-pre-wrap break-all font-mono">{text}</pre>
                             <button onClick={() => { navigator.clipboard.writeText(text); toast.success("Copiado"); }} className="text-primary hover:underline">
                               <Copy className="h-3 w-3" />
                             </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
