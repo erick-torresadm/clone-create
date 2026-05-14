@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { type StripeEnv, createStripeClient } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { fulfillBySessionId } from "@/lib/checkout.server";
+import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
+import { type AsaasEnv, createPixPayment, findOrCreateCustomer, getPixQr, getPayment, isPaid } from "@/lib/asaas.server";
 
 const MAXVIA_BASE = "https://maxvia88.com/api/v1";
 
@@ -16,8 +16,9 @@ const inputSchema = z.object({
   items: z.array(itemSchema).min(1).max(30),
   couponCode: z.string().max(40).optional(),
   customerEmail: z.string().email(),
+  customerName: z.string().min(2).max(120).optional(),
+  cpfCnpj: z.string().min(11).max(20).optional(),
   userId: z.string().uuid(),
-  returnUrl: z.string().url(),
   environment: z.enum(["sandbox", "live"]),
 });
 
@@ -27,20 +28,11 @@ const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; min?: 
   PRIME50: { type: "fixed", value: 50, min: 300 },
 };
 
-// ---------- MaxVia helpers ----------
-
 type LiveItem = { quantity: number; price: number };
 
-/**
- * Just-in-time MaxVia stock sync. Scans every category once and updates
- * `external_quantity / external_price / active` for every requested external_id.
- * Returns a map external_id -> live data so the caller can re-check stock
- * without doing another DB roundtrip.
- */
 async function syncMaxviaForExternalIds(externalIds: string[]): Promise<Map<string, LiveItem>> {
   const result = new Map<string, LiveItem>();
   if (!externalIds.length) return result;
-
   let cats: Array<{ id: number }> = [];
   try {
     const r = await fetch(`${MAXVIA_BASE}/categories`);
@@ -48,12 +40,8 @@ async function syncMaxviaForExternalIds(externalIds: string[]): Promise<Map<stri
       const j = await r.json();
       cats = (j?.data ?? []).map((c: any) => ({ id: c.id }));
     }
-  } catch {
-    return result; // network failure — let caller fall back to DB values
-  }
-
+  } catch { return result; }
   const wanted = new Set(externalIds.map((s) => String(s)));
-
   for (const c of cats) {
     if (!wanted.size) break;
     try {
@@ -67,12 +55,8 @@ async function syncMaxviaForExternalIds(externalIds: string[]): Promise<Map<stri
           wanted.delete(ext);
         }
       }
-    } catch {
-      // skip category on transient failure
-    }
+    } catch { /* skip */ }
   }
-
-  // Persist to DB so the catalog reflects reality
   await Promise.all(
     Array.from(result.entries()).map(([extId, live]) =>
       supabaseAdmin
@@ -86,59 +70,18 @@ async function syncMaxviaForExternalIds(externalIds: string[]): Promise<Map<stri
         .eq("external_id", extId),
     ),
   );
-
   return result;
 }
 
-async function resolveOrCreateCustomer(
-  stripe: ReturnType<typeof createStripeClient>,
-  options: { email?: string; userId?: string },
-): Promise<string> {
-  if (options.userId && !/^[a-zA-Z0-9_-]+$/.test(options.userId)) {
-    throw new Error("Invalid userId");
-  }
-  if (options.userId) {
-    const found = await stripe.customers.search({
-      query: `metadata['userId']:'${options.userId}'`,
-      limit: 1,
-    });
-    if (found.data.length) return found.data[0].id;
-  }
-  if (options.email) {
-    const existing = await stripe.customers.list({ email: options.email, limit: 1 });
-    if (existing.data.length) {
-      const customer = existing.data[0];
-      if (options.userId && customer.metadata?.userId !== options.userId) {
-        await stripe.customers.update(customer.id, {
-          metadata: { ...customer.metadata, userId: options.userId },
-        });
-      }
-      return customer.id;
-    }
-  }
-  const created = await stripe.customers.create({
-    ...(options.email && { email: options.email }),
-    ...(options.userId && { metadata: { userId: options.userId } }),
-  });
-  return created.id;
-}
-
-function isPixActivationError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error ?? "");
-  return message.toLowerCase().includes("payment method type provided: pix is invalid");
-}
-
-// ---------- Create checkout session ----------
+// ---------- Criar cobrança PIX (Asaas) ----------
 
 export const createCartCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => inputSchema.parse(d))
   .handler(async ({ data, context }) => {
     if (data.userId !== context.userId) throw new Error("Sessão inválida. Entre novamente para comprar.");
-    const env: StripeEnv = data.environment;
-    const stripe = createStripeClient(env);
+    const env: AsaasEnv = data.environment;
 
-    // 1. Load products from DB
     const ids = data.items.map((i) => i.productId);
     const { data: products, error } = await supabaseAdmin
       .from("products")
@@ -149,13 +92,11 @@ export const createCartCheckout = createServerFn({ method: "POST" })
 
     const pmap = new Map(products.map((p: any) => [p.id, p]));
 
-    // 2. JIT stock sync for maxvia items (covers stale "indisponível" cases)
     const maxviaExtIds = products
       .filter((p: any) => p.external_provider === "maxvia" && p.external_id)
       .map((p: any) => String(p.external_id));
     const live = await syncMaxviaForExternalIds(maxviaExtIds);
 
-    // 3. Validate stock per cart item using freshest data available
     let subtotalCents = 0;
     const orderItems: Array<{
       productId: string;
@@ -166,7 +107,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       externalId: string | null;
     }> = [];
 
-    const line_items = data.items.map((it) => {
+    for (const it of data.items) {
       const p: any = pmap.get(it.productId);
       if (!p) throw new Error("Produto não encontrado");
 
@@ -177,19 +118,15 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       } else if (typeof p.external_quantity === "number") {
         availableQty = p.external_quantity;
       }
-
       if (availableQty !== null && availableQty < it.quantity) {
         throw new Error(`Estoque insuficiente para "${p.name}". Disponível: ${availableQty}.`);
       }
-      // For non-API products without quantity tracking, just respect the active flag.
       if (availableQty === null && !p.active) {
         throw new Error(`Produto indisponível: ${p.name}`);
       }
-
       const unit = Math.round(Number(p.price) * 100);
       if (!unit || unit < 50) throw new Error(`Preço inválido para ${p.name}`);
       subtotalCents += unit * it.quantity;
-
       orderItems.push({
         productId: p.id,
         name: p.name,
@@ -198,98 +135,98 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         provider: p.external_provider ?? null,
         externalId: p.external_id ? String(p.external_id) : null,
       });
+    }
 
-      return {
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: String(p.name).slice(0, 250),
-            ...(p.image_url ? { images: [p.image_url] } : {}),
-          },
-          unit_amount: unit,
-        },
-        quantity: it.quantity,
-      };
-    });
-
-    // 4. Coupon
-    let discounts: Array<{ coupon: string }> = [];
     let discountCents = 0;
+    let appliedCoupon: string | null = null;
     if (data.couponCode) {
       const c = COUPONS[data.couponCode.trim().toUpperCase()];
       if (!c) throw new Error("Cupom inválido");
       if (c.min && subtotalCents < c.min * 100) throw new Error(`Cupom requer pedido mínimo de R$ ${c.min}`);
-      const coupon = c.type === "percent"
-        ? await stripe.coupons.create({ percent_off: c.value, duration: "once", name: data.couponCode.toUpperCase() })
-        : await stripe.coupons.create({ amount_off: c.value * 100, currency: "brl", duration: "once", name: data.couponCode.toUpperCase() });
-      discounts = [{ coupon: coupon.id }];
       discountCents = c.type === "percent"
         ? Math.round((subtotalCents * c.value) / 100)
         : c.value * 100;
+      appliedCoupon = data.couponCode.toUpperCase();
     }
 
-    const customerId = (data.customerEmail || data.userId)
-      ? await resolveOrCreateCustomer(stripe, { email: data.customerEmail, userId: data.userId })
-      : undefined;
+    const totalCents = Math.max(50, subtotalCents - discountCents);
+    const totalBrl = totalCents / 100;
 
-    // 5. Create Stripe session. Live keeps Pix-only; sandbox retries with
-    // Stripe's default test methods if Pix is not enabled on the test account,
-    // so the checkout never renders as an empty panel during preview.
-    const checkoutSessionParams = {
-      line_items,
-      mode: "payment",
-      ui_mode: "embedded_page",
-      return_url: data.returnUrl,
-      redirect_on_completion: "always",
-      ...(customerId && { customer: customerId }),
-      ...(discounts.length && { discounts }),
-      metadata: {
-        ...(data.userId && { userId: data.userId }),
-        env,
-      },
-    } as const;
-
-    let session;
-    try {
-      session = await stripe.checkout.sessions.create({
-        ...checkoutSessionParams,
-        payment_method_types: ["pix"],
-      });
-    } catch (error) {
-      if (env !== "sandbox" || !isPixActivationError(error)) throw error;
-      session = await stripe.checkout.sessions.create({
-        ...checkoutSessionParams,
-        metadata: { ...checkoutSessionParams.metadata, pix_test_fallback: "true" },
-      });
-    }
-
-    // 6. Persist a pending order so fulfillment can resolve cart items by session id
-    const totalCents = Math.max(0, subtotalCents - discountCents);
-    await supabaseAdmin.from("orders").insert({
-      user_id: data.userId ?? null,
-      email: data.customerEmail ?? null,
-      items: orderItems,
-      subtotal: subtotalCents / 100,
-      discount: discountCents / 100,
-      total: totalCents / 100,
-      coupon_code: data.couponCode?.toUpperCase() ?? null,
-      stripe_session_id: session.id,
-      status: "pending",
+    // 1. Cliente Asaas
+    const customer = await findOrCreateCustomer(env, {
+      email: data.customerEmail,
+      name: data.customerName || data.customerEmail.split("@")[0],
+      cpfCnpj: data.cpfCnpj,
+      externalReference: data.userId,
     });
 
-    return session.client_secret;
+    // 2. Cria pedido em rascunho (precisamos do id para externalReference)
+    const { data: orderRow, error: insErr } = await supabaseAdmin
+      .from("orders")
+      .insert({
+        user_id: data.userId,
+        email: data.customerEmail,
+        items: orderItems,
+        subtotal: subtotalCents / 100,
+        discount: discountCents / 100,
+        total: totalBrl,
+        coupon_code: appliedCoupon,
+        status: "pending",
+        asaas_customer_id: customer.id,
+      })
+      .select("id")
+      .single();
+    if (insErr || !orderRow) throw new Error(insErr?.message || "Falha ao criar pedido");
+
+    // 3. Cobrança PIX
+    const description = orderItems.map((i) => `${i.quantity}x ${i.name}`).join(", ").slice(0, 480);
+    const payment = await createPixPayment(env, {
+      customerId: customer.id,
+      valueBrl: totalBrl,
+      description,
+      externalReference: orderRow.id,
+    });
+
+    // 4. QR Code
+    const qr = await getPixQr(env, payment.id);
+
+    await supabaseAdmin
+      .from("orders")
+      .update({
+        asaas_payment_id: payment.id,
+        pix_payload: qr.payload,
+        pix_qr_base64: qr.encodedImage,
+        pix_expires_at: qr.expirationDate,
+      })
+      .eq("id", orderRow.id);
+
+    return {
+      orderId: orderRow.id,
+      paymentId: payment.id,
+      pixPayload: qr.payload,
+      pixQrBase64: qr.encodedImage,
+      expiresAt: qr.expirationDate,
+      totalBrl,
+    };
   });
 
-// ---------- Fulfillment ----------
+// ---------- Polling / Fulfillment ----------
 
-const fulfillSchema = z.object({
-  sessionId: z.string().min(5).max(200),
+const checkSchema = z.object({
+  paymentId: z.string().min(3).max(80),
   environment: z.enum(["sandbox", "live"]),
 });
 
-export const fulfillCheckoutOrder = createServerFn({ method: "POST" })
+export const checkPaymentStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => fulfillSchema.parse(d))
+  .inputValidator((d) => checkSchema.parse(d))
   .handler(async ({ data, context }) => {
-    return await fulfillBySessionId(data.sessionId, data.environment, { expectedUserId: context.userId });
+    const res = await fulfillByAsaasPaymentId(data.paymentId, data.environment, { expectedUserId: context.userId });
+    // Também devolve o status cru para a UI mostrar "aguardando pagamento"
+    let raw: string | null = null;
+    try {
+      const p = await getPayment(data.environment, data.paymentId);
+      raw = p.status;
+    } catch { /* ignore */ }
+    return { ...res, rawStatus: raw, paid: res.status === "paid" || (raw ? isPaid(raw) : false) };
   });
