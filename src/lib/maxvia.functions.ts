@@ -94,9 +94,28 @@ const importSchema = z.object({
   external_currency: z.string().min(1).max(8),
   external_quantity: z.number().int().nonnegative().optional(),
   section_id: z.string().uuid().nullable().optional(),
+  category_name: z.string().min(1).max(120).nullable().optional(),
   badge: z.string().max(40).nullable().optional(),
   image_url: z.string().url().nullable().optional(),
 });
+
+async function findOrCreateSectionByName(name: string): Promise<string> {
+  const trimmed = name.trim();
+  const { data: existing } = await supabaseAdmin
+    .from("sections")
+    .select("id,title")
+    .ilike("title", trimmed)
+    .limit(1)
+    .maybeSingle();
+  if (existing?.id) return existing.id as string;
+  const { data: created, error } = await supabaseAdmin
+    .from("sections")
+    .insert({ title: trimmed, emoji: "📦", active: true })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  return created!.id as string;
+}
 
 export const maxviaImportProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
