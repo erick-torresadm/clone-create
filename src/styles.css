@@ -132,40 +132,45 @@
   to { --glow-angle: 360deg; }
 }
 
-/* Brenin-style rotating border glow + outer halo */
+/* Brenin-style rotating border glow — light only on the borders */
 .glow-border,
 .glow-card {
   position: relative;
   isolation: isolate;
 }
 
-/* Outer halo (visible glow behind the card) */
+/* Outer halo — masked to a ring so the glow stays on the border, not inside the card */
 .glow-border::after,
 .glow-card::after {
   content: "";
   position: absolute;
-  inset: -6px;
-  border-radius: calc(var(--radius) + 4px);
+  inset: -3px;
+  border-radius: calc(var(--radius) + 3px);
+  padding: 8px;
   background: conic-gradient(
     from var(--glow-angle),
-    rgba(59, 130, 246, 0.0) 0deg,
-    rgba(96, 165, 250, 0.85) 60deg,
-    rgba(59, 130, 246, 0.95) 120deg,
-    rgba(59, 130, 246, 0.0) 220deg,
-    rgba(59, 130, 246, 0.0) 360deg
+    rgba(59, 130, 246, 0) 0deg,
+    rgba(96, 165, 250, 0.9) 60deg,
+    rgba(59, 130, 246, 1) 120deg,
+    rgba(59, 130, 246, 0) 220deg,
+    rgba(59, 130, 246, 0) 360deg
   );
-  filter: blur(14px);
-  opacity: 0.55;
+  filter: blur(10px);
+  opacity: 0.85;
   pointer-events: none;
-  animation: glow-spin 4s linear infinite;
+  animation: glow-spin 2.5s linear infinite;
   z-index: -1;
-  transition: opacity 0.3s ease;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  transition: opacity 0.25s ease, filter 0.25s ease;
 }
 .glow-border:hover::after,
 .glow-card:hover::after {
-  opacity: 0.95;
-  filter: blur(20px);
-  inset: -10px;
+  opacity: 1;
+  filter: blur(14px);
 }
 
 /* Crisp rotating border on top */
@@ -178,11 +183,11 @@
   padding: 2px;
   background: conic-gradient(
     from var(--glow-angle),
-    rgba(59, 130, 246, 0.2) 0deg,
+    rgba(59, 130, 246, 0.15) 0deg,
     #93c5fd 60deg,
     #3b82f6 120deg,
-    rgba(59, 130, 246, 0.2) 220deg,
-    rgba(59, 130, 246, 0.2) 360deg
+    rgba(59, 130, 246, 0.15) 220deg,
+    rgba(59, 130, 246, 0.15) 360deg
   );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -190,8 +195,8 @@
   -webkit-mask-composite: xor;
           mask-composite: exclude;
   pointer-events: none;
-  animation: glow-spin 4s linear infinite;
-  z-index: 0;
+  animation: glow-spin 2.5s linear infinite;
+  z-index: 1;
 }
 
 
