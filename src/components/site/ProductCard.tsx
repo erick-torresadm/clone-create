@@ -21,7 +21,7 @@ export function ProductCard({ product }: { product: Product }) {
         className="relative block"
         aria-label={`Ver ${product.name}`}
       >
-        <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-secondary via-card to-background">
+        <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-secondary via-card to-background">
           {product.image ? (
             <img
               src={product.image}
