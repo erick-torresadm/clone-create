@@ -297,6 +297,20 @@ function ApiTab() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [reviewing, setReviewing] = useState<{ p: any; price: number; sectionId: string | null; categoryName: string | null } | null>(null);
+
+  function openReview(p: any) {
+    const ov = overrides[String(p.id_product)] ?? {};
+    const price_brl = ov.price ? Number(ov.price) : suggestedBRL(p.price);
+    if (!price_brl || price_brl <= 0) { toast.error("Preço inválido"); return; }
+    setReviewing({
+      p: { ...p, name: ov.name?.trim() || p.name },
+      price: price_brl,
+      sectionId: section || null,
+      categoryName: !section ? (selectedCat?.name ?? null) : null,
+    });
+  }
+
   return (
     <div className="space-y-5">
       <div className="rounded-xl border border-border bg-card p-4">
