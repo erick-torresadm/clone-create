@@ -35,9 +35,11 @@ function AdminProdutos() {
         <Tabs defaultValue="manual" className="mt-6">
           <TabsList>
             <TabsTrigger value="manual">Manuais & lista</TabsTrigger>
+            <TabsTrigger value="sections">Seções</TabsTrigger>
             <TabsTrigger value="api">Importar da API (MaxVia)</TabsTrigger>
           </TabsList>
           <TabsContent value="manual" className="mt-6"><ManualTab /></TabsContent>
+          <TabsContent value="sections" className="mt-6"><SectionsTab /></TabsContent>
           <TabsContent value="api" className="mt-6"><ApiTab /></TabsContent>
         </Tabs>
       </div>
@@ -604,6 +606,98 @@ function ImportReviewDialog({ item, onClose, onImported }: { item: { p: any; pri
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SectionsTab() {
+  const qc = useQueryClient();
+  const { data: sections = [], refetch } = useSections();
+  const [form, setForm] = useState({ title: "", emoji: "", sort_order: "0" });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      if (!form.title.trim()) throw new Error("Título obrigatório");
+      const { error } = await supabase.from("sections").insert({
+        title: form.title.trim(),
+        emoji: form.emoji.trim() || null,
+        sort_order: Number(form.sort_order) || 0,
+        active: true,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Seção criada");
+      setForm({ title: "", emoji: "", sort_order: "0" });
+      qc.invalidateQueries({ queryKey: ["sections"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  async function update(id: string, patch: any) {
+    const { error } = await supabase.from("sections").update(patch).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["sections"] });
+  }
+
+  async function remove(id: string) {
+    if (!confirm("Remover seção? Os produtos ficarão sem seção.")) return;
+    const { error } = await supabase.from("sections").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Seção removida");
+    qc.invalidateQueries({ queryKey: ["sections"] });
+  }
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1fr,380px]">
+      <div className="rounded-2xl border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border p-4">
+          <h2 className="font-semibold text-foreground">Seções ({sections.length})</h2>
+          <Button variant="ghost" size="sm" onClick={() => refetch()}><RefreshCw className="mr-2 h-4 w-4" />Recarregar</Button>
+        </div>
+        <div className="divide-y divide-border">
+          {sections.map((s: any) => {
+            const isPromo = /promo|oferta/i.test(s.title);
+            return (
+              <SectionRow key={s.id} section={s} isPromo={isPromo} onUpdate={(patch) => update(s.id, patch)} onRemove={() => remove(s.id)} />
+            );
+          })}
+          {!sections.length && <div className="p-8 text-center text-sm text-muted-foreground">Nenhuma seção.</div>}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <h2 className="font-semibold text-foreground">Nova seção</h2>
+        <p className="mt-1 text-xs text-muted-foreground">Dica: nomeie como "Promoções" ou "Ofertas" para ganhar destaque amarelo no index.</p>
+        <div className="mt-4 space-y-3">
+          <div><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Ex.: Promoções" /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Emoji</Label><Input value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e.target.value })} placeholder="🔥" /></div>
+            <div><Label>Ordem</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: e.target.value })} /></div>
+          </div>
+          <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full"><Plus className="mr-2 h-4 w-4" />Criar seção</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionRow({ section: s, isPromo, onUpdate, onRemove }: { section: any; isPromo: boolean; onUpdate: (p: any) => void; onRemove: () => void }) {
+  const [title, setTitle] = useState(s.title);
+  const [emoji, setEmoji] = useState(s.emoji ?? "");
+  const [order, setOrder] = useState(String(s.sort_order ?? 0));
+  useEffect(() => { setTitle(s.title); setEmoji(s.emoji ?? ""); setOrder(String(s.sort_order ?? 0)); }, [s.title, s.emoji, s.sort_order]);
+  const dirty = title !== s.title || emoji !== (s.emoji ?? "") || Number(order) !== Number(s.sort_order ?? 0);
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 p-3">
+      <Input className="h-8 w-12" value={emoji} onChange={(e) => setEmoji(e.target.value)} placeholder="🔥" />
+      <Input className="h-8 flex-1 min-w-[160px]" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <Input type="number" className="h-8 w-20" value={order} onChange={(e) => setOrder(e.target.value)} />
+      {isPromo && <span className="rounded-full border border-yellow-500/40 bg-yellow-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-yellow-500">Promo</span>}
+      {dirty && <Button size="sm" className="h-8" onClick={() => onUpdate({ title, emoji: emoji || null, sort_order: Number(order) || 0 })}>Salvar</Button>}
+      <Switch checked={s.active} onCheckedChange={(v) => onUpdate({ active: v })} />
+      <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4" /></Button>
     </div>
   );
 }
