@@ -17,21 +17,13 @@ export const getPlatformStats = createServerFn({ method: "GET" })
     const isAdmin = (roles ?? []).some((r: any) => r.role === "admin");
     if (!isAdmin) throw new Error("Forbidden");
 
-    // DB size
-    const { data: dbRow, error: dbErr } = await supabaseAdmin.rpc("pg_db_size" as any).single();
+    // DB size via SECURITY DEFINER function
     let dbBytes = 0;
-    if (!dbErr && dbRow && typeof (dbRow as any).size === "number") {
-      dbBytes = Number((dbRow as any).size);
-    } else {
-      // Fallback: query via SQL using a temp function isn't possible; estimate via object counts
-      const tables = ["orders", "products", "product_stock", "profiles", "popups", "coupons"];
-      let total = 0;
-      for (const t of tables) {
-        const { count } = await supabaseAdmin.from(t).select("*", { head: true, count: "exact" });
-        total += (count ?? 0) * 512; // rough estimate
-      }
-      dbBytes = total;
-    }
+    try {
+      const { data: dbRow } = await (supabaseAdmin as any).rpc("get_db_size");
+      if (typeof dbRow === "number") dbBytes = dbRow;
+      else if (typeof dbRow === "string") dbBytes = Number(dbRow) || 0;
+    } catch {}
 
     // Storage size: list all buckets and sum
     let storageBytes = 0;
