@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { toast } from "sonner";
 
 export type CartItem = {
   id: string;
@@ -17,21 +16,26 @@ type CartCtx = {
   remove: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   clear: () => void;
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-const KEY = "blueprime_cart_v1";
+const KEY = "farmfy_cart_v1";
+const LEGACY_KEY = "blueprime_cart_v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => {
     if (typeof window === "undefined") return [];
     try {
-      const raw = window.localStorage.getItem(KEY);
+      const raw = window.localStorage.getItem(KEY) ?? window.localStorage.getItem(LEGACY_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
     }
   });
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -47,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...item, qty }];
     });
-    toast.success(`${item.name} adicionado ao carrinho`);
+    setDrawerOpen(true);
   };
 
   const remove: CartCtx["remove"] = (id) =>
@@ -64,7 +68,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
 
   return (
-    <Ctx.Provider value={{ items, count, subtotal, add, remove, setQty, clear }}>
+    <Ctx.Provider
+      value={{
+        items,
+        count,
+        subtotal,
+        add,
+        remove,
+        setQty,
+        clear,
+        drawerOpen,
+        openDrawer: () => setDrawerOpen(true),
+        closeDrawer: () => setDrawerOpen(false),
+      }}
+    >
       {children}
     </Ctx.Provider>
   );
