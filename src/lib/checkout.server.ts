@@ -87,23 +87,37 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
         "MaxVia /buy",
       );
       const buyJson: any = await buyRes.json().catch(() => ({}));
-      const externalOrderId = buyJson?.order_id ?? buyJson?.data?.order_id ?? buyJson?.data?.id ?? null;
-      if (!buyRes.ok || !externalOrderId) {
-        delivered.push({ ...base, error: `Falha ao processar pedido (${buyRes.status}).` });
+      console.log(`[fulfill] maxvia /buy status=${buyRes.status} body=${JSON.stringify(buyJson).slice(0, 400)}`);
+
+      // MaxVia retorna 200 com {status:false, msg:"..."} em erros de regra (ex: qtd mínima)
+      if (!buyRes.ok || buyJson?.status === false) {
+        const msg = buyJson?.msg || buyJson?.message || `HTTP ${buyRes.status}`;
+        delivered.push({ ...base, error: `Fornecedor: ${msg}` });
         continue;
       }
 
-      const detRes = await withTimeout(
-        fetch(`${MAXVIA_BASE}/order`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ api_key: apiKey, order_id: externalOrderId }),
-        }),
-        20000,
-        "MaxVia /order",
-      );
-      const detJson: any = await detRes.json().catch(() => ({}));
-      delivered.push({ ...base, externalOrderId, accounts: normalizeMaxviaAccounts(detJson) });
+      const externalOrderId = buyJson?.order_id ?? buyJson?.data?.order_id ?? buyJson?.data?.id ?? null;
+      // /buy já devolve as contas em `data`. Só caímos no /order se vier vazio.
+      let accounts = normalizeMaxviaAccounts(buyJson);
+      if (!accounts.length && externalOrderId) {
+        const detRes = await withTimeout(
+          fetch(`${MAXVIA_BASE}/order`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ api_key: apiKey, order_id: externalOrderId }),
+          }),
+          20000,
+          "MaxVia /order",
+        );
+        const detJson: any = await detRes.json().catch(() => ({}));
+        accounts = normalizeMaxviaAccounts(detJson);
+      }
+
+      if (!accounts.length) {
+        delivered.push({ ...base, externalOrderId, error: "Fornecedor não retornou contas." });
+      } else {
+        delivered.push({ ...base, externalOrderId, accounts });
+      }
     } catch (e: any) {
       delivered.push({ ...base, error: e?.message || "Erro inesperado." });
     }
