@@ -156,7 +156,7 @@ function Entrar() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   type={showPwd ? "text" : "password"}
-                  minLength={mode === "signup" ? 8 : 1}
+                  minLength={mode === "signup" ? 6 : 1}
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   placeholder={mode === "signup" ? "Crie uma senha forte" : "Sua senha"}
                   className="w-full rounded-lg border border-border bg-background px-3 py-2.5 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
