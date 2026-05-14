@@ -46,8 +46,8 @@ function Entrar() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (mode === "signup" && score < 3) {
-      toast.error("Sua senha precisa atender aos requisitos abaixo.");
+    if (mode === "signup" && password.length < 6) {
+      toast.error("A senha precisa ter pelo menos 6 caracteres.");
       return;
     }
     setLoading(true);
