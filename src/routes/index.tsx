@@ -105,10 +105,11 @@ function Index() {
             return (
               <section
                 key={section.title}
+                id={`sec-${slugify(section.title)}`}
                 className={
                   isPromo
-                    ? "relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-orange-500/5 to-transparent p-5 shadow-[0_0_30px_rgba(234,179,8,0.15)]"
-                    : ""
+                    ? "relative overflow-hidden rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-orange-500/5 to-transparent p-5 shadow-[0_0_30px_rgba(234,179,8,0.15)] scroll-mt-24"
+                    : "scroll-mt-24"
                 }
               >
                 <div className="mb-5 flex items-center gap-3">
