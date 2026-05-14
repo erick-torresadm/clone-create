@@ -147,7 +147,7 @@ function StockPanel({ product }: { product: any }) {
   const qc = useQueryClient();
   const [bulk, setBulk] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [splitMode, setSplitMode] = useState<"lines" | "blank-line" | "file-per-account">("lines");
+  const [splitMode, setSplitMode] = useState<"lines" | "blank-line" | "file-per-account">("file-per-account");
   const [dedupe, setDedupe] = useState(true);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
@@ -267,7 +267,8 @@ function StockPanel({ product }: { product: any }) {
           await readZipRecursive(await file.arrayBuffer(), accounts);
         } else {
           const txt = await file.text();
-          accounts.push(...splitContent(txt));
+          if (splitMode === "file-per-account") accounts.push(txt);
+          else accounts.push(...splitContent(txt));
         }
       }
       const r = await insertStock(accounts);
@@ -347,7 +348,7 @@ function StockPanel({ product }: { product: any }) {
             </label>
             <label className="flex items-center gap-1.5">
               <input type="radio" name="splitmode" checked={splitMode === "file-per-account"} onChange={() => setSplitMode("file-per-account")} />
-              <FileArchive className="h-3.5 w-3.5" /> .zip: 1 arquivo = 1 conta
+              <FileArchive className="h-3.5 w-3.5" /> 1 arquivo = 1 conta (.txt ou item do .zip)
             </label>
           </div>
           <label className="flex items-center gap-1.5">
