@@ -33,6 +33,18 @@ function AdminPedidos() {
     onSuccess: () => { toast.success("Atualizado"); qc.invalidateQueries({ queryKey: ["all-orders"] }); },
   });
 
+  const redeliverFn = useServerFn(adminRedeliverOrder);
+  const redeliver = useMutation({
+    mutationFn: async (orderId: string) => await redeliverFn({ data: { orderId } }),
+    onSuccess: (res: any) => {
+      const errs = (res?.items ?? []).filter((i: any) => i.error);
+      if (errs.length) toast.warning(`Reentrega parcial: ${errs.map((e: any) => `${e.name}: ${e.error}`).join(" | ")}`);
+      else toast.success("Reentregue com sucesso");
+      qc.invalidateQueries({ queryKey: ["all-orders"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Falha na reentrega"),
+  });
+
   return (
     <Layout>
       <div className="mx-auto max-w-7xl px-6 py-10">
