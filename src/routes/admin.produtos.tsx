@@ -108,6 +108,7 @@ function ManualTab() {
                 <p className="text-xs text-muted-foreground">R$ {Number(p.price).toFixed(2)} · {p.badge ?? "—"}</p>
               </div>
               <Switch checked={p.active} onCheckedChange={(v) => toggleActive.mutate({ id: p.id, active: v })} />
+              <Button variant="ghost" size="icon" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
               <Button variant="ghost" size="icon" onClick={() => { if (confirm("Remover?")) remove.mutate(p.id); }}><Trash2 className="h-4 w-4" /></Button>
             </div>
           ))}
