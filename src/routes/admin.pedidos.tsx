@@ -64,12 +64,25 @@ function AdminPedidos() {
                   <td className="p-3 text-xs">{o.coupon_code ?? "—"}</td>
                   <td className="p-3"><span className="rounded bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">{o.status}</span></td>
                   <td className="p-3">
-                    <select className="rounded-md border border-border bg-background px-2 py-1 text-xs" value={o.status} onChange={(e) => setStatus.mutate({ id: o.id, status: e.target.value })}>
-                      <option value="pending">pending</option>
-                      <option value="paid">paid</option>
-                      <option value="delivered">delivered</option>
-                      <option value="canceled">canceled</option>
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <select className="rounded-md border border-border bg-background px-2 py-1 text-xs" value={o.status} onChange={(e) => setStatus.mutate({ id: o.id, status: e.target.value })}>
+                        <option value="pending">pending</option>
+                        <option value="paid">paid</option>
+                        <option value="delivered">delivered</option>
+                        <option value="canceled">canceled</option>
+                      </select>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={redeliver.isPending}
+                        onClick={() => {
+                          if (confirm("Reentregar esse pedido? Vai chamar o fornecedor/estoque novamente.")) redeliver.mutate(o.id);
+                        }}
+                      >
+                        <RefreshCw className="mr-1 h-3 w-3" />
+                        Reentregar
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
