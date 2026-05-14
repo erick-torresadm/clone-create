@@ -80,17 +80,52 @@ function Entrar() {
   return (
     <Layout>
       <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-6 py-16">
-        <div className="w-full rounded-2xl border border-border bg-card p-8">
+        <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-xl">
           <div className="mb-6 flex items-center justify-center gap-2">
             <span className="text-xl font-bold text-foreground">FDM store</span>
             <BadgeCheck className="h-5 w-5 text-primary" />
           </div>
+
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-muted/50 p-1">
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className={`rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("signup")}
+              className={`rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Criar conta
+            </button>
+          </div>
+
           <h1 className="text-center text-2xl font-bold text-foreground">
-            {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
+            {mode === "login" ? "Bem-vindo de volta" : "Crie sua conta grátis"}
           </h1>
           <p className="mt-1 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Acesse sua conta para continuar" : "Leva menos de 1 minuto"}
+            {mode === "login" ? "Acesse sua conta para continuar" : "Leva menos de 1 minuto — entrega instantânea"}
           </p>
+
+          {mode === "signup" && (
+            <div className="mt-5 grid grid-cols-3 gap-2 text-[11px]">
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-muted/30 p-2 text-center text-muted-foreground">
+                <Zap className="h-3.5 w-3.5 text-primary" />
+                <span>Entrega na hora</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-muted/30 p-2 text-center text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                <span>Pagamento seguro</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-muted/30 p-2 text-center text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <span>Suporte 24/7</span>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div>
