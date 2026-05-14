@@ -129,8 +129,11 @@ function ReturnPage() {
               </div>
             )}
 
-            <div className="mt-10 text-center">
-              <Link to="/produtos" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:brightness-110">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+              <Link to="/minha-conta" className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:brightness-110">
+                Ver no painel
+              </Link>
+              <Link to="/produtos" className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-accent">
                 Continuar comprando
               </Link>
             </div>
