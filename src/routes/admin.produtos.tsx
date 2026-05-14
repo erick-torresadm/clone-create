@@ -299,11 +299,46 @@ function StockDialog({ product, onClose }: { product: any; onClose: () => void }
           <Button variant="ghost" size="sm" onClick={onClose}>Fechar</Button>
         </div>
 
+        <div className="mt-4 rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4">
+          <div className="flex items-center gap-2">
+            <Upload className="h-4 w-4 text-primary" />
+            <h4 className="text-sm font-semibold text-foreground">Entrega manual — upload de arquivos</h4>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Envie <b>.txt</b> (uma conta por linha) ou <b>.zip</b> com os perfis dentro. Cada item entra no estoque e é entregue automaticamente em ordem de chegada.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
+            <span className="text-muted-foreground">Para arquivos .zip:</span>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="zipmode" checked={zipMode === "file-per-account"} onChange={() => setZipMode("file-per-account")} />
+              <FileArchive className="h-3.5 w-3.5" /> 1 arquivo = 1 conta
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="zipmode" checked={zipMode === "lines"} onChange={() => setZipMode("lines")} />
+              <FileText className="h-3.5 w-3.5" /> dividir por linhas
+            </label>
+          </div>
+
+          <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-background px-4 py-6 text-sm font-medium text-foreground transition hover:border-primary hover:bg-primary/10">
+            <Upload className="h-4 w-4" />
+            {uploading ? "Processando..." : "Selecionar arquivos (.txt / .zip)"}
+            <input
+              type="file"
+              accept=".txt,.zip,text/plain,application/zip"
+              multiple
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => { handleFiles(e.target.files); e.currentTarget.value = ""; }}
+            />
+          </label>
+        </div>
+
         <div className="mt-4">
-          <Label>Adicionar contas (uma por linha — ex: <code>email|senha</code>)</Label>
+          <Label>Ou cole as contas (uma por linha — ex: <code>email|senha</code>)</Label>
           <textarea
             className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs"
-            rows={6}
+            rows={5}
             value={bulk}
             onChange={(e) => setBulk(e.target.value)}
             placeholder={"login1@dominio.com|senha123\nlogin2@dominio.com|senha456"}
