@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
-import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive } from "lucide-react";
+import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
@@ -35,6 +35,7 @@ function AdminHome() {
 
   const cards = [
     { to: "/admin/produtos", icon: Package, title: "Produtos & API", desc: "Manuais + importar do fornecedor." },
+    { to: "/admin/estoque", icon: Upload, title: "Estoque & Upload", desc: "Envie .txt / .zip com perfis para entrega manual." },
     { to: "/admin/cupons", icon: Tag, title: "Cupons", desc: "Crie códigos de desconto." },
     { to: "/admin/popups", icon: Bell, title: "Popups & Notícias", desc: "Avisos no site." },
     { to: "/admin/aparencia", icon: Settings, title: "Aparência & Config", desc: "Cores, logo, hero, câmbio." },
