@@ -23,6 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <main className="flex-1">{children}</main>
         <Footer />
       </div>
+      <CartDrawer />
     </div>
   );
 }
