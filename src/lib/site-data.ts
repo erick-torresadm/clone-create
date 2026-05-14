@@ -111,6 +111,7 @@ function dbToProduct(p: DBProduct): Product {
     reviews: p.reviews ?? undefined,
     image: p.image_url ?? undefined,
     badge: p.badge ?? undefined,
+    stock: p.external_quantity ?? null,
   };
 }
 
