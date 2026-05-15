@@ -577,6 +577,12 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
           {sending.isPending || uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>
       </form>
+      {pickerOpen && (
+        <ProductPickerModal
+          onClose={() => setPickerOpen(false)}
+          onPick={(id) => { setPickerOpen(false); sending.mutate(`[product]${id}`); }}
+        />
+      )}
     </div>
   );
 }
