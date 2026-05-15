@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/use-auth";
 import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send, Sparkles, User, ArrowRight } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
 import { SalesDashboard } from "@/components/admin/SalesDashboard";
+import { StorageCleanup } from "@/components/admin/StorageCleanup";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminHome,
