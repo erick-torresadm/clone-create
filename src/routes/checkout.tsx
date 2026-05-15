@@ -97,6 +97,7 @@ function CheckoutPage() {
         if (r.paid) {
           setPaid(true);
           clear();
+          try { sessionStorage.removeItem("applied_coupon"); } catch {}
           playSuccess();
           toast.success("Pagamento confirmado!");
           setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
