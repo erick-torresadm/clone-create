@@ -393,7 +393,7 @@ function CheckoutPage() {
           )}
 
           {pix && !paid && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 w-full min-w-0 space-y-4">
               {accountCreated && (
                 <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
                   <button
