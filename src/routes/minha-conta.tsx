@@ -7,8 +7,9 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { checkPaymentStatus } from "@/lib/checkout.functions";
-import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send } from "lucide-react";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send, BadgeCheck } from "lucide-react";
 import { getMyTelegramStatus, setTelegramSubscriptionActive } from "@/lib/telegram.functions";
+import { useResellerStatus } from "@/lib/reseller";
 
 const MANUAL_SUPPORT_WHATSAPP = "5511930070320";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/minha-conta")({
 
 function MinhaConta() {
   const { user, loading, signOut } = useAuth();
+  const reseller = useResellerStatus();
   const navigate = useNavigate();
   const check = useServerFn(checkPaymentStatus);
   useEffect(() => { if (!loading && !user) navigate({ to: "/entrar" }); }, [loading, user, navigate]);
@@ -58,7 +60,14 @@ function MinhaConta() {
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Minha conta</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Minha conta</h1>
+              {reseller.data.isReseller && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-gradient-to-r from-primary/20 to-primary/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">
+                  <BadgeCheck className="h-3.5 w-3.5" /> Revendedor
+                </span>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">Olá, {user.email}</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -68,6 +77,45 @@ function MinhaConta() {
             <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sair</Button>
           </div>
         </div>
+
+        {reseller.data.isReseller && (
+          <div className="mt-6 overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <BadgeCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground">Conta Revendedor ativa</h3>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    Você tem <span className="font-semibold text-primary">{reseller.data.discountPct}% OFF</span> em todos os produtos. O desconto já é aplicado automaticamente no carrinho.
+                  </p>
+                </div>
+              </div>
+              <Link to="/produtos" className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:brightness-110">
+                Comprar com desconto
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {!reseller.data.isReseller && reseller.data.status === "pending" && (
+          <div className="mt-6 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-700 dark:text-yellow-400">
+            ⏳ Sua solicitação de revendedor está em análise. Avisaremos assim que for aprovada.
+          </div>
+        )}
+
+        {!reseller.data.isReseller && reseller.data.status === "none" && (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
+            <div className="text-sm">
+              <span className="font-semibold text-foreground">Quer revender?</span>{" "}
+              <span className="text-muted-foreground">Compre com até 50% OFF e venda no seu preço.</span>
+            </div>
+            <Link to="/revendedor" className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20">
+              <BadgeCheck className="h-4 w-4" /> Solicitar cadastro
+            </Link>
+          </div>
+        )}
 
         <TelegramSubscriptionCard />
 
