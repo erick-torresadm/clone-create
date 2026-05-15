@@ -31,6 +31,7 @@ export const Route = createFileRoute("/produto/$id")({
 function ProductPage() {
   const { id } = Route.useParams();
   const { getProduct, allProducts, isLoading } = useCatalog();
+  const { data: settings } = useSettings();
   const product = getProduct(id);
   const { add } = useCart();
   const navigate = useNavigate();
