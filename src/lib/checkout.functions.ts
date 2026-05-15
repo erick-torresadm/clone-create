@@ -172,6 +172,9 @@ export const createCartCheckout = createServerFn({ method: "POST" })
 
     const totalCents = Math.max(50, subtotalCents - discountCents);
     const totalBrl = totalCents / 100;
+    if (totalBrl < 5) {
+      throw new Error(`O valor mínimo de cobrança via Pix é R$ 5,00. Adicione mais itens ao carrinho (total atual: R$ ${totalBrl.toFixed(2).replace(".", ",")}).`);
+    }
 
     // 1. Cliente Asaas
     const customer = await findOrCreateCustomer(env, {
