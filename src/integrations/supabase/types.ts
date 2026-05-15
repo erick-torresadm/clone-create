@@ -376,9 +376,13 @@ export type Database = {
           id: number
           logo_url: string | null
           primary_color: string
+          sounds_enabled: boolean
           store_name: string
           telegram: string | null
           updated_at: string
+          welcome_coupon_code: string
+          welcome_coupon_enabled: boolean
+          welcome_coupon_text: string
           whatsapp: string | null
         }
         Insert: {
@@ -395,9 +399,13 @@ export type Database = {
           id?: number
           logo_url?: string | null
           primary_color?: string
+          sounds_enabled?: boolean
           store_name?: string
           telegram?: string | null
           updated_at?: string
+          welcome_coupon_code?: string
+          welcome_coupon_enabled?: boolean
+          welcome_coupon_text?: string
           whatsapp?: string | null
         }
         Update: {
@@ -414,12 +422,84 @@ export type Database = {
           id?: number
           logo_url?: string | null
           primary_color?: string
+          sounds_enabled?: boolean
           store_name?: string
           telegram?: string | null
           updated_at?: string
+          welcome_coupon_code?: string
+          welcome_coupon_enabled?: boolean
+          welcome_coupon_text?: string
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      support_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          status: string
+          subject: string | null
+          unread_admin: number
+          unread_user: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          subject?: string | null
+          unread_admin?: number
+          unread_user?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          status?: string
+          subject?: string | null
+          unread_admin?: number
+          unread_user?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender: string
+          sender_id: string | null
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender: string
+          sender_id?: string | null
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender?: string
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "support_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -471,6 +551,8 @@ export type Database = {
       }
       increment_coupon_usage: { Args: { _code: string }; Returns: undefined }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      support_mark_read_admin: { Args: { _convo: string }; Returns: undefined }
+      support_mark_read_user: { Args: { _convo: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
