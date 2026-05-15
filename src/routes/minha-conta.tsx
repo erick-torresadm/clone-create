@@ -7,7 +7,9 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { checkPaymentStatus } from "@/lib/checkout.functions";
-import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download } from "lucide-react";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle } from "lucide-react";
+
+const MANUAL_SUPPORT_WHATSAPP = "5511930070320";
 import { toast } from "sonner";
 
 const ENV = (import.meta.env.MODE === "production" ? "live" : "sandbox") as "sandbox" | "live";
@@ -85,6 +87,12 @@ function OrderCard({ order }: { order: any }) {
   const [show, setShow] = useState(false);
   const items = Array.isArray(order.items) ? order.items : [];
   const delivered = order.delivered_data;
+  const isPaid = ["paid", "processing", "delivered"].includes(order.status);
+  const manualItems = items.filter((it: any) => !it.provider);
+  const showManualSupport = isPaid && manualItems.length > 0;
+  const waMessage = encodeURIComponent(
+    `Olá! Acabei de comprar e preciso da entrega manual.\n\nPedido: #${String(order.id).slice(0, 8)}\nProdutos:\n${manualItems.map((it: any) => `• ${it.name} × ${it.quantity ?? 1}`).join("\n")}`,
+  );
   const statusColor: Record<string, string> = {
     pending: "bg-yellow-500/15 text-yellow-600",
     paid: "bg-blue-500/15 text-blue-600",
@@ -124,6 +132,18 @@ function OrderCard({ order }: { order: any }) {
         <span className="text-muted-foreground">Total</span>
         <span className="font-bold text-foreground">R$ {Number(order.total).toFixed(2)}</span>
       </div>
+
+      {showManualSupport && (
+        <a
+          href={`https://wa.me/${MANUAL_SUPPORT_WHATSAPP}?text=${waMessage}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-500 transition hover:bg-emerald-500/20"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Falar no WhatsApp para receber a entrega
+        </a>
+      )}
 
       {order.status === "pending" && order.pix_payload && (
         <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
