@@ -238,6 +238,7 @@ export type Database = {
           external_quantity: number | null
           id: string
           image_url: string | null
+          min_quantity: number
           name: string
           old_price: number | null
           price: number
@@ -264,6 +265,7 @@ export type Database = {
           external_quantity?: number | null
           id?: string
           image_url?: string | null
+          min_quantity?: number
           name: string
           old_price?: number | null
           price: number
@@ -290,6 +292,7 @@ export type Database = {
           external_quantity?: number | null
           id?: string
           image_url?: string | null
+          min_quantity?: number
           name?: string
           old_price?: number | null
           price?: number
