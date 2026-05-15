@@ -84,6 +84,7 @@ function CheckoutPage() {
         if (r.paid) {
           setPaid(true);
           clear();
+          playSuccess();
           toast.success("Pagamento confirmado!");
           setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
           return;
