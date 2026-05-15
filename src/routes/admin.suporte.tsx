@@ -397,8 +397,12 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
         .from("support-media")
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("support-media").getPublicUrl(path);
-      const url = pub.publicUrl;
+      // Bucket is private — issue a long-lived signed URL (1 year).
+      const { data: signed, error: sErr } = await supabase.storage
+        .from("support-media")
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+      if (sErr || !signed) throw sErr || new Error("Falha ao gerar URL");
+      const url = signed.signedUrl;
       const body = `[${kind === "image" ? "img" : "audio"}]${url}`;
       sending.mutate(body);
     } catch (e: any) {
