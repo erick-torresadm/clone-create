@@ -40,8 +40,8 @@ function CheckoutPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailConfirm, setEmailConfirm] = useState("");
   const [cpf, setCpf] = useState("");
-  const [showOptional, setShowOptional] = useState(false);
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
@@ -65,6 +65,11 @@ function CheckoutPage() {
       .replace(/(\d{4})(\d)/, "$1-$2");
   }
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const emailMatches = email.trim().toLowerCase() === emailConfirm.trim().toLowerCase() && emailConfirm.length > 0;
+  const nameValid = name.trim().length >= 2;
+  const cpfDigits = cpf.replace(/\D/g, "");
+  const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
+  const formValid = !!user || (emailValid && emailMatches && nameValid && cpfValid);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
