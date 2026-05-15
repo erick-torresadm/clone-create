@@ -806,3 +806,24 @@ function SectionRow({ section: s, isPromo, onUpdate, onRemove }: { section: any;
     </div>
   );
 }
+
+function PromoNotifyButton({ product }: { product: any }) {
+  const fn = useServerFn(broadcastProductPromo);
+  const isPromo = product.old_price && Number(product.old_price) > Number(product.price);
+  if (!isPromo || !product.active) return null;
+  async function notify() {
+    if (!confirm(`Enviar aviso de promoção de "${product.name}" para todos os inscritos no Telegram?`)) return;
+    try {
+      const r: any = await fn({ data: { productId: product.id } });
+      if (r?.skipped) toast.info("Aviso já enviado para este preço");
+      else toast.success(`Enviado para ${r.sent} inscrito(s)`);
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  }
+  return (
+    <Button variant="outline" size="sm" onClick={notify} className="h-8 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10" title="Avisar inscritos no Telegram">
+      <Send className="mr-1 h-3.5 w-3.5" />Avisar
+    </Button>
+  );
+}
