@@ -249,23 +249,26 @@ function OrderCard({ order }: { order: any }) {
       )}
 
       {Array.isArray(delivered) && delivered.length > 0 && (
-        <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">🔓 Dados entregues</p>
+        <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <span aria-hidden>🔓</span> Dados entregues
+            </p>
             <Button size="sm" variant="ghost" onClick={() => setShow(!show)}>
               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               <span className="ml-1">{show ? "Ocultar" : "Mostrar"}</span>
             </Button>
           </div>
           {show && (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-4">
               {delivered.map((d: any, i: number) => {
                 const accountsRaw: any[] = Array.isArray(d.accounts) ? d.accounts : [];
                 const lines = accountsRaw
                   .map((a) => (typeof a === "string" ? a : a?.full_info ?? a?.uid ?? ""))
-                  .filter((s) => s && String(s).trim().length > 0);
+                  .map((s) => String(s).replace(/\r/g, "").trim())
+                  .filter((s) => s.length > 0);
                 const downloadTxt = () => {
-                  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+                  const blob = new Blob([lines.join("\n\n———\n\n")], { type: "text/plain;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
@@ -274,17 +277,21 @@ function OrderCard({ order }: { order: any }) {
                   URL.revokeObjectURL(url);
                 };
                 return (
-                  <div key={i}>
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <p className="text-xs font-semibold text-muted-foreground">
-                        {d.name} · {lines.length}/{d.quantity ?? lines.length} {d.error ? "· ⚠ " + d.error : ""}
-                      </p>
+                  <div key={i} className="rounded-lg border border-border/60 bg-background/60 p-3">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-foreground">{d.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {lines.length}/{d.quantity ?? lines.length} {lines.length === 1 ? "conta" : "contas"}
+                          {d.error ? <span className="ml-1 text-amber-600">· ⚠ {d.error}</span> : null}
+                        </p>
+                      </div>
                       {lines.length > 0 && (
                         <div className="flex gap-1">
                           <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={downloadTxt}>
                             <Download className="mr-1 h-3 w-3" /> .txt
                           </Button>
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(lines.join("\n")); toast.success("Tudo copiado"); }}>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(lines.join("\n\n———\n\n")); toast.success("Tudo copiado"); }}>
                             <Copy className="mr-1 h-3 w-3" /> Copiar tudo
                           </Button>
                         </div>
@@ -293,14 +300,9 @@ function OrderCard({ order }: { order: any }) {
                     {lines.length === 0 ? (
                       <div className="rounded bg-background p-2 text-xs text-muted-foreground">Sem dados.</div>
                     ) : (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {lines.map((text, j) => (
-                          <div key={j} className="flex items-start gap-2 rounded bg-background p-2 font-mono text-xs text-foreground">
-                            <pre className="flex-1 whitespace-pre-wrap break-all font-mono">{text}</pre>
-                            <button onClick={() => { navigator.clipboard.writeText(text); toast.success("Copiado"); }} className="text-primary hover:underline">
-                              <Copy className="h-3 w-3" />
-                            </button>
-                          </div>
+                          <AccountCard key={j} text={text} index={j} total={lines.length} />
                         ))}
                       </div>
                     )}
@@ -310,6 +312,67 @@ function OrderCard({ order }: { order: any }) {
             </div>
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+type Field = { key: string; value: string };
+
+function parseAccountFields(text: string): Field[] {
+  const clean = text.replace(/\r/g, "");
+  const lines = clean.split("\n");
+  const fields: Field[] = [];
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const m = line.match(/^([A-Za-zÀ-ÿ0-9 _\-\/\.]{1,40}?)\s*[:=]\s*(.*)$/);
+    if (m && m[1] && /[A-Za-zÀ-ÿ]/.test(m[1])) {
+      fields.push({ key: m[1].trim().toUpperCase(), value: m[2].trim() });
+    } else if (fields.length > 0) {
+      fields[fields.length - 1].value = (fields[fields.length - 1].value + "\n" + line).trim();
+    } else {
+      fields.push({ key: "INFO", value: line });
+    }
+  }
+  return fields;
+}
+
+function AccountCard({ text, index, total }: { text: string; index: number; total: number }) {
+  const fields = parseAccountFields(text);
+  const copyAll = () => { navigator.clipboard.writeText(text.replace(/\r/g, "").trim()); toast.success("Conta copiada"); };
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Conta {index + 1}{total > 1 ? ` de ${total}` : ""}
+        </p>
+        <button onClick={copyAll} className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline">
+          <Copy className="h-3 w-3" /> Copiar conta
+        </button>
+      </div>
+      {fields.length === 0 ? (
+        <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs text-foreground">{text}</pre>
+      ) : (
+        <dl className="divide-y divide-border">
+          {fields.map((f, i) => (
+            <div key={i} className="grid grid-cols-[110px_1fr_auto] items-start gap-2 px-3 py-2 sm:grid-cols-[140px_1fr_auto]">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{f.key}</dt>
+              <dd className="min-w-0 break-all font-mono text-xs text-foreground">
+                <pre className="whitespace-pre-wrap break-all font-mono">{f.value || "—"}</pre>
+              </dd>
+              {f.value ? (
+                <button
+                  onClick={() => { navigator.clipboard.writeText(f.value); toast.success(`${f.key} copiado`); }}
+                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={`Copiar ${f.key}`}
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+              ) : <span />}
+            </div>
+          ))}
+        </dl>
       )}
     </div>
   );
