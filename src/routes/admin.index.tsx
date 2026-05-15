@@ -41,6 +41,7 @@ function AdminHome() {
     { to: "/admin/aparencia", icon: Settings, title: "Aparência & Config", desc: "Cores, logo, hero, câmbio." },
     { to: "/admin/pedidos", icon: Package, title: "Pedidos", desc: "Acompanhe e atualize status." },
     { to: "/admin/saques", icon: HardDrive, title: "Saques de indicação", desc: "Aprove pagamentos PIX dos afiliados." },
+    { to: "/admin/suporte", icon: MessageCircle, title: "Suporte ao cliente", desc: "Converse com clientes em tempo real." },
   ];
 
   return (
