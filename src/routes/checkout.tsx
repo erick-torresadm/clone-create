@@ -39,6 +39,18 @@ function CheckoutPage() {
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
+  const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { const raw = sessionStorage.getItem("applied_coupon"); if (raw) setCoupon(JSON.parse(raw)); } catch {}
+  }, []);
+
+  const discount = useMemo(() => {
+    if (!coupon) return 0;
+    if (coupon.type === "percent") return (total * coupon.value) / 100;
+    return Math.min(coupon.value, total);
+  }, [coupon, /* total set below */ items]);
 
   useEffect(() => {
     if (authLoading) return;
