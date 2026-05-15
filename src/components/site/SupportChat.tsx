@@ -76,10 +76,18 @@ function SupportChatInner({
         .order("last_message_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return (data as Convo | null) ?? null;
+      const c = (data as Convo | null) ?? null;
+      // Hide closed conversations after 48h
+      if (c && c.status === "closed" && c.closed_at) {
+        const ageMs = Date.now() - new Date(c.closed_at).getTime();
+        if (ageMs > 48 * 60 * 60 * 1000) return null;
+      }
+      return c;
     },
+    refetchInterval: 60_000,
   });
   const convo = convoQ.data;
+  const isClosed = convo?.status === "closed";
 
   const msgsQ = useQuery({
     queryKey: ["support-msgs", convo?.id],
