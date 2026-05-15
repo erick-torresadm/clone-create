@@ -6,6 +6,7 @@ import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send, Sparkles, User, ArrowRight } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
+import { SalesDashboard } from "@/components/admin/SalesDashboard";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminHome,
@@ -114,7 +115,11 @@ function AdminHome() {
           </button>
         </div>
 
-        <PlatformStats />
+        <SalesDashboard />
+
+        <div className="mt-6">
+          <PlatformStats />
+        </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (
