@@ -148,6 +148,35 @@ function OrderCard({ order }: { order: any }) {
         </a>
       )}
 
+      {isPaid && (
+        <div className="mt-4 rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-indigo-500/10 p-4">
+          <p className="text-sm font-semibold text-foreground">🎉 Bem-vindo à comunidade!</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Entre nos nossos grupos exclusivos para clientes: novidades, promoções, dicas e suporte direto.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <a
+              href="https://chat.whatsapp.com/CAQzvoaGFQUDLAGdxqWy1o"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Entrar no WhatsApp
+            </a>
+            <a
+              href="https://discord.gg/nPhugmw2bq"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-600"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Entrar no Discord
+            </a>
+          </div>
+        </div>
+      )}
+
       {order.status === "pending" && order.pix_payload && (
         <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
           <p className="text-sm font-semibold text-foreground flex items-center gap-2">
