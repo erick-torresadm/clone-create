@@ -192,6 +192,27 @@ function CheckoutPage() {
           {!pix && (
             <div className="mt-6 space-y-4">
               <ScarcityPanel seed={items.map((i) => i.id).join("-") || "checkout"} compact />
+              {!user && (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-dashed border-border bg-card/40 p-3 text-xs">
+                  <span className="text-muted-foreground">Prefere se cadastrar antes de pagar?</span>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to="/entrar"
+                      search={{ redirect: "/checkout", mode: "signup" } as any}
+                      className="rounded-lg border border-border px-3 py-1.5 font-semibold text-foreground hover:bg-secondary"
+                    >
+                      Registre-se
+                    </Link>
+                    <Link
+                      to="/entrar"
+                      search={{ redirect: "/checkout" } as any}
+                      className="rounded-lg px-3 py-1.5 font-semibold text-primary hover:underline"
+                    >
+                      Entrar
+                    </Link>
+                  </div>
+                </div>
+              )}
               <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome completo *</label>
