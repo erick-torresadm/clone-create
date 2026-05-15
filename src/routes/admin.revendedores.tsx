@@ -58,13 +58,25 @@ function AdminResellers() {
   });
 
   const process = useMutation({
-    mutationFn: async ({ userId, approve, note }: { userId: string; approve: boolean; note: string }) => {
+    mutationFn: async ({ userId, approve, note, discountPct }: { userId: string; approve: boolean; note: string; discountPct?: number }) => {
       const { error } = await (supabase as any).rpc("process_reseller", {
         _user_id: userId, _approve: approve, _note: note || null,
+        _discount_pct: typeof discountPct === "number" ? discountPct : null,
       });
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-resellers"] }); toast.success("Atualizado"); },
+    onError: (e: any) => toast.error(e.message ?? "Erro"),
+  });
+
+  const setDiscount = useMutation({
+    mutationFn: async ({ userId, discountPct }: { userId: string; discountPct: number }) => {
+      const { error } = await (supabase as any).rpc("set_reseller_discount", {
+        _user_id: userId, _discount_pct: discountPct,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-resellers"] }); toast.success("Desconto atualizado"); },
     onError: (e: any) => toast.error(e.message ?? "Erro"),
   });
 
