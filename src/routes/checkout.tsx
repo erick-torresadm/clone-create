@@ -211,17 +211,11 @@ function CheckoutPage() {
           {!pix && (
             <div className="mt-6 space-y-4">
               <ScarcityPanel seed={items.map((i) => i.id).join("-") || "checkout"} compact />
+
               {!user && (
                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-dashed border-border bg-card/40 p-3 text-xs">
-                  <span className="text-muted-foreground">Prefere se cadastrar antes de pagar?</span>
+                  <span className="text-muted-foreground">Já tem conta?</span>
                   <div className="flex items-center gap-2">
-                    <Link
-                      to="/entrar"
-                      search={{ redirect: "/checkout", mode: "signup" } as any}
-                      className="rounded-lg border border-border px-3 py-1.5 font-semibold text-foreground hover:bg-secondary"
-                    >
-                      Registre-se
-                    </Link>
                     <Link
                       to="/entrar"
                       search={{ redirect: "/checkout" } as any}
@@ -229,32 +223,104 @@ function CheckoutPage() {
                     >
                       Entrar
                     </Link>
+                    <Link
+                      to="/entrar"
+                      search={{ redirect: "/checkout", mode: "signup" } as any}
+                      className="rounded-lg border border-border px-3 py-1.5 font-semibold text-foreground hover:bg-secondary"
+                    >
+                      Cadastrar antes
+                    </Link>
                   </div>
                 </div>
               )}
-              <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome completo *</label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como aparece no seu CPF" />
+
+              <div className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.3)]">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-base font-bold text-foreground">Seus dados</h2>
+                    <p className="text-[11px] text-muted-foreground">Leva 30 segundos · entrega imediata após o pagamento</p>
+                  </div>
+                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
+                    <Lock className="h-3 w-3" /> 100% seguro
+                  </span>
                 </div>
+
                 {!user && (
                   <div>
-                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">E-mail *</label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" autoComplete="email" />
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <Mail className="h-3 w-3" /> E-mail *
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        autoComplete="email"
+                        inputMode="email"
+                        className={emailValid ? "pr-9 border-emerald-500/50 focus-visible:ring-emerald-500/30" : ""}
+                      />
+                      {emailValid && (
+                        <CheckCircle2 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+                      )}
+                    </div>
                     <p className="mt-1.5 text-[11px] text-muted-foreground">
-                      Criamos sua conta automaticamente para entregar seus produtos. Já tem conta?{" "}
-                      <Link to="/entrar" search={{ redirect: "/checkout" } as any} className="text-primary hover:underline">Entrar</Link>
+                      Criamos sua conta automaticamente · seus produtos ficam em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>.
                     </p>
                   </div>
                 )}
+
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ <span className="text-muted-foreground/60">(opcional)</span></label>
-                  <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" inputMode="numeric" />
+                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <UserIcon className="h-3 w-3" /> Nome completo *
+                  </label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome como no documento" autoComplete="name" />
                 </div>
-                <Button size="lg" className="w-full" onClick={handleGenerate} disabled={creating}>
-                  {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
-                  Gerar QR Code Pix · R$ {total.toFixed(2)}
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    CPF / CNPJ <span className="text-muted-foreground/60 normal-case">(opcional)</span>
+                  </label>
+                  <Input
+                    value={cpf}
+                    onChange={(e) => setCpf(maskCpf(e.target.value))}
+                    placeholder="000.000.000-00"
+                    inputMode="numeric"
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-medium text-muted-foreground">
+                  <div className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-2">
+                    <Zap className="h-3.5 w-3.5 text-primary" /> Entrega na hora
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-2">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Garantia total
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-2">
+                    <Lock className="h-3.5 w-3.5 text-primary" /> Pagto. seguro
+                  </div>
+                </div>
+
+                <Button
+                  size="lg"
+                  className="h-14 w-full text-base font-bold shadow-[0_10px_30px_-10px_rgba(99,140,255,0.7)] transition hover:brightness-110"
+                  onClick={handleGenerate}
+                  disabled={creating}
+                >
+                  {creating ? (
+                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Gerando Pix...</>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <QrCode className="h-5 w-5" />
+                      Gerar Pix · <span className="font-extrabold">R$ {total.toFixed(2)}</span>
+                    </span>
+                  )}
                 </Button>
+
+                <p className="text-center text-[10px] text-muted-foreground">
+                  Ao continuar você concorda com a <Link to="/garantia" className="underline hover:text-foreground">garantia</Link>.
+                </p>
               </div>
             </div>
           )}
