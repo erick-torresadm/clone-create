@@ -46,19 +46,19 @@ function CheckoutPage() {
     try { const raw = sessionStorage.getItem("applied_coupon"); if (raw) setCoupon(JSON.parse(raw)); } catch {}
   }, []);
 
-  const discount = useMemo(() => {
-    if (!coupon) return 0;
-    if (coupon.type === "percent") return (total * coupon.value) / 100;
-    return Math.min(coupon.value, total);
-  }, [coupon, /* total set below */ items]);
-
   useEffect(() => {
     if (authLoading) return;
     if (!user) navigate({ to: "/entrar", search: { redirect: "/checkout" } as any });
     else if (!items.length && !pix) navigate({ to: "/carrinho" });
   }, [items.length, navigate, user, authLoading, pix]);
 
-  const total = useMemo(() => items.reduce((s, i) => s + i.qty * i.price, 0), [items]);
+  const subtotal = useMemo(() => items.reduce((s, i) => s + i.qty * i.price, 0), [items]);
+  const discount = useMemo(() => {
+    if (!coupon) return 0;
+    if (coupon.type === "percent") return (subtotal * coupon.value) / 100;
+    return Math.min(coupon.value, subtotal);
+  }, [coupon, subtotal]);
+  const total = Math.max(0, subtotal - discount);
 
   async function handleGenerate() {
     if (!user?.email || !user?.id) return;
