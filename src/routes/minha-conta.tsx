@@ -119,6 +119,8 @@ function MinhaConta() {
           </div>
         )}
 
+        <PasswordCard email={user.email ?? ""} />
+
         <TelegramSubscriptionCard />
 
         <h2 className="mt-10 flex items-center gap-2 text-xl font-bold text-foreground"><Package className="h-5 w-5 text-primary" />Meus pedidos</h2>
