@@ -26,6 +26,7 @@ import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
+import { Route as AdminRevendedoresRouteImport } from './routes/admin.revendedores'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
@@ -121,6 +122,11 @@ const AdminSaquesRoute = AdminSaquesRouteImport.update({
   path: '/admin/saques',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRevendedoresRoute = AdminRevendedoresRouteImport.update({
+  id: '/admin/revendedores',
+  path: '/admin/revendedores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
   id: '/admin/produtos',
   path: '/admin/produtos',
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
     | '/minha-conta/indicacoes'
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
     | '/minha-conta/indicacoes'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
     | '/minha-conta/indicacoes'
@@ -360,6 +372,7 @@ export interface RootRouteChildren {
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminPopupsRoute: typeof AdminPopupsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
+  AdminRevendedoresRoute: typeof AdminRevendedoresRoute
   AdminSaquesRoute: typeof AdminSaquesRoute
   AdminSuporteRoute: typeof AdminSuporteRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
@@ -490,6 +503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSaquesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/revendedores': {
+      id: '/admin/revendedores'
+      path: '/admin/revendedores'
+      fullPath: '/admin/revendedores'
+      preLoaderRoute: typeof AdminRevendedoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/produtos': {
       id: '/admin/produtos'
       path: '/admin/produtos'
@@ -587,6 +607,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPedidosRoute: AdminPedidosRoute,
   AdminPopupsRoute: AdminPopupsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
+  AdminRevendedoresRoute: AdminRevendedoresRoute,
   AdminSaquesRoute: AdminSaquesRoute,
   AdminSuporteRoute: AdminSuporteRoute,
   ProdutoIdRoute: ProdutoIdRoute,
