@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+
 import { Starfield } from "./Starfield";
 import { SupportChat } from "./SupportChat";
 import { useSettings } from "@/lib/site-data";
@@ -23,7 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
       />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <PaymentTestModeBanner />
+        
         <Header />
         <main key={typeof window !== "undefined" ? window.location.pathname : "ssr"} className="route-fade-in flex-1">{children}</main>
         <Footer />
