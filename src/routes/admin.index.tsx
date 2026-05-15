@@ -122,6 +122,9 @@ function AdminHome() {
           <PlatformStats />
         </div>
 
+        <PlatformCleanupSection />
+
+
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (
             <Link key={c.to} to={c.to as any}
