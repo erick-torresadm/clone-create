@@ -110,3 +110,42 @@ export async function sendOrderDeliveredEmail(opts: {
     html,
   });
 }
+
+export async function sendAbandonedCartEmail(opts: {
+  to: string;
+  couponCode: string;
+  discountPercent: number;
+  storeUrl: string;
+}) {
+  const html = `<!doctype html><html><body style="margin:0;background:#f5f7fb;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#0f172a">
+    <div style="max-width:560px;margin:0 auto;padding:24px">
+      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,.08)">
+        <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);padding:32px 24px;text-align:center;color:#fff">
+          <div style="font-size:24px;font-weight:800;letter-spacing:-.5px">Ativosfy</div>
+          <div style="margin-top:8px;opacity:.95;font-size:15px">Você esqueceu seu carrinho 🛒</div>
+        </div>
+        <div style="padding:28px 24px">
+          <p style="margin:0 0 14px;font-size:16px">Olá! Notamos que você começou uma compra mas não finalizou.</p>
+          <p style="margin:0 0 22px;font-size:15px;color:#475569">Que tal um empurrãozinho? Use o cupom abaixo e ganhe <b>${opts.discountPercent}% de desconto</b> no seu pedido:</p>
+          <div style="text-align:center;margin:22px 0">
+            <div style="display:inline-block;padding:16px 28px;background:#0f172a;color:#fff;border-radius:12px;font-family:Menlo,Consolas,monospace;font-size:22px;font-weight:700;letter-spacing:2px">
+              ${escapeHtml(opts.couponCode)}
+            </div>
+          </div>
+          <div style="text-align:center;margin:24px 0">
+            <a href="${escapeHtml(opts.storeUrl)}" style="display:inline-block;padding:14px 32px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;font-size:15px">Voltar para a loja</a>
+          </div>
+          <p style="margin:22px 0 0;font-size:12px;color:#94a3b8;text-align:center">Aplique o cupom no checkout para ativar o desconto.</p>
+        </div>
+        <div style="padding:14px 24px;background:#f8fafc;color:#94a3b8;font-size:11px;text-align:center">
+          © ${new Date().getFullYear()} Ativosfy · ativosfy.store
+        </div>
+      </div>
+    </div></body></html>`;
+
+  await sendResendEmail({
+    to: opts.to,
+    subject: `🎁 ${opts.discountPercent}% off — termine sua compra na Ativosfy`,
+    html,
+  });
+}

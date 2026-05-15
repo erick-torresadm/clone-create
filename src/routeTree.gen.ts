@@ -29,6 +29,7 @@ import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminAparenciaRouteImport } from './routes/admin.aparencia'
 import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
+import { Route as ApiPublicSendAbandonedCartRouteImport } from './routes/api/public/send-abandoned-cart'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 
 const SobreRoute = SobreRouteImport.update({
@@ -132,6 +133,12 @@ const ApiPublicSyncMaxviaStockRoute =
     path: '/api/public/sync-maxvia-stock',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSendAbandonedCartRoute =
+  ApiPublicSendAbandonedCartRouteImport.update({
+    id: '/api/public/send-abandoned-cart',
+    path: '/api/public/send-abandoned-cart',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas/webhook',
   path: '/api/public/asaas/webhook',
@@ -158,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
 }
@@ -181,6 +189,7 @@ export interface FileRoutesByTo {
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
 }
@@ -205,6 +214,7 @@ export interface FileRoutesById {
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
 }
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/produto/$id'
     | '/admin/'
+    | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/produto/$id'
     | '/admin'
+    | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
   id:
@@ -276,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/produto/$id'
     | '/admin/'
+    | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
   fileRoutesById: FileRoutesById
@@ -300,6 +313,7 @@ export interface RootRouteChildren {
   AdminProdutosRoute: typeof AdminProdutosRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
@@ -446,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSyncMaxviaStockRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/send-abandoned-cart': {
+      id: '/api/public/send-abandoned-cart'
+      path: '/api/public/send-abandoned-cart'
+      fullPath: '/api/public/send-abandoned-cart'
+      preLoaderRoute: typeof ApiPublicSendAbandonedCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/asaas/webhook': {
       id: '/api/public/asaas/webhook'
       path: '/api/public/asaas/webhook'
@@ -476,9 +497,20 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProdutosRoute: AdminProdutosRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
+  ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
