@@ -23,7 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
       />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <PaymentTestModeBanner />
+        
         <Header />
         <main key={typeof window !== "undefined" ? window.location.pathname : "ssr"} className="route-fade-in flex-1">{children}</main>
         <Footer />
