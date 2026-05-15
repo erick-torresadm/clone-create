@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/use-cart";
 import { useAuth } from "@/lib/use-auth";
 import { createCartCheckout, checkPaymentStatus } from "@/lib/checkout.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
 import { ArrowLeft, Copy, Loader2, ShieldCheck, CheckCircle2, QrCode, Clock, Zap, Lock } from "lucide-react";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { playSuccess } from "@/lib/sound";
