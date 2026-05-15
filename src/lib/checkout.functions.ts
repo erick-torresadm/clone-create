@@ -96,7 +96,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const ids = data.items.map((i) => i.productId);
     const { data: products, error } = await supabaseAdmin
       .from("products")
-      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity")
+      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity,min_quantity")
       .in("id", ids);
     if (error) throw new Error(error.message);
     if (!products || products.length !== ids.length) throw new Error("Produto não encontrado");
@@ -124,10 +124,11 @@ export const createCartCheckout = createServerFn({ method: "POST" })
 
       const isMaxvia = p.external_provider === "maxvia" && p.external_id;
 
-      // Fornecedor MaxVia exige pedido mínimo de 10 unidades por produto.
-      if (isMaxvia && it.quantity < 10) {
+      // Pedido mínimo configurado por produto (admin define).
+      const minQty = Math.max(1, Number(p.min_quantity ?? 1));
+      if (it.quantity < minQty) {
         throw new Error(
-          `O fornecedor exige pedido mínimo de 10 unidades para "${p.name}". Aumente a quantidade no carrinho.`,
+          `O fornecedor exige pedido mínimo de ${minQty} unidades para "${p.name}". Aumente a quantidade no carrinho.`,
         );
       }
 

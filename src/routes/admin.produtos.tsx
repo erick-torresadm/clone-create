@@ -387,6 +387,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
     image_url: product.image_url ?? "",
     description: product.description ?? "",
     tags: Array.isArray(product.tags) ? product.tags.join(", ") : "",
+    min_quantity: String(product.min_quantity ?? 1),
   });
   const suggestFn = useServerFn(maxviaAiSuggest);
   const [aiLoading, setAiLoading] = useState(false);
@@ -416,6 +417,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
         image_url: f.image_url || null,
         description: f.description || null,
         tags: tagsArr,
+        min_quantity: Math.max(1, Number(f.min_quantity) || 1),
       }).eq("id", product.id);
       if (error) throw error;
     },
@@ -454,6 +456,11 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
           <div>
             <Label>Tags (separadas por vírgula)</Label>
             <Input value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} placeholder="Entrega manual, Entrega 30min" />
+          </div>
+          <div>
+            <Label>Pedido mínimo (unidades)</Label>
+            <Input type="number" min={1} value={f.min_quantity} onChange={(e) => setF({ ...f, min_quantity: e.target.value })} placeholder="1" />
+            <p className="mt-1 text-xs text-muted-foreground">Use 1 para a maioria. Aumente apenas se o fornecedor exigir um lote mínimo (ex.: 10 para Instagram/Twitter).</p>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
