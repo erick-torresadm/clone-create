@@ -123,10 +123,13 @@ async function _getSalesDashboard(_context: any) {
   // Top produtos (30d)
   const productMap = new Map<string, { name: string; qty: number; revenue: number }>();
   for (const o of paidOrders) {
-    const items = Array.isArray(o.items) ? o.items : [];
-    for (const it of items) {
-      const key = it.productId || it.name;
-      const cur = productMap.get(key) || { name: it.name, qty: 0, revenue: 0 };
+    const items = (Array.isArray(o.items) ? o.items : []) as any[];
+    for (const raw of items) {
+      const it = raw as any;
+      if (!it) continue;
+      const key = String(it.productId || it.name || "");
+      if (!key) continue;
+      const cur = productMap.get(key) || { name: String(it.name || ""), qty: 0, revenue: 0 };
       cur.qty += Number(it.quantity || 0);
       cur.revenue += Number(it.unitPriceBrl || 0) * Number(it.quantity || 0);
       productMap.set(key, cur);
