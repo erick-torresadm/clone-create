@@ -11,9 +11,8 @@ function getApiKey(): string {
 }
 
 function baseUrl(env: AsaasEnv) {
-  // Em ambiente preview/dev sempre força sandbox; chave $aact_hmlg = sandbox.
-  const key = getApiKey();
-  if (key.startsWith("$aact_hmlg") || key.includes("hmlg")) return SANDBOX_BASE;
+  // Respeita o env passado pelo caller. Não força sandbox baseado em prefixo
+  // de chave (evita falso-positivo quando a chave de produção contém "hmlg").
   return env === "live" ? LIVE_BASE : SANDBOX_BASE;
 }
 
