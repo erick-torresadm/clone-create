@@ -22,10 +22,11 @@ export function Header() {
           {isAdmin && (
             <Link
               to="/admin"
-              className="hidden h-10 items-center gap-1.5 rounded-lg bg-secondary px-3 text-foreground transition-colors hover:bg-primary hover:text-primary-foreground sm:flex"
+              aria-label="Admin"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-secondary px-3 text-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <Shield className="h-5 w-5" />
-              <span className="text-xs font-semibold">Admin</span>
+              <span className="hidden text-xs font-semibold sm:inline">Admin</span>
             </Link>
           )}
           <Link
