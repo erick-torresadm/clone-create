@@ -128,38 +128,89 @@ function CheckoutPage() {
           )}
 
           {pix && !paid && (
-            <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card p-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="rounded-2xl bg-white p-4 ring-4 ring-primary/20">
-                  <img
-                    src={`data:image/png;base64,${pix.pixQrBase64}`}
-                    alt="QR Code Pix"
-                    className="h-64 w-64 object-contain"
-                  />
+            <div className="mt-6 space-y-4">
+              <ScarcityPanel seed={pix.orderId} compact />
+
+              <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-primary/5 shadow-[0_20px_60px_-20px_rgba(99,140,255,0.4)]">
+                {/* Header strip */}
+                <div className="flex items-center justify-between border-b border-border bg-background/40 px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/15 text-primary">
+                      <QrCode className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-foreground">Pix • Pagamento instantâneo</div>
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Pedido #{pix.orderId.slice(0, 8)}
+                      </div>
+                    </div>
+                  </div>
+                  <PixCountdown expiresAt={pix.expiresAt} />
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground">Abra o app do seu banco e escaneie o QR Code</p>
-                <p className="text-xs text-muted-foreground/80">ou use o copia-e-cola abaixo</p>
+
+                <div className="grid gap-5 p-6 sm:grid-cols-[auto_1fr] sm:items-center">
+                  <div className="mx-auto rounded-2xl bg-white p-3 ring-4 ring-primary/20 sm:mx-0">
+                    <img
+                      src={`data:image/png;base64,${pix.pixQrBase64}`}
+                      alt="QR Code Pix"
+                      className="h-52 w-52 object-contain"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <ol className="space-y-1.5 text-sm text-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span>
+                        Abra o app do seu banco
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">2</span>
+                        Escaneie o QR ou cole o código
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">3</span>
+                        Confirme — entrega automática
+                      </li>
+                    </ol>
+                    <div className="text-2xl font-extrabold text-primary">R$ {pix.totalBrl.toFixed(2)}</div>
+                  </div>
+                </div>
+
+                <div className="border-t border-border bg-background/40 p-4">
+                  <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pix copia e cola</div>
+                  <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-2">
+                    <code className="flex-1 truncate font-mono text-xs text-foreground">{pix.pixPayload}</code>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(pix.pixPayload);
+                        toast.success("Código Pix copiado");
+                      }}
+                    >
+                      <Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 border-t border-primary/20 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Aguardando pagamento... confirmação automática
+                </div>
               </div>
 
-              <div className="mt-5">
-                <div className="flex items-center gap-2 rounded-xl border border-border bg-background/60 p-2">
-                  <code className="flex-1 truncate font-mono text-xs text-foreground">{pix.pixPayload}</code>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => {
-                      navigator.clipboard.writeText(pix.pixPayload);
-                      toast.success("Código Pix copiado");
-                    }}
-                  >
-                    <Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar
-                  </Button>
+              <div className="grid grid-cols-3 gap-3 text-center text-[11px] text-muted-foreground">
+                <div className="rounded-xl border border-border bg-card/60 p-3">
+                  <Lock className="mx-auto mb-1 h-4 w-4 text-primary" />
+                  Pagamento seguro
                 </div>
-              </div>
-
-              <div className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                Aguardando pagamento... a confirmação é automática.
+                <div className="rounded-xl border border-border bg-card/60 p-3">
+                  <Zap className="mx-auto mb-1 h-4 w-4 text-primary" />
+                  Entrega imediata
+                </div>
+                <div className="rounded-xl border border-border bg-card/60 p-3">
+                  <ShieldCheck className="mx-auto mb-1 h-4 w-4 text-primary" />
+                  Garantia total
+                </div>
               </div>
             </div>
           )}
