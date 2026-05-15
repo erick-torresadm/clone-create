@@ -138,23 +138,23 @@ function SectionBlock({ section, isPromo }: { section: { title: string; products
           : "scroll-mt-24"
       }
     >
-      <div className="mb-5 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-2 sm:mb-5 sm:gap-3">
         {isPromo ? (
-          <Flame className="h-6 w-6 text-yellow-500" />
+          <Flame className="h-5 w-5 text-yellow-500 sm:h-6 sm:w-6" />
         ) : (
-          <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40 shadow-[0_0_12px_rgba(59,130,246,0.6)]" />
+          <span className="h-7 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40 shadow-[0_0_12px_rgba(59,130,246,0.6)] sm:h-8" />
         )}
-        <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+        <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-3xl">
           {section.title}
         </h2>
         <span
           className={
             isPromo
-              ? "rounded-full border border-yellow-500/40 bg-yellow-500/15 px-2.5 py-0.5 text-xs font-bold uppercase text-yellow-500 animate-pulse"
-              : "rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary"
+              ? "rounded-full border border-yellow-500/40 bg-yellow-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-yellow-500 animate-pulse sm:px-2.5 sm:text-xs"
+              : "rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary sm:px-2.5 sm:text-xs"
           }
         >
-          {isPromo ? "Oferta limitada" : section.products.length}
+          {isPromo ? "Oferta" : section.products.length}
         </span>
         <div
           className={`ml-2 hidden h-px flex-1 ${
