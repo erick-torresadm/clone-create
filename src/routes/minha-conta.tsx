@@ -133,6 +133,18 @@ function OrderCard({ order }: { order: any }) {
         <span className="font-bold text-foreground">R$ {Number(order.total).toFixed(2)}</span>
       </div>
 
+      {showManualSupport && (
+        <a
+          href={`https://wa.me/${MANUAL_SUPPORT_WHATSAPP}?text=${waMessage}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-500 transition hover:bg-emerald-500/20"
+        >
+          <MessageCircle className="h-4 w-4" />
+          Falar no WhatsApp para receber a entrega
+        </a>
+      )}
+
       {order.status === "pending" && order.pix_payload && (
         <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
           <p className="text-sm font-semibold text-foreground flex items-center gap-2">
