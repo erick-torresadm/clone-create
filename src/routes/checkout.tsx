@@ -73,6 +73,7 @@ function CheckoutPage() {
           cpfCnpj: cpf.replace(/\D/g, "") || undefined,
           userId: user.id,
           environment: ENV,
+          couponCode: coupon?.code,
         },
       });
       setPix(res);
