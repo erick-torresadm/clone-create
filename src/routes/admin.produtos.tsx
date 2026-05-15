@@ -417,6 +417,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
         image_url: f.image_url || null,
         description: f.description || null,
         tags: tagsArr,
+        min_quantity: Math.max(1, Number(f.min_quantity) || 1),
       }).eq("id", product.id);
       if (error) throw error;
     },
