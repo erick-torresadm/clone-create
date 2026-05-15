@@ -330,9 +330,10 @@ function SupportChatInner({
             </div>
           )}
 
-          {convo?.status === "closed" && (
+          {isClosed && (
             <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Conversa encerrada. Envie uma nova mensagem para reabrir.
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Conversa encerrada. Histórico disponível por 48h.</span>
             </div>
           )}
 
