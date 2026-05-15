@@ -123,6 +123,7 @@ function CheckoutPage() {
       return null;
     }
     setAccountCreated({ email: cleanEmail, password });
+    setShowAccount(true);
     return { id: data.user.id, email: cleanEmail };
   }
 
