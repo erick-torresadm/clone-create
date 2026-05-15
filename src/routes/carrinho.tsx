@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useCart } from "@/lib/use-cart";
 import { useCatalog, formatBRL } from "@/lib/site-data";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
