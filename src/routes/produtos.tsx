@@ -51,17 +51,17 @@ function Produtos() {
         <div className="space-y-12 pb-10">
           {filtered.map((section) => (
             <section key={section.title}>
-              <div className="mb-5 flex items-center gap-3">
-                <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/30 shadow-[0_0_12px_rgba(99,140,255,0.6)]" />
-                <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+              <div className="mb-4 flex items-center gap-2 sm:mb-5 sm:gap-3">
+                <span className="h-7 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/30 shadow-[0_0_12px_rgba(99,140,255,0.6)] sm:h-8" />
+                <h2 className="text-xl font-extrabold tracking-tight text-foreground sm:text-3xl">
                   {section.title}
                 </h2>
-                <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary sm:px-2.5 sm:text-xs">
                   {section.products.length}
                 </span>
                 <div className="ml-2 hidden h-px flex-1 bg-gradient-to-r from-border to-transparent sm:block" />
               </div>
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
                 {section.products.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
             </section>

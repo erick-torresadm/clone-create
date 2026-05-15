@@ -59,19 +59,19 @@ export function ProductCard({ product }: { product: Product }) {
         <Share2 className="h-4 w-4" />
       </button>
 
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-3 sm:p-5">
         <Link
           to="/produto/$id"
           params={{ id: product.id }}
           className="block"
         >
-          <h3 className="line-clamp-2 text-sm font-bold tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-base">
+          <h3 className="line-clamp-2 text-[15px] font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-base">
             {product.name}
           </h3>
         </Link>
 
         {product.tags && product.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
+          <div className="mt-2 hidden flex-wrap gap-1.5 sm:flex">
             {product.tags.map((t) => (
               <span
                 key={t}
@@ -84,16 +84,16 @@ export function ProductCard({ product }: { product: Product }) {
         )}
 
         <div className="mt-auto pt-3">
-          <span className="text-xs text-muted-foreground line-through">R$ {formatBRL(product.oldPrice)}</span>
-          <div className="mt-0.5 flex flex-wrap items-center gap-2">
-            <span className={`text-lg font-bold sm:text-xl ${isReseller ? "text-emerald-400" : "text-primary"}`}>R$ {formatBRL(product.price)}</span>
+          <span className="text-[11px] text-muted-foreground line-through sm:text-xs">R$ {formatBRL(product.oldPrice)}</span>
+          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className={`text-xl font-extrabold leading-none sm:text-2xl ${isReseller ? "text-emerald-400" : "text-primary"}`}>R$ {formatBRL(product.price)}</span>
             {off > 0 && (
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold sm:text-xs ${isReseller ? "bg-emerald-500 text-white" : "bg-destructive text-destructive-foreground"}`}>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold sm:px-2 sm:text-xs ${isReseller ? "bg-emerald-500 text-white" : "bg-destructive text-destructive-foreground"}`}>
                 -{off}%
               </span>
             )}
             {isReseller && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
+              <span className="hidden items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400 sm:inline-flex">
                 <BadgeCheck className="h-3 w-3" /> Revendedor
               </span>
             )}
@@ -110,15 +110,9 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="mt-3 flex items-stretch gap-2">
             <button
               onClick={handleAdd}
-              aria-label="Adicionar ao carrinho"
-              className="inline-flex items-center justify-center rounded-xl border-2 border-border bg-background px-3 py-2 text-foreground transition hover:border-foreground/60"
+              className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground shadow-[0_8px_24px_-8px_rgba(59,130,246,0.7)] transition hover:brightness-110 active:scale-[0.98]"
             >
               <ShoppingCart className="h-4 w-4" />
-            </button>
-            <button
-              onClick={handleAdd}
-              className="inline-flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_rgba(59,130,246,0.7)] transition hover:brightness-110"
-            >
               Comprar
             </button>
           </div>

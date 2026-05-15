@@ -8,14 +8,14 @@ export function Header() {
   const { count, openDrawer } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-primary/20 bg-card/80 px-4 sm:px-6 py-4 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-lg font-extrabold text-primary-foreground shadow-[0_0_18px_rgba(59,130,246,0.5)]">
+    <header className="sticky top-0 z-50 border-b border-primary/20 bg-card/80 px-3 sm:px-6 py-3 sm:py-4 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
+        <Link to="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-base font-extrabold text-primary-foreground shadow-[0_0_18px_rgba(59,130,246,0.5)] sm:h-10 sm:w-10 sm:text-lg">
             F
           </span>
-          <span className="text-xl font-bold text-foreground">Ativosfy</span>
-          <BadgeCheck className="h-5 w-5 fill-primary text-primary-foreground" />
+          <span className="truncate text-lg font-bold text-foreground sm:text-xl">Ativosfy</span>
+          <BadgeCheck className="hidden h-5 w-5 fill-primary text-primary-foreground sm:inline-block" />
         </Link>
 
         <div className="flex items-center gap-2">
