@@ -593,6 +593,12 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
           onPick={(id) => { setPickerOpen(false); sending.mutate(`[product]${id}`); }}
         />
       )}
+      {gifOpen && (
+        <GifPickerModal
+          onClose={() => setGifOpen(false)}
+          onPick={(url) => { setGifOpen(false); sending.mutate(`[gif]${url}`); }}
+        />
+      )}
     </div>
   );
 }
