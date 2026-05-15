@@ -120,13 +120,26 @@ function CheckoutPage() {
       toast.error(translateAuthError(error.message, "Não foi possível criar a conta"));
       return null;
     }
-    if (!data.session || !data.user) {
-      toast.error("Conta criada, mas não foi possível iniciar a sessão. Faça login.");
+    let userId = data.user?.id;
+    if (!data.session) {
+      // Fallback: tenta logar imediatamente (caso confirm esteja desligado mas a sessão não veio)
+      const { data: signIn, error: signInErr } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+      if (signInErr || !signIn.session || !signIn.user) {
+        toast.error("Conta criada, mas não foi possível iniciar a sessão. Faça login.");
+        return null;
+      }
+      userId = signIn.user.id;
+    }
+    if (!userId) {
+      toast.error("Não foi possível obter o usuário criado.");
       return null;
     }
     setAccountCreated({ email: cleanEmail, password });
     setShowAccount(true);
-    return { id: data.user.id, email: cleanEmail };
+    return { id: userId, email: cleanEmail };
   }
 
   async function handleGenerate() {
