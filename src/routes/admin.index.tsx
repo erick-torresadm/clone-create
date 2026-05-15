@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
-import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send } from "lucide-react";
+import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send, Sparkles, User, ArrowRight } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
@@ -24,10 +24,65 @@ function AdminHome() {
   if (!isAdmin) {
     return (
       <Layout>
-        <div className="mx-auto max-w-xl px-4 sm:px-6 py-24 text-center">
-          <h1 className="text-2xl font-bold text-foreground">Acesso restrito</h1>
-          <p className="mt-2 text-muted-foreground">Sua conta não tem permissão de administrador.</p>
-          <button onClick={signOut} className="mt-6 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">Sair</button>
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-16">
+          <div className="rounded-2xl border border-border bg-card p-8 shadow-xl">
+            <div className="flex items-center justify-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                <Sparkles className="h-7 w-7" />
+              </div>
+            </div>
+            <h1 className="mt-5 text-center text-2xl font-extrabold tracking-tight text-foreground">
+              Bem-vindo(a), {user.email?.split("@")[0]}!
+            </h1>
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              Sua conta foi criada com sucesso. Escolha como deseja continuar:
+            </p>
+
+            <div className="mt-6 grid gap-3">
+              <Link
+                to="/revendedor"
+                className="group flex items-start gap-4 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-5 transition hover:border-primary hover:shadow-[0_8px_24px_-8px_rgba(99,140,255,0.5)]"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                  <BadgeCheck className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-foreground">Quero ser Revendedor</h3>
+                    <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                      Recomendado
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Compre com até 50% OFF, revenda com seu preço e ganhe comissões. Linke sua conta ao sistema.
+                  </p>
+                </div>
+                <ArrowRight className="mt-3 h-5 w-5 text-primary transition group-hover:translate-x-1" />
+              </Link>
+
+              <Link
+                to="/minha-conta"
+                className="group flex items-start gap-4 rounded-xl border border-border bg-muted/30 p-5 transition hover:border-primary/50"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-card text-foreground">
+                  <User className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground">Ir para Minha Conta</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Veja seus pedidos, indicações, saldo e notificações.
+                  </p>
+                </div>
+                <ArrowRight className="mt-3 h-5 w-5 text-muted-foreground transition group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            <div className="mt-6 flex items-center justify-center gap-3 text-xs text-muted-foreground">
+              <button onClick={signOut} className="inline-flex items-center gap-1.5 hover:text-foreground">
+                <LogOut className="h-3.5 w-3.5" /> Sair da conta
+              </button>
+            </div>
+          </div>
         </div>
       </Layout>
     );
