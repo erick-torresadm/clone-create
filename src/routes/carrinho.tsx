@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
-import { ShoppingCart, ArrowRight, Trash2, Minus, Plus, Tag, ShieldCheck, Zap } from "lucide-react";
+import { ShoppingCart, ArrowRight, Trash2, Minus, Plus, Tag, ShieldCheck, Zap, Globe, ExternalLink } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/lib/use-cart";
 import { useCatalog, formatBRL } from "@/lib/site-data";
@@ -49,6 +49,11 @@ function Carrinho() {
     return ALL_PRODUCTS.filter((p) => !ids.has(p.id))
       .sort((a, b) => (b.sold ?? 0) - (a.sold ?? 0))
       .slice(0, 4);
+  }, [items]);
+
+  // FastProxy upsell — só aparece se tem perfis ou BMs no carrinho
+  const needsProxy = useMemo(() => {
+    return items.some((it) => /perfil|perfis|\bbm\b|gerenciador|conta gerente/i.test(it.name));
   }, [items]);
 
   const applyCoupon = async () => {
@@ -129,6 +134,36 @@ function Carrinho() {
                 </div>
               </div>
             ))}
+
+            {/* FastProxy — proteção de IP para perfis e BMs */}
+            {needsProxy && (
+              <a
+                href="https://fastproxy.com.br"
+                target="_blank"
+                rel="noreferrer"
+                className="group relative block overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-4 sm:p-5 transition hover:border-emerald-500/60"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30">
+                    <Globe className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                        Recomendado
+                      </span>
+                      <h3 className="text-sm font-bold text-foreground">Proteja o IP da sua conta com FastProxy</h3>
+                    </div>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Use proxies dedicados ao acessar perfis e BMs para evitar bloqueios e checkpoints. Cada conta com seu próprio IP, do mesmo país de origem.
+                    </p>
+                    <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 group-hover:underline">
+                      Comprar em fastproxy.com.br <ExternalLink className="h-3 w-3" />
+                    </div>
+                  </div>
+                </div>
+              </a>
+            )}
 
             {/* Upsell - aumenta ticket */}
             {upsells.length > 0 && (
