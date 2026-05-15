@@ -510,8 +510,8 @@ function CheckoutPage() {
                       <Sparkles className="h-3 w-3" /> Mais rápido no celular
                     </span>
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <code className="min-w-0 flex-1 truncate rounded-xl border border-border bg-background px-3 py-3 font-mono text-xs text-foreground">
+                  <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <code className="block min-w-0 max-w-full flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded-xl border border-border bg-background px-3 py-3 font-mono text-xs text-foreground">
                       {pix.pixPayload}
                     </code>
                     <Button
