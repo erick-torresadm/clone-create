@@ -14,6 +14,10 @@ type Convo = {
   last_message_at: string;
   unread_user: number;
   unread_admin: number;
+  client_email?: string | null;
+  client_name?: string | null;
+  client_ip?: string | null;
+  client_user_agent?: string | null;
 };
 type Msg = {
   id: string;
@@ -22,6 +26,14 @@ type Msg = {
   body: string;
   created_at: string;
 };
+
+async function getClientIp(): Promise<string | null> {
+  try {
+    const r = await fetch("https://api.ipify.org?format=json");
+    const j = await r.json();
+    return j.ip ?? null;
+  } catch { return null; }
+}
 
 export function SupportChat() {
   const { user } = useAuth();
@@ -114,9 +126,21 @@ function SupportChatInner({
     mutationFn: async (body: string) => {
       let id = convo?.id;
       if (!id) {
+        const { data: u } = await supabase.auth.getUser();
+        const meta = (u.user?.user_metadata ?? {}) as any;
+        const name = meta.display_name || meta.full_name || meta.name || u.user?.email?.split("@")[0] || null;
+        const ip = await getClientIp();
+        const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
         const { data: created, error } = await supabase
           .from("support_conversations")
-          .insert({ user_id: userId, subject: "Suporte" })
+          .insert({
+            user_id: userId,
+            subject: "Suporte",
+            client_email: u.user?.email ?? null,
+            client_name: name,
+            client_ip: ip,
+            client_user_agent: ua,
+          })
           .select()
           .single();
         if (error) throw error;
@@ -134,6 +158,19 @@ function SupportChatInner({
       qc.invalidateQueries({ queryKey: ["support-msgs", id] });
     },
   });
+
+  // Presence: detect if any admin is online
+  const [adminOnline, setAdminOnline] = useState(false);
+  useEffect(() => {
+    const ch = supabase.channel("admins-presence", { config: { presence: { key: userId } } });
+    ch.on("presence", { event: "sync" }, () => {
+      const state = ch.presenceState() as Record<string, Array<{ role?: string }>>;
+      const online = Object.values(state).some((arr) => arr.some((p) => p.role === "admin"));
+      setAdminOnline(online);
+    });
+    ch.subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [userId]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -167,13 +204,20 @@ function SupportChatInner({
             </div>
             <div className="flex-1">
               <div className="text-sm font-bold text-foreground">Suporte ativosfy</div>
-              <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                </span>
-                Online · respondemos em minutos
-              </div>
+              {adminOnline ? (
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  </span>
+                  Online · respondemos agora
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                  Offline · responderemos por email
+                </div>
+              )}
             </div>
           </div>
 
