@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { Share2, ShoppingCart } from "lucide-react";
+import { Share2, ShoppingCart, BadgeCheck } from "lucide-react";
 import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
+import { useResellerStatus } from "@/lib/reseller";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = discount(product.oldPrice, product.price);
   const { add } = useCart();
+  const { data: reseller } = useResellerStatus();
+  const isReseller = reseller.isReseller;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
