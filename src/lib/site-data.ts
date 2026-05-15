@@ -116,7 +116,7 @@ function dbToProduct(p: DBProduct, manualStock?: number): Product {
     stock: isExternal ? (p.external_quantity ?? 0) : (manualStock ?? 0),
     tags: p.tags ?? [],
     provider: p.external_provider ?? null,
-    minQuantity: p.external_provider === "maxvia" ? 10 : 1,
+    minQuantity: Math.max(1, Number((p as any).min_quantity ?? 1)),
   };
 }
 
