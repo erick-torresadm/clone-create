@@ -511,7 +511,7 @@ function CheckoutPage() {
                     </span>
                   </div>
                   <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-                    <code className="block min-w-0 max-w-full flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded-xl border border-border bg-background px-3 py-3 font-mono text-xs text-foreground">
+                    <code className="block min-w-0 max-h-24 max-w-full flex-1 overflow-y-auto break-all rounded-xl border border-border bg-background px-3 py-3 font-mono text-[11px] leading-relaxed text-foreground">
                       {pix.pixPayload}
                     </code>
                     <Button
