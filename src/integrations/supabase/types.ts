@@ -322,18 +322,63 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          referral_code: string | null
+          referred_by: string | null
         }
         Insert: {
           created_at?: string
           display_name?: string | null
           email?: string | null
           id: string
+          referral_code?: string | null
+          referred_by?: string | null
         }
         Update: {
           created_at?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          referral_code?: string | null
+          referred_by?: string | null
+        }
+        Relationships: []
+      }
+      referral_commissions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          order_id: string
+          order_total: number
+          rate: number
+          referred_user_id: string
+          referrer_id: string
+          status: string
+          withdrawal_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          order_id: string
+          order_total: number
+          rate: number
+          referred_user_id: string
+          referrer_id: string
+          status?: string
+          withdrawal_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          order_id?: string
+          order_total?: number
+          rate?: number
+          referred_user_id?: string
+          referrer_id?: string
+          status?: string
+          withdrawal_id?: string | null
         }
         Relationships: []
       }
@@ -540,6 +585,45 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          full_name: string | null
+          id: string
+          pix_key: string
+          pix_type: string
+          processed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          pix_key: string
+          pix_type?: string
+          processed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          pix_key?: string
+          pix_type?: string
+          processed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -569,6 +653,23 @@ export type Database = {
       }
       increment_coupon_usage: { Args: { _code: string }; Returns: undefined }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      process_withdrawal: {
+        Args: { _approve: boolean; _note: string; _request_id: string }
+        Returns: undefined
+      }
+      register_referral_commission: {
+        Args: { _order_id: string }
+        Returns: undefined
+      }
+      request_withdrawal: {
+        Args: {
+          _amount: number
+          _full_name: string
+          _pix_key: string
+          _pix_type: string
+        }
+        Returns: string
+      }
       support_mark_read_admin: { Args: { _convo: string }; Returns: undefined }
       support_mark_read_user: { Args: { _convo: string }; Returns: undefined }
     }

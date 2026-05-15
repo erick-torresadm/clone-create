@@ -43,6 +43,13 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
           await fulfillByAsaasPaymentId(paymentId, env).catch((e) =>
             console.error(`[asaas-webhook] fulfill error: ${e?.message}`),
           );
+          // Register referral commission if the buyer was referred by someone
+          const { data: ord } = await supabaseAdmin
+            .from("orders").select("id").eq("asaas_payment_id", paymentId).maybeSingle();
+          if (ord?.id) {
+            const { error: rcErr } = await (supabaseAdmin as any).rpc("register_referral_commission", { _order_id: ord.id });
+            if (rcErr) console.error("[ref-commission]", rcErr.message);
+          }
         } else if (event === "PAYMENT_OVERDUE" || event === "PAYMENT_DELETED" || event === "PAYMENT_REFUNDED") {
           const newStatus = event === "PAYMENT_REFUNDED" ? "refunded" : "canceled";
           const { data: row } = await supabaseAdmin

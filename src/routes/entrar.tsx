@@ -1,13 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
 import { BadgeCheck, Eye, EyeOff, Check, X, Info, Sparkles, ShieldCheck, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/entrar")({
   validateSearch: (s: Record<string, unknown>) => ({
     redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+    ref: typeof s.ref === "string" ? s.ref : undefined,
   }),
   head: () => ({
     meta: [
@@ -38,7 +39,13 @@ function Entrar() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
+  const { redirect, ref } = Route.useSearch();
+  const [refCode, setRefCode] = useState<string>(ref ?? "");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (ref) { try { sessionStorage.setItem("ref_code", ref); } catch {} setRefCode(ref); }
+    else { try { const s = sessionStorage.getItem("ref_code"); if (s) setRefCode(s); } catch {} }
+  }, [ref]);
 
   const checks = useMemo(() => checkPassword(password), [password]);
   const score = strengthScore(checks);
@@ -64,9 +71,13 @@ function Entrar() {
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/admin`,
+            data: refCode ? { referred_by_code: refCode } : undefined,
+          },
         });
         if (error) throw error;
+        try { sessionStorage.removeItem("ref_code"); } catch {}
         toast.success("Conta criada! Verifique seu e-mail (se exigido) e entre.");
         setMode("login");
       } else {

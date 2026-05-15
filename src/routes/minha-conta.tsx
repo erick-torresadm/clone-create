@@ -53,12 +53,17 @@ function MinhaConta() {
   return (
     <Layout>
       <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Minha conta</h1>
             <p className="text-sm text-muted-foreground">Olá, {user.email}</p>
           </div>
-          <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sair</Button>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/minha-conta/indicacoes" className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20">
+              💸 Indicações & Saldo
+            </Link>
+            <Button variant="outline" onClick={signOut}><LogOut className="mr-2 h-4 w-4" />Sair</Button>
+          </div>
         </div>
 
         <h2 className="mt-10 flex items-center gap-2 text-xl font-bold text-foreground"><Package className="h-5 w-5 text-primary" />Meus pedidos</h2>

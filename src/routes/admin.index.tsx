@@ -40,6 +40,7 @@ function AdminHome() {
     { to: "/admin/popups", icon: Bell, title: "Popups & Notícias", desc: "Avisos no site." },
     { to: "/admin/aparencia", icon: Settings, title: "Aparência & Config", desc: "Cores, logo, hero, câmbio." },
     { to: "/admin/pedidos", icon: Package, title: "Pedidos", desc: "Acompanhe e atualize status." },
+    { to: "/admin/saques", icon: HardDrive, title: "Saques de indicação", desc: "Aprove pagamentos PIX dos afiliados." },
   ];
 
   return (

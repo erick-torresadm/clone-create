@@ -22,7 +22,9 @@ import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
+import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
@@ -98,9 +100,19 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
   path: '/produto/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MinhaContaIndicacoesRoute = MinhaContaIndicacoesRouteImport.update({
+  id: '/indicacoes',
+  path: '/indicacoes',
+  getParentRoute: () => MinhaContaRoute,
+} as any)
 const AdminSuporteRoute = AdminSuporteRouteImport.update({
   id: '/admin/suporte',
   path: '/admin/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSaquesRoute = AdminSaquesRouteImport.update({
+  id: '/admin/saques',
+  path: '/admin/saques',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
@@ -159,7 +171,7 @@ export interface FileRoutesByFullPath {
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
-  '/minha-conta': typeof MinhaContaRoute
+  '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
@@ -169,7 +181,9 @@ export interface FileRoutesByFullPath {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
@@ -184,7 +198,7 @@ export interface FileRoutesByTo {
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
-  '/minha-conta': typeof MinhaContaRoute
+  '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
@@ -194,7 +208,9 @@ export interface FileRoutesByTo {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
@@ -210,7 +226,7 @@ export interface FileRoutesById {
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
-  '/minha-conta': typeof MinhaContaRoute
+  '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
@@ -220,7 +236,9 @@ export interface FileRoutesById {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
@@ -247,7 +265,9 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/saques'
     | '/admin/suporte'
+    | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
@@ -272,7 +292,9 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/saques'
     | '/admin/suporte'
+    | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin'
     | '/api/public/send-abandoned-cart'
@@ -297,7 +319,9 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/saques'
     | '/admin/suporte'
+    | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
@@ -313,7 +337,7 @@ export interface RootRouteChildren {
   DicasRoute: typeof DicasRoute
   EntrarRoute: typeof EntrarRoute
   GarantiaRoute: typeof GarantiaRoute
-  MinhaContaRoute: typeof MinhaContaRoute
+  MinhaContaRoute: typeof MinhaContaRouteWithChildren
   ProdutosRoute: typeof ProdutosRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SobreRoute: typeof SobreRoute
@@ -323,6 +347,7 @@ export interface RootRouteChildren {
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminPopupsRoute: typeof AdminPopupsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
+  AdminSaquesRoute: typeof AdminSaquesRoute
   AdminSuporteRoute: typeof AdminSuporteRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -424,11 +449,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/minha-conta/indicacoes': {
+      id: '/minha-conta/indicacoes'
+      path: '/indicacoes'
+      fullPath: '/minha-conta/indicacoes'
+      preLoaderRoute: typeof MinhaContaIndicacoesRouteImport
+      parentRoute: typeof MinhaContaRoute
+    }
     '/admin/suporte': {
       id: '/admin/suporte'
       path: '/admin/suporte'
       fullPath: '/admin/suporte'
       preLoaderRoute: typeof AdminSuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/saques': {
+      id: '/admin/saques'
+      path: '/admin/saques'
+      fullPath: '/admin/saques'
+      preLoaderRoute: typeof AdminSaquesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/produtos': {
@@ -497,6 +536,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface MinhaContaRouteChildren {
+  MinhaContaIndicacoesRoute: typeof MinhaContaIndicacoesRoute
+}
+
+const MinhaContaRouteChildren: MinhaContaRouteChildren = {
+  MinhaContaIndicacoesRoute: MinhaContaIndicacoesRoute,
+}
+
+const MinhaContaRouteWithChildren = MinhaContaRoute._addFileChildren(
+  MinhaContaRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarrinhoRoute: CarrinhoRoute,
@@ -505,7 +556,7 @@ const rootRouteChildren: RootRouteChildren = {
   DicasRoute: DicasRoute,
   EntrarRoute: EntrarRoute,
   GarantiaRoute: GarantiaRoute,
-  MinhaContaRoute: MinhaContaRoute,
+  MinhaContaRoute: MinhaContaRouteWithChildren,
   ProdutosRoute: ProdutosRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   SobreRoute: SobreRoute,
@@ -515,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPedidosRoute: AdminPedidosRoute,
   AdminPopupsRoute: AdminPopupsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
+  AdminSaquesRoute: AdminSaquesRoute,
   AdminSuporteRoute: AdminSuporteRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
