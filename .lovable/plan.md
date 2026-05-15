@@ -1,39 +1,64 @@
+# Programa de Revendedores
 
-## 1. Trocar "FDM store" → "ativosfy"
-- `src/routes/entrar.tsx`: substituir os 3 textos "FDM store" por "ativosfy".
+Sistema de cadastro de revendedores que, após aprovação manual no painel admin, passam a ver preços reduzidos no site inteiro (50% de desconto sobre o preço de venda das contas em estoque, e margem de 50% sobre o custo real nos produtos sincronizados via API — sem revelar o custo).
 
-## 2. Esqueci minha senha
-- No `/entrar`, adicionar link "Esqueci minha senha" → abre form para inserir e‑mail e chama `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/redefinir-senha' })`.
-- Criar nova rota `/redefinir-senha` (`src/routes/redefinir-senha.tsx`) com form de nova senha + `supabase.auth.updateUser({ password })`.
-- Os e‑mails de signup e recuperação são enviados automaticamente pelo Supabase Auth (template padrão). Sem customização extra agora — se quiser branding com logo da ativosfy depois, é outra etapa.
+## Fluxo do usuário
 
-## 3. Conectar cupons ao banco (corrige bug atual)
-- Em `src/lib/checkout.functions.ts`: remover o objeto `COUPONS` hardcoded e passar a consultar a tabela `coupons`:
-  - filtrar por `code = upper(input)`, `active = true`, `expires_at` no futuro (ou null), `min_order` respeitado, `used_count < max_uses` (se definido).
-  - aplicar `discount_type` (`percent`/`fixed`) e `value`.
-  - incrementar `used_count` quando o pedido for marcado como `paid` (em `checkout.server.ts`, no `fulfillPaidOrder`).
-- Resultado: qualquer cupom criado no admin passa a funcionar de verdade no checkout.
+1. Nova página `/revendedor` com texto de venda + formulário "Quero ser revendedor".
+2. Usuário cria conta normal (signup) marcado como "pedido de revenda" + preenche WhatsApp/Telegram + motivo.
+3. Status inicia como `pending`. Vê banner "Cadastro em análise" no painel.
+4. Admin aprova ou rejeita em `/admin/revendedores`.
+5. Aprovado → todos os produtos do site passam a mostrar:
+   - Preço cortado original (riscado)
+   - Novo preço de revendedor (verde) com badge **"Preço Revendedor -50%"**
+   - Carrinho/checkout aplica o preço reduzido automaticamente.
 
-## 4. Criar cupom `CARRINHO15`
-- Migração de dados: inserir na tabela `coupons` o cupom `CARRINHO15`, `discount_type=percent`, `value=15`, `active=true`, sem expiração.
+## Cálculo do preço (sem expor o custo da API)
 
-## 5. Carrinho abandonado → enviar cupom por e‑mail
-**Definição de "abandonado":** pedido com `status='pending'` criado há mais de **30 minutos** e ainda sem pagamento.
+- **Conta com estoque manual** (`source = 'manual'`): preço revendedor = `price * 0.50`.
+- **Produto via API** (`source != 'manual'` e tem `external_price`): preço revendedor = `external_price * brl_per_usd * 1.50` (margem de 50% sobre o custo). Resultado parece "preço de revendedor", o custo real nunca aparece no front.
+- Fallback: se não houver `external_price`, usa `price * 0.50`.
 
-- Migração:
-  - adicionar coluna `abandoned_email_sent_at TIMESTAMPTZ` em `orders`.
-  - habilitar `pg_cron` + `pg_net`.
-  - criar job que roda a cada 10 minutos chamando `POST https://project--15e1ab37-295e-420d-956f-97ff29d001b0.lovable.app/api/public/send-abandoned-cart` com header `x-cron-secret`.
-- Novo secret `ABANDONED_CART_CRON_SECRET`.
-- Nova rota pública `src/routes/api/public/send-abandoned-cart.ts`:
-  - valida o header.
-  - busca orders `pending`, `created_at < now() - 30min`, `abandoned_email_sent_at is null`, com `email` preenchido.
-  - para cada uma: envia e‑mail (template novo em `resend.server.ts`) com o cupom `CARRINHO15` (15% off) e link para `/produtos`.
-  - marca `abandoned_email_sent_at = now()` para não enviar de novo.
+Toda a lógica de cálculo fica num helper único (`getResellerPrice`) e o checkout valida no servidor para impedir manipulação no client.
 
-## Detalhes técnicos
-- Os e‑mails de signup/recuperação vão pelos servidores padrão do Supabase Auth (não pelo Resend). Quiser trocar pra Resend com domínio `ativosfy.store`, é uma etapa separada (configurar SMTP custom no Auth).
-- O e‑mail de carrinho abandonado vai pelo Resend (`noreply@ativosfy.store`), reutilizando `sendResendEmail`.
-- Cron a cada 10min é tempo razoável para detectar abandono em ~30–40min.
+## Mudanças no banco
 
-Confirma que posso seguir com tudo?
+Nova tabela `reseller_accounts`:
+- `user_id` (PK, FK profiles)
+- `status`: `pending | approved | rejected`
+- `whatsapp`, `telegram`, `reason`
+- `approved_at`, `approved_by`, `admin_note`
+- `discount_pct` (default 50) — permite ajustar individualmente no futuro
+
+Função `is_approved_reseller(uuid)` (SECURITY DEFINER) usada em RLS e no checkout server-side.
+
+RLS:
+- Usuário lê/insere o próprio registro
+- Admin lê/atualiza tudo
+
+## Telas novas
+
+1. **`/revendedor`** — landing + formulário (cria conta + insere em `reseller_accounts` com status pending).
+2. **`/minha-conta/revendedor`** — status do pedido + dados.
+3. **`/admin/revendedores`** — fila pendente, aprovar/rejeitar com nota, lista dos aprovados com busca.
+4. Botão no painel admin index linkando para a fila.
+
+## Mudanças nas telas existentes
+
+- `useAuth` expõe `isReseller` (boolean cacheado).
+- Componentes de preço (cards de produto, página de produto, drawer do carrinho, checkout) usam `getResellerPrice(product, isReseller)` e mostram badge quando aplicável.
+- Server function de criação de pedido recalcula totais usando o preço de revendedor quando o usuário é aprovado — nunca confia no preço enviado pelo client.
+
+## Segurança
+
+- Custo real (`external_price`) nunca é selecionado em queries públicas — apenas o preço já transformado.
+- Aprovação só via RPC `approve_reseller(user_id, approve, note)` com check de admin.
+- RLS impede usuário comum de ler tabela `reseller_accounts` de outros.
+
+## O que NÃO entra agora
+
+- Pagamento diferenciado / split de comissão.
+- Painel separado de revendedor (eles compram pela mesma loja, só com preços reduzidos).
+- Limite de compras ou quotas mensais.
+
+Posso confirmar e começar pela migration + páginas, ou ajusta algo antes?
