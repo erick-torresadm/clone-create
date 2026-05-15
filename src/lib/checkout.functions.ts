@@ -23,11 +23,21 @@ const inputSchema = z.object({
   environment: z.enum(["sandbox", "live"]),
 });
 
-const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; min?: number }> = {
-  BLUE10: { type: "percent", value: 10 },
-  BLUE20: { type: "percent", value: 20, min: 200 },
-  PRIME50: { type: "fixed", value: 50, min: 300 },
-};
+async function loadCoupon(code: string): Promise<{ type: "percent" | "fixed"; value: number; min: number } | null> {
+  const { data, error } = await supabaseAdmin
+    .from("coupons")
+    .select("code,discount_type,value,active,expires_at,max_uses,used_count,min_order")
+    .ilike("code", code.trim())
+    .maybeSingle();
+  if (error || !data || !data.active) return null;
+  if (data.expires_at && new Date(data.expires_at) < new Date()) return null;
+  if (data.max_uses != null && data.used_count >= data.max_uses) return null;
+  return {
+    type: data.discount_type as "percent" | "fixed",
+    value: Number(data.value),
+    min: Number(data.min_order ?? 0),
+  };
+}
 
 type LiveItem = { quantity: number; price: number };
 
