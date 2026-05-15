@@ -237,8 +237,8 @@ function CheckoutPage() {
               <div className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.3)]">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <h2 className="text-base font-bold text-foreground">Seus dados</h2>
-                    <p className="text-[11px] text-muted-foreground">Leva 30 segundos · entrega imediata após o pagamento</p>
+                    <h2 className="text-base font-bold text-foreground">Compra rápida</h2>
+                    <p className="text-[11px] text-muted-foreground">Só precisamos do seu e-mail · entrega imediata após o Pix</p>
                   </div>
                   <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
                     <Lock className="h-3 w-3" /> 100% seguro
@@ -248,7 +248,7 @@ function CheckoutPage() {
                 {!user && (
                   <div>
                     <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      <Mail className="h-3 w-3" /> E-mail *
+                      <Mail className="h-3 w-3" /> E-mail para receber os produtos *
                     </label>
                     <div className="relative">
                       <Input
@@ -258,37 +258,47 @@ function CheckoutPage() {
                         placeholder="seu@email.com"
                         autoComplete="email"
                         inputMode="email"
-                        className={emailValid ? "pr-9 border-emerald-500/50 focus-visible:ring-emerald-500/30" : ""}
+                        className={emailValid ? "h-12 pr-9 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
                       />
                       {emailValid && (
                         <CheckCircle2 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
                       )}
                     </div>
                     <p className="mt-1.5 text-[11px] text-muted-foreground">
-                      Criamos sua conta automaticamente · seus produtos ficam em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>.
+                      <Sparkles className="mr-1 inline h-3 w-3 text-primary" />
+                      Sem senha agora. Criamos sua conta automaticamente e enviamos o acesso.
                     </p>
                   </div>
                 )}
 
-                <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    <UserIcon className="h-3 w-3" /> Nome completo *
-                  </label>
-                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome como no documento" autoComplete="name" />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    CPF / CNPJ <span className="text-muted-foreground/60 normal-case">(opcional)</span>
-                  </label>
-                  <Input
-                    value={cpf}
-                    onChange={(e) => setCpf(maskCpf(e.target.value))}
-                    placeholder="000.000.000-00"
-                    inputMode="numeric"
-                    autoComplete="off"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowOptional((s) => !s)}
+                  className="flex w-full items-center justify-between text-[11px] font-medium text-muted-foreground hover:text-foreground"
+                >
+                  <span>Adicionar nome e CPF (opcional, para nota fiscal)</span>
+                  {showOptional ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                </button>
+                {showOptional && (
+                  <div className="space-y-3 rounded-xl border border-dashed border-border bg-background/40 p-3">
+                    <div>
+                      <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <UserIcon className="h-3 w-3" /> Nome completo
+                      </label>
+                      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como no documento" autoComplete="name" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ</label>
+                      <Input
+                        value={cpf}
+                        onChange={(e) => setCpf(maskCpf(e.target.value))}
+                        placeholder="000.000.000-00"
+                        inputMode="numeric"
+                        autoComplete="off"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-medium text-muted-foreground">
                   <div className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-2">
@@ -306,7 +316,7 @@ function CheckoutPage() {
                   size="lg"
                   className="h-14 w-full text-base font-bold shadow-[0_10px_30px_-10px_rgba(99,140,255,0.7)] transition hover:brightness-110"
                   onClick={handleGenerate}
-                  disabled={creating}
+                  disabled={creating || (!user && !emailValid)}
                 >
                   {creating ? (
                     <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Gerando Pix...</>
