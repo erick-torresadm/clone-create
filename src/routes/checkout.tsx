@@ -44,7 +44,25 @@ function CheckoutPage() {
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
   const [accountCreated, setAccountCreated] = useState<{ email: string; password: string } | null>(null);
+  const [showAccount, setShowAccount] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
+
+  function maskCpf(v: string) {
+    const d = v.replace(/\D/g, "").slice(0, 14);
+    if (d.length <= 11) {
+      return d
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    }
+    return d
+      .replace(/^(\d{2})(\d)/, "$1.$2")
+      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  }
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   useEffect(() => {
     if (typeof window === "undefined") return;
