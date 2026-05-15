@@ -197,6 +197,16 @@ function CheckoutPage() {
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome completo *</label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como aparece no seu CPF" />
                 </div>
+                {!user && (
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">E-mail *</label>
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" autoComplete="email" />
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      Criamos sua conta automaticamente para entregar seus produtos. Já tem conta?{" "}
+                      <Link to="/entrar" search={{ redirect: "/checkout" } as any} className="text-primary hover:underline">Entrar</Link>
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ <span className="text-muted-foreground/60">(opcional)</span></label>
                   <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" inputMode="numeric" />
