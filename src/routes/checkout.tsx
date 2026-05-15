@@ -221,6 +221,29 @@ function CheckoutPage() {
 
           {pix && !paid && (
             <div className="mt-6 space-y-4">
+              {accountCreated && (
+                <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                  <div className="font-bold text-foreground">Conta criada automaticamente</div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Salve seus dados de acesso. Você pode trocar a senha depois em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>.
+                  </p>
+                  <div className="mt-2 grid gap-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                      <span className="text-muted-foreground">E-mail</span>
+                      <code className="font-mono text-foreground">{accountCreated.email}</code>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                      <span className="text-muted-foreground">Senha</span>
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-foreground">{accountCreated.password}</code>
+                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(accountCreated.password); toast.success("Senha copiada"); }}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <ScarcityPanel seed={pix.orderId} compact />
 
               <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-primary/5 shadow-[0_20px_60px_-20px_rgba(99,140,255,0.4)]">
