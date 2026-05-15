@@ -58,13 +58,25 @@ function AdminResellers() {
   });
 
   const process = useMutation({
-    mutationFn: async ({ userId, approve, note }: { userId: string; approve: boolean; note: string }) => {
+    mutationFn: async ({ userId, approve, note, discountPct }: { userId: string; approve: boolean; note: string; discountPct?: number }) => {
       const { error } = await (supabase as any).rpc("process_reseller", {
         _user_id: userId, _approve: approve, _note: note || null,
+        _discount_pct: typeof discountPct === "number" ? discountPct : null,
       });
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-resellers"] }); toast.success("Atualizado"); },
+    onError: (e: any) => toast.error(e.message ?? "Erro"),
+  });
+
+  const setDiscount = useMutation({
+    mutationFn: async ({ userId, discountPct }: { userId: string; discountPct: number }) => {
+      const { error } = await (supabase as any).rpc("set_reseller_discount", {
+        _user_id: userId, _discount_pct: discountPct,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-resellers"] }); toast.success("Desconto atualizado"); },
     onError: (e: any) => toast.error(e.message ?? "Erro"),
   });
 
@@ -110,7 +122,15 @@ function AdminResellers() {
           )}
           {rows.map((r) => {
             const p = profilesQ.data?.get(r.user_id);
-            return <ResellerRow key={r.user_id} r={r} email={p?.email ?? null} name={p?.display_name ?? null} onProcess={(approve, note) => process.mutate({ userId: r.user_id, approve, note })} pending={process.isPending} />;
+            return <ResellerRow
+              key={r.user_id}
+              r={r}
+              email={p?.email ?? null}
+              name={p?.display_name ?? null}
+              onProcess={(approve, note, discountPct) => process.mutate({ userId: r.user_id, approve, note, discountPct })}
+              onSaveDiscount={(discountPct) => setDiscount.mutate({ userId: r.user_id, discountPct })}
+              pending={process.isPending || setDiscount.isPending}
+            />;
           })}
         </div>
       </div>
@@ -126,8 +146,11 @@ function TabBtn({ active, onClick, icon: Icon, label, count }: { active: boolean
   );
 }
 
-function ResellerRow({ r, email, name, onProcess, pending }: { r: Row; email: string | null; name: string | null; onProcess: (approve: boolean, note: string) => void; pending: boolean }) {
+function ResellerRow({ r, email, name, onProcess, onSaveDiscount, pending }: { r: Row; email: string | null; name: string | null; onProcess: (approve: boolean, note: string, discountPct?: number) => void; onSaveDiscount: (discountPct: number) => void; pending: boolean }) {
   const [note, setNote] = useState(r.admin_note ?? "");
+  const [discount, setDiscount] = useState<string>(String(Number(r.discount_pct ?? 0)));
+  const parsedDiscount = Math.max(0, Math.min(90, Number(discount) || 0));
+  const dirtyDiscount = parsedDiscount !== Number(r.discount_pct);
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -140,7 +163,7 @@ function ResellerRow({ r, email, name, onProcess, pending }: { r: Row; email: st
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
             <Info label="WhatsApp" value={r.whatsapp} />
             <Info label="Telegram" value={r.telegram} />
-            <Info label="Desconto" value={`${Number(r.discount_pct)}%`} />
+            <Info label="Desconto atual" value={`${Number(r.discount_pct)}%`} />
             <Info label="Cadastrado em" value={new Date(r.created_at).toLocaleString("pt-BR")} />
           </div>
           {r.reason && (
@@ -153,14 +176,40 @@ function ResellerRow({ r, email, name, onProcess, pending }: { r: Row; email: st
       </div>
 
       <div className="mt-4">
+        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Desconto do revendedor (%)</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={90}
+            step={1}
+            value={discount}
+            onChange={(e) => setDiscount(e.target.value)}
+            className="w-28 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+          />
+          <span className="text-sm text-muted-foreground">%</span>
+          {r.status === "approved" && dirtyDiscount && (
+            <button
+              disabled={pending}
+              onClick={() => onSaveDiscount(parsedDiscount)}
+              className="rounded-lg border border-primary/50 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/10 disabled:opacity-60"
+            >
+              Salvar desconto
+            </button>
+          )}
+        </div>
+        <p className="mt-1 text-[11px] text-muted-foreground">Entre 0 e 90. Aplicado nas compras desse revendedor.</p>
+      </div>
+
+      <div className="mt-4">
         <label className="mb-1 block text-xs font-semibold text-muted-foreground">Nota interna (opcional)</label>
         <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex: aprovado após contato no WhatsApp" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
         {r.status !== "approved" && (
-          <button disabled={pending} onClick={() => onProcess(true, note)} className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-60">
-            <BadgeCheck className="h-4 w-4" /> Aprovar
+          <button disabled={pending} onClick={() => onProcess(true, note, parsedDiscount)} className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:brightness-110 disabled:opacity-60">
+            <BadgeCheck className="h-4 w-4" /> Aprovar com {parsedDiscount}%
           </button>
         )}
         {r.status !== "rejected" && (

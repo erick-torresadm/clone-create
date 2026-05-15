@@ -770,10 +770,20 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_approved_reseller: { Args: { _user_id: string }; Returns: boolean }
       my_reseller_discount: { Args: never; Returns: number }
-      process_reseller: {
-        Args: { _approve: boolean; _note: string; _user_id: string }
-        Returns: undefined
-      }
+      process_reseller:
+        | {
+            Args: { _approve: boolean; _note: string; _user_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _approve: boolean
+              _discount_pct?: number
+              _note: string
+              _user_id: string
+            }
+            Returns: undefined
+          }
       process_withdrawal: {
         Args: { _approve: boolean; _note: string; _request_id: string }
         Returns: undefined
@@ -794,6 +804,10 @@ export type Database = {
           _pix_type: string
         }
         Returns: string
+      }
+      set_reseller_discount: {
+        Args: { _discount_pct: number; _user_id: string }
+        Returns: undefined
       }
       support_mark_read_admin: { Args: { _convo: string }; Returns: undefined }
       support_mark_read_user: { Args: { _convo: string }; Returns: undefined }
