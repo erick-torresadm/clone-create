@@ -139,29 +139,37 @@ function SupportChatInner({
   }, [open, convo?.id, convo?.unread_user, qc]);
 
   const [draft, setDraft] = useState("");
+  const startNew = useMutation({
+    mutationFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const meta = (u.user?.user_metadata ?? {}) as any;
+      const name = meta.display_name || meta.full_name || meta.name || u.user?.email?.split("@")[0] || null;
+      const ip = await getClientIp();
+      const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
+      const { data: created, error } = await supabase
+        .from("support_conversations")
+        .insert({
+          user_id: userId,
+          subject: "Suporte",
+          client_email: u.user?.email ?? null,
+          client_name: name,
+          client_ip: ip,
+          client_user_agent: ua,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return created as Convo;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["support-convo-mine"] }),
+  });
+
   const sending = useMutation({
     mutationFn: async (body: string) => {
-      let id = convo?.id;
+      let id = (!convo || isClosed) ? undefined : convo.id;
       if (!id) {
-        const { data: u } = await supabase.auth.getUser();
-        const meta = (u.user?.user_metadata ?? {}) as any;
-        const name = meta.display_name || meta.full_name || meta.name || u.user?.email?.split("@")[0] || null;
-        const ip = await getClientIp();
-        const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
-        const { data: created, error } = await supabase
-          .from("support_conversations")
-          .insert({
-            user_id: userId,
-            subject: "Suporte",
-            client_email: u.user?.email ?? null,
-            client_name: name,
-            client_ip: ip,
-            client_user_agent: ua,
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        id = (created as Convo).id;
+        const created = await startNew.mutateAsync();
+        id = created.id;
       }
       const { data: inserted, error: e2 } = await supabase
         .from("support_messages")
