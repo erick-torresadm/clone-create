@@ -574,6 +574,3 @@ function parseMedia(body: string): { kind: "image" | "audio"; url: string } | nu
   if (aud) return { kind: "audio", url: aud[1] };
   return null;
 }
-    </div>
-  );
-}
