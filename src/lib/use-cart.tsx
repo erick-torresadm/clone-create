@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { playAddToCart } from "./sound";
+import { fbTrack } from "./meta-pixel";
 
 export type CartItem = {
   id: string;
@@ -54,6 +55,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
     setDrawerOpen(true);
     playAddToCart();
+    fbTrack("AddToCart", {
+      content_ids: [item.id],
+      content_name: item.name,
+      content_type: "product",
+      value: item.price * qty,
+      currency: "BRL",
+    });
   };
 
   const remove: CartCtx["remove"] = (id) =>
