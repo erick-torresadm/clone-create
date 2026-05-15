@@ -40,6 +40,7 @@ function CheckoutPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
+  const [showOptional, setShowOptional] = useState(false);
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
