@@ -4,7 +4,8 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Send, Loader2, MessageCircle, Search, CheckCircle2, RotateCcw, Inbox, Mail, Globe, Monitor, Image as ImageIcon, Mic, Square, BellOff, Bell } from "lucide-react";
+import { ArrowLeft, Send, Loader2, MessageCircle, Search, CheckCircle2, RotateCcw, Inbox, Mail, Globe, Monitor, Image as ImageIcon, Mic, Square, BellOff, Bell, Package, X } from "lucide-react";
+import { ChatProductCard, parseChatMedia } from "@/components/site/ChatProductCard";
 import { playMessage, startPhoneRing } from "@/lib/sound";
 import { toast } from "sonner";
 import { userAvatar, adminAvatar } from "@/lib/avatar";
@@ -384,6 +385,7 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
 
   // Upload image / audio (admin only)
   const [uploading, setUploading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   async function uploadAndSend(file: File, kind: "image" | "audio") {
     setUploading(true);
@@ -556,6 +558,15 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
         >
           {recording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
         </button>
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          disabled={uploading || sending.isPending}
+          title="Enviar produto para compra"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-emerald-500/60 hover:text-emerald-500 disabled:opacity-50"
+        >
+          <Package className="h-4 w-4" />
+        </button>
         <input
           value={draft}
           onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
@@ -566,23 +577,31 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
           {sending.isPending || uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>
       </form>
+      {pickerOpen && (
+        <ProductPickerModal
+          onClose={() => setPickerOpen(false)}
+          onPick={(id) => { setPickerOpen(false); sending.mutate(`[product]${id}`); }}
+        />
+      )}
     </div>
   );
 }
 
 function AdminBubble({ m, clientAvatar }: { m: Msg; clientAvatar: string }) {
   const isAdmin = m.sender === "admin";
-  const media = parseMedia(m.body);
+  const media = parseChatMedia(m.body);
   return (
     <div className={`flex items-end gap-2 ${isAdmin ? "flex-row-reverse" : ""}`}>
       <img src={isAdmin ? adminAvatar() : clientAvatar} alt="" className="h-7 w-7 shrink-0 rounded-full" />
-      <div className={`max-w-[70%] rounded-2xl px-3.5 py-2 text-sm ${isAdmin ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border border-border bg-card text-foreground"}`}>
+      <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${isAdmin ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border border-border bg-card text-foreground"}`}>
         {media?.kind === "image" ? (
           <a href={media.url} target="_blank" rel="noreferrer">
             <img src={media.url} alt="" className="max-h-56 rounded-lg" />
           </a>
         ) : media?.kind === "audio" ? (
           <audio controls src={media.url} className="max-w-[12rem]" />
+        ) : media?.kind === "product" ? (
+          <ChatProductCard id={media.id} dark={isAdmin} />
         ) : (
           <div className="whitespace-pre-wrap break-words">{m.body}</div>
         )}
@@ -594,10 +613,72 @@ function AdminBubble({ m, clientAvatar }: { m: Msg; clientAvatar: string }) {
   );
 }
 
-function parseMedia(body: string): { kind: "image" | "audio"; url: string } | null {
-  const img = body.match(/^\[img\](https?:\/\/\S+)$/);
-  if (img) return { kind: "image", url: img[1] };
-  const aud = body.match(/^\[audio\](https?:\/\/\S+)$/);
-  if (aud) return { kind: "audio", url: aud[1] };
-  return null;
+function ProductPickerModal({ onClose, onPick }: { onClose: () => void; onPick: (id: string) => void }) {
+  const [q, setQ] = useState("");
+  const list = useQuery({
+    queryKey: ["chat-products-picker"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, price, image_url")
+        .eq("active", true)
+        .order("sort_order", { ascending: true })
+        .limit(200);
+      if (error) throw error;
+      return data as Array<{ id: string; name: string; price: number; image_url: string | null }>;
+    },
+  });
+  const items = (list.data ?? []).filter((p) =>
+    q.trim() === "" ? true : p.name.toLowerCase().includes(q.trim().toLowerCase())
+  );
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="text-sm font-bold text-foreground">Enviar produto no chat</div>
+          <button onClick={onClose} className="rounded-full p-1 text-muted-foreground hover:bg-background/60"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="border-b border-border p-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              autoFocus
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar produto..."
+              className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+            />
+          </div>
+        </div>
+        <div className="divide-y divide-border overflow-y-auto">
+          {list.isLoading && <div className="grid place-items-center py-8 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /></div>}
+          {!list.isLoading && items.length === 0 && (
+            <div className="p-6 text-center text-sm text-muted-foreground">Nenhum produto encontrado.</div>
+          )}
+          {items.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => onPick(p.id)}
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-background/40"
+            >
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                {p.image_url && <img src={p.image_url} alt="" className="h-full w-full object-cover" />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-foreground">{p.name}</div>
+                <div className="text-[11px] font-bold text-primary">
+                  {Number(p.price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </div>
+              </div>
+              <Send className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
+

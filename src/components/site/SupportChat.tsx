@@ -6,6 +6,7 @@ import { useLocation } from "@tanstack/react-router";
 import { MessageCircle, X, Send, Loader2, CheckCircle2, Clock } from "lucide-react";
 import { playMessage } from "@/lib/sound";
 import { userAvatar, adminAvatar } from "@/lib/avatar";
+import { parseChatMedia, ChatProductCard } from "@/components/site/ChatProductCard";
 
 type Convo = {
   id: string;
@@ -368,12 +369,12 @@ function SupportChatInner({
 
 function Bubble({ m, myAvatar }: { m: Msg; myAvatar: string }) {
   const isUser = m.sender === "user";
-  const media = parseMedia(m.body);
+  const media = parseChatMedia(m.body);
   return (
     <div className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
       <img src={isUser ? myAvatar : adminAvatar()} alt="" className="h-7 w-7 shrink-0 rounded-full" />
       <div
-        className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
+        className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm ${
           isUser
             ? "rounded-br-sm bg-primary text-primary-foreground"
             : "rounded-bl-sm border border-border bg-card text-foreground"
@@ -385,6 +386,8 @@ function Bubble({ m, myAvatar }: { m: Msg; myAvatar: string }) {
           </a>
         ) : media?.kind === "audio" ? (
           <audio controls src={media.url} className="max-w-[12rem]" />
+        ) : media?.kind === "product" ? (
+          <ChatProductCard id={media.id} dark={isUser} />
         ) : (
           <div className="whitespace-pre-wrap break-words">{m.body}</div>
         )}
@@ -394,14 +397,6 @@ function Bubble({ m, myAvatar }: { m: Msg; myAvatar: string }) {
       </div>
     </div>
   );
-}
-
-function parseMedia(body: string): { kind: "image" | "audio"; url: string } | null {
-  const img = body.match(/^\[img\](https?:\/\/\S+)$/);
-  if (img) return { kind: "image", url: img[1] };
-  const aud = body.match(/^\[audio\](https?:\/\/\S+)$/);
-  if (aud) return { kind: "audio", url: aud[1] };
-  return null;
 }
 
 function TypingDots() {
