@@ -32,7 +32,7 @@ function strengthScore(c: ReturnType<typeof checkPassword>) {
 }
 
 function Entrar() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -42,7 +42,9 @@ function Entrar() {
 
   const checks = useMemo(() => checkPassword(password), [password]);
   const score = strengthScore(checks);
-  const canSubmit = mode === "login" ? password.length > 0 : score >= 1 && password.length >= 6;
+  const canSubmit = mode === "forgot"
+    ? email.length > 3
+    : mode === "login" ? password.length > 0 : score >= 1 && password.length >= 6;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +54,14 @@ function Entrar() {
     }
     setLoading(true);
     try {
-      if (mode === "signup") {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/redefinir-senha`,
+        });
+        if (error) throw error;
+        toast.success("Enviamos um link de recuperação para seu e-mail.");
+        setMode("login");
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: `${window.location.origin}/admin` },
@@ -82,32 +91,34 @@ function Entrar() {
       <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-6 py-16">
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-xl">
           <div className="mb-6 flex items-center justify-center gap-2">
-            <span className="text-xl font-bold text-foreground">FDM store</span>
+            <span className="text-xl font-bold text-foreground">ativosfy</span>
             <BadgeCheck className="h-5 w-5 text-primary" />
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-muted/50 p-1">
-            <button
-              type="button"
-              onClick={() => setMode("login")}
-              className={`rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("signup")}
-              className={`rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Criar conta
-            </button>
-          </div>
+          {mode !== "forgot" && (
+            <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-muted/50 p-1">
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className={`rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Entrar
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className={`rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Criar conta
+              </button>
+            </div>
+          )}
 
           <h1 className="text-center text-2xl font-bold text-foreground">
-            {mode === "login" ? "Bem-vindo de volta" : "Crie sua conta grátis"}
+            {mode === "login" ? "Bem-vindo de volta" : mode === "signup" ? "Crie sua conta grátis" : "Recuperar senha"}
           </h1>
           <p className="mt-1 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Acesse sua conta para continuar" : "Leva menos de 1 minuto — entrega instantânea"}
+            {mode === "login" ? "Acesse sua conta para continuar" : mode === "signup" ? "Leva menos de 1 minuto — entrega instantânea" : "Enviaremos um link para você criar uma nova senha"}
           </p>
 
           {mode === "signup" && (
