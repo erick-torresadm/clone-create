@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
+import { Route as AdminTelegramRouteImport } from './routes/admin.telegram'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
 import { Route as AdminRevendedoresRouteImport } from './routes/admin.revendedores'
@@ -112,6 +113,11 @@ const MinhaContaIndicacoesRoute = MinhaContaIndicacoesRouteImport.update({
   id: '/indicacoes',
   path: '/indicacoes',
   getParentRoute: () => MinhaContaRoute,
+} as any)
+const AdminTelegramRoute = AdminTelegramRouteImport.update({
+  id: '/admin/telegram',
+  path: '/admin/telegram',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSuporteRoute = AdminSuporteRouteImport.update({
   id: '/admin/suporte',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/admin/telegram': typeof AdminTelegramRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/admin/telegram': typeof AdminTelegramRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/admin/telegram': typeof AdminTelegramRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -297,6 +306,7 @@ export interface FileRouteTypes {
     | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
+    | '/admin/telegram'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
+    | '/admin/telegram'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin'
@@ -357,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
+    | '/admin/telegram'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   AdminRevendedoresRoute: typeof AdminRevendedoresRoute
   AdminSaquesRoute: typeof AdminSaquesRoute
   AdminSuporteRoute: typeof AdminSuporteRoute
+  AdminTelegramRoute: typeof AdminTelegramRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
@@ -502,6 +515,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/minha-conta/indicacoes'
       preLoaderRoute: typeof MinhaContaIndicacoesRouteImport
       parentRoute: typeof MinhaContaRoute
+    }
+    '/admin/telegram': {
+      id: '/admin/telegram'
+      path: '/admin/telegram'
+      fullPath: '/admin/telegram'
+      preLoaderRoute: typeof AdminTelegramRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/suporte': {
       id: '/admin/suporte'
@@ -631,6 +651,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRevendedoresRoute: AdminRevendedoresRoute,
   AdminSaquesRoute: AdminSaquesRoute,
   AdminSuporteRoute: AdminSuporteRoute,
+  AdminTelegramRoute: AdminTelegramRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
