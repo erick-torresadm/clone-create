@@ -568,7 +568,7 @@ function CheckoutPage() {
           )}
         </div>
 
-        <aside className="h-fit space-y-4 rounded-2xl border border-border bg-card/80 p-5 backdrop-blur lg:sticky lg:top-24">
+        <aside className="order-1 h-fit space-y-4 rounded-2xl border border-border bg-card/80 p-4 backdrop-blur sm:p-5 lg:sticky lg:top-24 lg:order-2">
           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Resumo do pedido</h2>
           <ul className="space-y-3">
             {items.map((it) => (
