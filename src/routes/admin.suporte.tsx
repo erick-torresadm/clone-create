@@ -568,6 +568,15 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
         >
           <Package className="h-4 w-4" />
         </button>
+        <button
+          type="button"
+          onClick={() => setGifOpen(true)}
+          disabled={uploading || sending.isPending}
+          title="Enviar GIF"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-fuchsia-500/60 hover:text-fuchsia-500 disabled:opacity-50"
+        >
+          <Smile className="h-4 w-4" />
+        </button>
         <input
           value={draft}
           onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
