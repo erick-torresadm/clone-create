@@ -104,6 +104,7 @@ function dbToProduct(
   p: DBProduct,
   manualStock: number | undefined,
   resellerPrice: number | null,
+  stockLoaded: boolean = true,
 ): Product {
   const isExternal = !!p.source && p.source !== "manual";
   const publicPrice = Number(p.price);
@@ -112,6 +113,12 @@ function dbToProduct(
   const oldPrice = resellerPrice != null
     ? publicPrice
     : Number(p.old_price ?? p.price);
+  // Estoque: para externos vem do DB; para manuais depende do RPC.
+  // Enquanto o RPC ainda não carregou, deixamos `undefined` para não exibir
+  // "Esgotado" indevidamente no card.
+  const stockValue = isExternal
+    ? (p.external_quantity ?? 0)
+    : (stockLoaded ? (manualStock ?? 0) : undefined);
   return {
     id: p.id,
     name: p.name,
@@ -123,7 +130,7 @@ function dbToProduct(
     reviews: p.reviews ?? undefined,
     image: p.image_url ?? undefined,
     badge: p.badge ?? undefined,
-    stock: isExternal ? (p.external_quantity ?? 0) : (manualStock ?? 0),
+    stock: stockValue,
     tags: p.tags ?? [],
     provider: p.external_provider ?? null,
     minQuantity: Math.max(1, Number((p as any).min_quantity ?? 1)),
