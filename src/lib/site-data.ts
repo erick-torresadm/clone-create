@@ -163,12 +163,13 @@ export function useCatalog() {
   const dbProducts = (products.data ?? []).filter((p) => p.active);
   const dbSections = sections.data ?? [];
   const stockMap = stock.data ?? new Map<string, number>();
+  const stockLoaded = !stock.isLoading && !!stock.data;
 
   const toProd = (p: DBProduct) => {
     const rp = reseller.data.isReseller
       ? resellerPriceFor(p, settings.data, reseller.data.discountPct)
       : null;
-    return dbToProduct(p, stockMap.get(p.id), rp);
+    return dbToProduct(p, stockMap.get(p.id), rp, stockLoaded);
   };
   const allProducts: Product[] = dbProducts.map(toProd);
 
