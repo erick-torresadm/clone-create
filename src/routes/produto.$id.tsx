@@ -117,6 +117,18 @@ function ProductPage() {
             </h1>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              {typeof product.stock === "number" && (
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 font-bold uppercase tracking-wider shadow-sm ${
+                    product.stock > 0
+                      ? "bg-emerald-500 text-white"
+                      : "bg-destructive text-destructive-foreground"
+                  }`}
+                >
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-white/90" />
+                  {product.stock > 0 ? `${product.stock} em estoque` : "Esgotado"}
+                </span>
+              )}
               {product.sold && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-3 py-1 font-semibold text-foreground">
                   <Flame className="h-3 w-3 text-destructive" /> + {product.sold} vendidos
@@ -125,6 +137,10 @@ function ProductPage() {
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-semibold text-primary">
                 <Zap className="h-3 w-3" /> Entrega automática
               </span>
+            </div>
+
+            <div className="mt-4">
+              <ScarcityPanel seed={product.id} compact />
             </div>
 
             <div className="mt-5 flex items-center gap-3">
@@ -141,11 +157,29 @@ function ProductPage() {
             <div className="mt-1 text-xs text-muted-foreground">à vista no Pix</div>
 
             <div className="mt-5 rounded-xl border border-border bg-background/40 p-4">
-              <div className="text-center text-xs text-muted-foreground">(Estoque ilimitado)</div>
-              <button onClick={handleBuyNow} className="mt-3 h-12 w-full rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-[0_10px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110">
+              {typeof product.stock === "number" && product.stock > 0 && product.stock <= 10 ? (
+                <div className="text-center text-xs font-semibold text-destructive">
+                  ⚠️ Restam apenas {product.stock} unidades — última chance!
+                </div>
+              ) : typeof product.stock === "number" && product.stock <= 0 ? (
+                <div className="text-center text-xs font-semibold text-destructive">Sem estoque no momento</div>
+              ) : (
+                <div className="text-center text-xs text-muted-foreground">
+                  {typeof product.stock === "number" ? `${product.stock} disponíveis` : "Estoque ilimitado"}
+                </div>
+              )}
+              <button
+                onClick={handleBuyNow}
+                disabled={typeof product.stock === "number" && product.stock <= 0}
+                className="mt-3 h-12 w-full rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-[0_10px_30px_-10px_rgba(99,140,255,0.8)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 Comprar agora
               </button>
-              <button onClick={handleAdd} className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-semibold text-foreground transition hover:border-primary">
+              <button
+                onClick={handleAdd}
+                disabled={typeof product.stock === "number" && product.stock <= 0}
+                className="mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-card text-sm font-semibold text-foreground transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 <ShoppingCart className="h-4 w-4" /> Adicionar ao carrinho
               </button>
               <button
