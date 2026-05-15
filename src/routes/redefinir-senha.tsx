@@ -4,6 +4,7 @@ import { BadgeCheck, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/redefinir-senha")({
   head: () => ({
@@ -47,7 +48,7 @@ function RedefinirSenha() {
       toast.success("Senha alterada com sucesso!");
       navigate({ to: "/admin" });
     } catch (err: any) {
-      toast.error(err.message ?? "Erro ao redefinir senha");
+      toast.error(translateAuthError(err?.message, "Erro ao redefinir senha"));
     } finally {
       setLoading(false);
     }
