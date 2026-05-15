@@ -516,25 +516,35 @@ function CheckoutPage() {
               </li>
             ))}
           </ul>
-          {coupon && (
+          <div className="space-y-1.5 border-t border-border pt-3">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Subtotal</span>
               <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
             </div>
-          )}
-          {coupon && discount > 0 && (
-            <div className="flex items-center justify-between text-xs text-primary">
-              <span>Cupom <b>{coupon.code}</b></span>
-              <span>- R$ {discount.toFixed(2)}</span>
-            </div>
-          )}
-          <div className="flex items-center justify-between border-t border-border pt-4 text-base">
-            <span className="font-semibold text-foreground">Total</span>
-            <span className="text-xl font-extrabold text-primary">R$ {(pix?.totalBrl ?? total).toFixed(2)}</span>
+            {coupon && discount > 0 && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Cupom <code className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-bold text-primary">{coupon.code}</code>
+                </span>
+                <span className="font-semibold text-emerald-600">- R$ {discount.toFixed(2)}</span>
+              </div>
+            )}
           </div>
-          <p className="text-center text-[11px] text-muted-foreground">
-            Após o pagamento, suas contas aparecem em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>.
-          </p>
+          <div className="rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-foreground">Total</span>
+              <span className="text-2xl font-extrabold text-primary">R$ {(pix?.totalBrl ?? total).toFixed(2)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="mt-1 flex items-center justify-end gap-1 text-[11px] font-bold text-emerald-600">
+                <Sparkles className="h-3 w-3" /> Você economizou R$ {discount.toFixed(2)}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+            <Zap className="h-3 w-3 text-primary" />
+            Entrega automática em <Link to="/minha-conta" className="ml-1 text-primary hover:underline">Minha conta</Link>
+          </div>
         </aside>
       </div>
     </Layout>
