@@ -317,6 +317,67 @@ function OrderCard({ order }: { order: any }) {
   );
 }
 
+type Field = { key: string; value: string };
+
+function parseAccountFields(text: string): Field[] {
+  const clean = text.replace(/\r/g, "");
+  const lines = clean.split("\n");
+  const fields: Field[] = [];
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const m = line.match(/^([A-Za-zÀ-ÿ0-9 _\-\/\.]{1,40}?)\s*[:=]\s*(.*)$/);
+    if (m && m[1] && /[A-Za-zÀ-ÿ]/.test(m[1])) {
+      fields.push({ key: m[1].trim().toUpperCase(), value: m[2].trim() });
+    } else if (fields.length > 0) {
+      fields[fields.length - 1].value = (fields[fields.length - 1].value + "\n" + line).trim();
+    } else {
+      fields.push({ key: "INFO", value: line });
+    }
+  }
+  return fields;
+}
+
+function AccountCard({ text, index, total }: { text: string; index: number; total: number }) {
+  const fields = parseAccountFields(text);
+  const copyAll = () => { navigator.clipboard.writeText(text.replace(/\r/g, "").trim()); toast.success("Conta copiada"); };
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-1.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Conta {index + 1}{total > 1 ? ` de ${total}` : ""}
+        </p>
+        <button onClick={copyAll} className="flex items-center gap-1 text-[11px] font-medium text-primary hover:underline">
+          <Copy className="h-3 w-3" /> Copiar conta
+        </button>
+      </div>
+      {fields.length === 0 ? (
+        <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs text-foreground">{text}</pre>
+      ) : (
+        <dl className="divide-y divide-border">
+          {fields.map((f, i) => (
+            <div key={i} className="grid grid-cols-[110px_1fr_auto] items-start gap-2 px-3 py-2 sm:grid-cols-[140px_1fr_auto]">
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{f.key}</dt>
+              <dd className="min-w-0 break-all font-mono text-xs text-foreground">
+                <pre className="whitespace-pre-wrap break-all font-mono">{f.value || "—"}</pre>
+              </dd>
+              {f.value ? (
+                <button
+                  onClick={() => { navigator.clipboard.writeText(f.value); toast.success(`${f.key} copiado`); }}
+                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={`Copiar ${f.key}`}
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+              ) : <span />}
+            </div>
+          ))}
+        </dl>
+      )}
+    </div>
+  );
+}
+
 function TelegramSubscriptionCard() {
   const statusFn = useServerFn(getMyTelegramStatus);
   const toggleFn = useServerFn(setTelegramSubscriptionActive);
