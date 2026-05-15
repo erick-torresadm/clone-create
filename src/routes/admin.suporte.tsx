@@ -17,6 +17,10 @@ type Convo = {
   last_message_at: string;
   unread_admin: number;
   unread_user: number;
+  client_email: string | null;
+  client_name: string | null;
+  client_ip: string | null;
+  client_user_agent: string | null;
 };
 type Msg = { id: string; conversation_id: string; sender: "user" | "admin"; body: string; created_at: string };
 
@@ -24,6 +28,18 @@ function AdminSupport() {
   const { user, isAdmin, loading, roleLoading } = useAuth();
   const navigate = useNavigate();
   useEffect(() => { if (!loading && !roleLoading && (!user || !isAdmin)) navigate({ to: "/entrar" }); }, [loading, roleLoading, user, isAdmin, navigate]);
+
+  // Broadcast admin presence so users see "Online"
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    const ch = supabase.channel("admins-presence", { config: { presence: { key: user.id } } });
+    ch.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await ch.track({ role: "admin", at: Date.now() });
+      }
+    });
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id, isAdmin]);
 
   const qc = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
