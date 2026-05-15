@@ -171,14 +171,15 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       if (availableQty === null && !p.active) {
         throw new Error(`Produto indisponível: ${p.name}`);
       }
-      const unit = Math.round(Number(p.price) * 100);
+      const unitBrl = priceFor(p);
+      const unit = Math.round(unitBrl * 100);
       if (!unit || unit < 50) throw new Error(`Preço inválido para ${p.name}`);
       subtotalCents += unit * it.quantity;
       orderItems.push({
         productId: p.id,
         name: p.name,
         quantity: it.quantity,
-        unitPriceBrl: Number(p.price),
+        unitPriceBrl: unitBrl,
         provider: p.external_provider ?? null,
         externalId: p.external_id ? String(p.external_id) : null,
       });
