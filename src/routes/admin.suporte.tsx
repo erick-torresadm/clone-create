@@ -558,6 +558,15 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
         >
           {recording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
         </button>
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          disabled={uploading || sending.isPending}
+          title="Enviar produto para compra"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-emerald-500/60 hover:text-emerald-500 disabled:opacity-50"
+        >
+          <Package className="h-4 w-4" />
+        </button>
         <input
           value={draft}
           onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
