@@ -393,7 +393,7 @@ function CheckoutPage() {
           )}
 
           {pix && !paid && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 w-full min-w-0 space-y-4">
               {accountCreated && (
                 <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
                   <button
@@ -467,21 +467,21 @@ function CheckoutPage() {
                 </div>
 
                 {/* QR + instruções lado a lado, visível por padrão */}
-                <div className="grid gap-5 border-b border-border p-5 md:grid-cols-[auto_1fr] md:items-center">
+                <div className="grid gap-5 border-b border-border p-5 md:grid-cols-[auto_minmax(0,1fr)] md:items-center">
                   <div className="mx-auto rounded-2xl bg-white p-3 ring-4 ring-primary/20 md:mx-0">
                     {pix.pixQrBase64 ? (
                       <img
                         src={`data:image/png;base64,${pix.pixQrBase64}`}
                         alt="QR Code Pix"
-                        className="h-48 w-48 object-contain"
+                        className="h-44 w-44 object-contain sm:h-48 sm:w-48"
                       />
                     ) : (
-                      <div className="grid h-48 w-48 place-items-center text-center text-xs text-muted-foreground">
+                      <div className="grid h-44 w-44 place-items-center text-center text-xs text-muted-foreground sm:h-48 sm:w-48">
                         QR indisponível.<br />Use o código copia e cola abaixo.
                       </div>
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-sm font-bold text-foreground">Pague pelo QR Code</div>
                     <ol className="mt-3 space-y-2 text-sm text-foreground">
                       <li className="flex items-start gap-2">
@@ -510,8 +510,8 @@ function CheckoutPage() {
                       <Sparkles className="h-3 w-3" /> Mais rápido no celular
                     </span>
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <code className="min-w-0 flex-1 truncate rounded-xl border border-border bg-background px-3 py-3 font-mono text-xs text-foreground">
+                  <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <code className="block min-w-0 max-w-full flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded-xl border border-border bg-background px-3 py-3 font-mono text-xs text-foreground">
                       {pix.pixPayload}
                     </code>
                     <Button
