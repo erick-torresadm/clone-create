@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/use-auth";
 import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send, Sparkles, User, ArrowRight } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
 import { SalesDashboard } from "@/components/admin/SalesDashboard";
+import { StorageCleanup } from "@/components/admin/StorageCleanup";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminHome,
@@ -121,6 +122,9 @@ function AdminHome() {
           <PlatformStats />
         </div>
 
+        <PlatformCleanupSection />
+
+
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((c) => (
             <Link key={c.to} to={c.to as any}
@@ -146,6 +150,17 @@ function formatBytes(bytes: number) {
     i++;
   }
   return `${n.toFixed(n >= 10 || i === 0 ? 0 : 2)} ${units[i]}`;
+}
+
+function PlatformCleanupSection() {
+  const fetchStats = useServerFn(getPlatformStats);
+  const { data } = useQuery({
+    queryKey: ["admin", "platform-stats"],
+    queryFn: () => fetchStats(),
+    staleTime: 60_000,
+  });
+  const pct = data?.db.limit ? (data.db.used / data.db.limit) * 100 : 0;
+  return <StorageCleanup dbPct={pct} />;
 }
 
 function PlatformStats() {
