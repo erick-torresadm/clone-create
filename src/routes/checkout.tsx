@@ -258,6 +258,18 @@ function CheckoutPage() {
               </li>
             ))}
           </ul>
+          {coupon && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+            </div>
+          )}
+          {coupon && discount > 0 && (
+            <div className="flex items-center justify-between text-xs text-primary">
+              <span>Cupom <b>{coupon.code}</b></span>
+              <span>- R$ {discount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between border-t border-border pt-4 text-base">
             <span className="font-semibold text-foreground">Total</span>
             <span className="text-xl font-extrabold text-primary">R$ {(pix?.totalBrl ?? total).toFixed(2)}</span>
