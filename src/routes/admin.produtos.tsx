@@ -457,6 +457,11 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
             <Label>Tags (separadas por vírgula)</Label>
             <Input value={f.tags} onChange={(e) => setF({ ...f, tags: e.target.value })} placeholder="Entrega manual, Entrega 30min" />
           </div>
+          <div>
+            <Label>Pedido mínimo (unidades)</Label>
+            <Input type="number" min={1} value={f.min_quantity} onChange={(e) => setF({ ...f, min_quantity: e.target.value })} placeholder="1" />
+            <p className="mt-1 text-xs text-muted-foreground">Use 1 para a maioria. Aumente apenas se o fornecedor exigir um lote mínimo (ex.: 10 para Instagram/Twitter).</p>
+          </div>
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={onClose}>Cancelar</Button>
             <Button className="flex-1" onClick={() => save.mutate()} disabled={save.isPending}>Salvar</Button>
