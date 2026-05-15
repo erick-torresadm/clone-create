@@ -65,3 +65,24 @@ export function playClick() {
   if (!getSoundsEnabled()) return;
   tone(420, 40, "square", 0.04);
 }
+
+// Looping phone ring — returns a stop function.
+// Plays a classic two-tone ring (≈ 440/480 Hz) for ~1.2s, pauses ~0.8s, repeats.
+export function startPhoneRing(): () => void {
+  if (!getSoundsEnabled()) return () => {};
+  let stopped = false;
+  let timer: number | null = null;
+  const ringOnce = () => {
+    if (stopped) return;
+    const dur = 1200;
+    tone(440, dur, "sine", 0.09);
+    tone(480, dur, "sine", 0.09, 0.005);
+    timer = window.setTimeout(ringOnce, dur + 800);
+  };
+  ringOnce();
+  return () => {
+    stopped = true;
+    if (timer) window.clearTimeout(timer);
+  };
+}
+
