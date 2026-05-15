@@ -129,7 +129,7 @@ function ProductPage() {
                   {product.stock > 0 ? `${product.stock} em estoque` : "Esgotado"}
                 </span>
               )}
-              {product.sold > 0 && (
+              {(product.sold ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-3 py-1 font-semibold text-foreground">
                   <Flame className="h-3 w-3 text-destructive" /> + {product.sold} vendidos
                 </span>
