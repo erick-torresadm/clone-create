@@ -1,5 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { createHash, timingSafeEqual } from "crypto";
+
+function deriveSecret(apiKey: string): string {
+  return createHash("sha256").update(`telegram-webhook:${apiKey}`).digest("base64url");
+}
+function safeEq(a: string, b: string): boolean {
+  const A = Buffer.from(a);
+  const B = Buffer.from(b);
+  return A.length === B.length && timingSafeEqual(A, B);
+}
 
 // Webhook público do bot Telegram. Lida com /start <token> para vincular
 // um usuário do site ao chat dele e cadastrá-lo como inscrito de promoções.
@@ -7,6 +17,13 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const TELEGRAM_API_KEY = process.env.TELEGRAM_API_KEY;
+        if (TELEGRAM_API_KEY) {
+          const expected = deriveSecret(TELEGRAM_API_KEY);
+          const got = request.headers.get("X-Telegram-Bot-Api-Secret-Token") ?? "";
+          if (!safeEq(got, expected)) return new Response("Unauthorized", { status: 401 });
+        }
+
         let update: any;
         try {
           update = await request.json();
