@@ -16,6 +16,8 @@ export type Product = {
   badge?: string;
   stock?: number | null;
   tags?: string[];
+  provider?: string | null;
+  minQuantity?: number;
 };
 
 export type Section = {
