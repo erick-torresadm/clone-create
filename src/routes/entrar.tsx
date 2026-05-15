@@ -71,9 +71,13 @@ function Entrar() {
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/admin`,
+            data: refCode ? { referred_by_code: refCode } : undefined,
+          },
         });
         if (error) throw error;
+        try { sessionStorage.removeItem("ref_code"); } catch {}
         toast.success("Conta criada! Verifique seu e-mail (se exigido) e entre.");
         setMode("login");
       } else {
