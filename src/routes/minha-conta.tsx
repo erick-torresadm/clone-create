@@ -249,23 +249,26 @@ function OrderCard({ order }: { order: any }) {
       )}
 
       {Array.isArray(delivered) && delivered.length > 0 && (
-        <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">🔓 Dados entregues</p>
+        <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <span aria-hidden>🔓</span> Dados entregues
+            </p>
             <Button size="sm" variant="ghost" onClick={() => setShow(!show)}>
               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               <span className="ml-1">{show ? "Ocultar" : "Mostrar"}</span>
             </Button>
           </div>
           {show && (
-            <div className="mt-3 space-y-3">
+            <div className="mt-3 space-y-4">
               {delivered.map((d: any, i: number) => {
                 const accountsRaw: any[] = Array.isArray(d.accounts) ? d.accounts : [];
                 const lines = accountsRaw
                   .map((a) => (typeof a === "string" ? a : a?.full_info ?? a?.uid ?? ""))
-                  .filter((s) => s && String(s).trim().length > 0);
+                  .map((s) => String(s).replace(/\r/g, "").trim())
+                  .filter((s) => s.length > 0);
                 const downloadTxt = () => {
-                  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+                  const blob = new Blob([lines.join("\n\n———\n\n")], { type: "text/plain;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
@@ -274,17 +277,21 @@ function OrderCard({ order }: { order: any }) {
                   URL.revokeObjectURL(url);
                 };
                 return (
-                  <div key={i}>
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <p className="text-xs font-semibold text-muted-foreground">
-                        {d.name} · {lines.length}/{d.quantity ?? lines.length} {d.error ? "· ⚠ " + d.error : ""}
-                      </p>
+                  <div key={i} className="rounded-lg border border-border/60 bg-background/60 p-3">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-foreground">{d.name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {lines.length}/{d.quantity ?? lines.length} {lines.length === 1 ? "conta" : "contas"}
+                          {d.error ? <span className="ml-1 text-amber-600">· ⚠ {d.error}</span> : null}
+                        </p>
+                      </div>
                       {lines.length > 0 && (
                         <div className="flex gap-1">
                           <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={downloadTxt}>
                             <Download className="mr-1 h-3 w-3" /> .txt
                           </Button>
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(lines.join("\n")); toast.success("Tudo copiado"); }}>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { navigator.clipboard.writeText(lines.join("\n\n———\n\n")); toast.success("Tudo copiado"); }}>
                             <Copy className="mr-1 h-3 w-3" /> Copiar tudo
                           </Button>
                         </div>
@@ -293,14 +300,9 @@ function OrderCard({ order }: { order: any }) {
                     {lines.length === 0 ? (
                       <div className="rounded bg-background p-2 text-xs text-muted-foreground">Sem dados.</div>
                     ) : (
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {lines.map((text, j) => (
-                          <div key={j} className="flex items-start gap-2 rounded bg-background p-2 font-mono text-xs text-foreground">
-                            <pre className="flex-1 whitespace-pre-wrap break-all font-mono">{text}</pre>
-                            <button onClick={() => { navigator.clipboard.writeText(text); toast.success("Copiado"); }} className="text-primary hover:underline">
-                              <Copy className="h-3 w-3" />
-                            </button>
-                          </div>
+                          <AccountCard key={j} text={text} index={j} total={lines.length} />
                         ))}
                       </div>
                     )}
