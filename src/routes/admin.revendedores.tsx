@@ -122,7 +122,15 @@ function AdminResellers() {
           )}
           {rows.map((r) => {
             const p = profilesQ.data?.get(r.user_id);
-            return <ResellerRow key={r.user_id} r={r} email={p?.email ?? null} name={p?.display_name ?? null} onProcess={(approve, note) => process.mutate({ userId: r.user_id, approve, note })} pending={process.isPending} />;
+            return <ResellerRow
+              key={r.user_id}
+              r={r}
+              email={p?.email ?? null}
+              name={p?.display_name ?? null}
+              onProcess={(approve, note, discountPct) => process.mutate({ userId: r.user_id, approve, note, discountPct })}
+              onSaveDiscount={(discountPct) => setDiscount.mutate({ userId: r.user_id, discountPct })}
+              pending={process.isPending || setDiscount.isPending}
+            />;
           })}
         </div>
       </div>
