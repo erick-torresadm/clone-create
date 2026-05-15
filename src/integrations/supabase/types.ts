@@ -73,6 +73,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          abandoned_email_sent_at: string | null
           asaas_customer_id: string | null
           asaas_payment_id: string | null
           coupon_code: string | null
@@ -93,6 +94,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          abandoned_email_sent_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           coupon_code?: string | null
@@ -113,6 +115,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          abandoned_email_sent_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           coupon_code?: string | null
@@ -466,6 +469,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_coupon_usage: { Args: { _code: string }; Returns: undefined }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
