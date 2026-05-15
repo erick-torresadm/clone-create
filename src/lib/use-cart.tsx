@@ -53,6 +53,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...prev, { ...item, qty }];
     });
     setDrawerOpen(true);
+    playAddToCart();
   };
 
   const remove: CartCtx["remove"] = (id) =>
