@@ -387,6 +387,7 @@ function EditProductDialog({ product, sections, onClose, onSaved }: { product: a
     image_url: product.image_url ?? "",
     description: product.description ?? "",
     tags: Array.isArray(product.tags) ? product.tags.join(", ") : "",
+    min_quantity: String(product.min_quantity ?? 1),
   });
   const suggestFn = useServerFn(maxviaAiSuggest);
   const [aiLoading, setAiLoading] = useState(false);
