@@ -38,10 +38,12 @@ function CheckoutPage() {
   const checkFn = useServerFn(checkPaymentStatus);
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
+  const [accountCreated, setAccountCreated] = useState<{ email: string; password: string } | null>(null);
   const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
 
   useEffect(() => {
@@ -51,8 +53,8 @@ function CheckoutPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) navigate({ to: "/entrar", search: { redirect: "/checkout" } as any });
-    else if (!items.length && !pix) navigate({ to: "/carrinho" });
+    if (user?.email) setEmail((e) => e || user.email!);
+    if (!items.length && !pix) navigate({ to: "/carrinho" });
   }, [items.length, navigate, user, authLoading, pix]);
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + i.qty * i.price, 0), [items]);
@@ -63,18 +65,63 @@ function CheckoutPage() {
   }, [coupon, subtotal]);
   const total = Math.max(0, subtotal - discount);
 
+  function generatePassword() {
+    // Senha aleatória forte para evitar bloqueio anti-pwned
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let p = "";
+    const arr = new Uint32Array(14);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < arr.length; i++) p += chars[arr[i] % chars.length];
+    return p + "!9";
+  }
+
+  async function ensureAuthenticated(): Promise<{ id: string; email: string } | null> {
+    if (user?.id && user.email) return { id: user.id, email: user.email };
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) { toast.error("Informe seu e-mail"); return null; }
+    // Tenta criar conta automaticamente
+    const password = generatePassword();
+    const { data, error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/minha-conta`,
+        data: { display_name: name.trim() || cleanEmail.split("@")[0] },
+      },
+    });
+    if (error) {
+      const msg = error.message?.toLowerCase() || "";
+      if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("user already")) {
+        toast.error("Este e-mail já tem cadastro. Faça login para continuar.", {
+          action: { label: "Entrar", onClick: () => navigate({ to: "/entrar", search: { redirect: "/checkout" } as any }) },
+        });
+        return null;
+      }
+      toast.error(translateAuthError(error.message, "Não foi possível criar a conta"));
+      return null;
+    }
+    if (!data.session || !data.user) {
+      toast.error("Conta criada, mas não foi possível iniciar a sessão. Faça login.");
+      return null;
+    }
+    setAccountCreated({ email: cleanEmail, password });
+    return { id: data.user.id, email: cleanEmail };
+  }
+
   async function handleGenerate() {
-    if (!user?.email || !user?.id) return;
     if (!name.trim()) return toast.error("Informe seu nome completo");
+    if (!user && !email.trim()) return toast.error("Informe seu e-mail");
     setCreating(true);
     try {
+      const account = await ensureAuthenticated();
+      if (!account) { setCreating(false); return; }
       const res = await checkoutFn({
         data: {
           items: items.map((i) => ({ productId: i.id, quantity: i.qty })),
-          customerEmail: user.email,
+          customerEmail: account.email,
           customerName: name.trim(),
           cpfCnpj: cpf.replace(/\D/g, "") || undefined,
-          userId: user.id,
+          userId: account.id,
           environment: ENV,
           couponCode: coupon?.code,
         },
