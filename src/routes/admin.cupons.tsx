@@ -102,6 +102,11 @@ function AdminCupons() {
               <div><Label>Usos máx</Label><Input type="number" value={f.max_uses} onChange={(e) => setF({ ...f, max_uses: e.target.value })} /></div>
             </div>
             <div><Label>Expira em</Label><Input type="datetime-local" value={f.expires_at} onChange={(e) => setF({ ...f, expires_at: e.target.value })} /></div>
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <Switch checked={f.notify} onCheckedChange={(v) => setF({ ...f, notify: v })} />
+              <Send className="h-3.5 w-3.5 text-primary" />
+              Avisar inscritos no Telegram
+            </label>
             <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full"><Plus className="mr-2 h-4 w-4" />Criar</Button>
           </div>
         </div>
