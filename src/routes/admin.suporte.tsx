@@ -385,6 +385,7 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
 
   // Upload image / audio (admin only)
   const [uploading, setUploading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   async function uploadAndSend(file: File, kind: "image" | "audio") {
     setUploading(true);
