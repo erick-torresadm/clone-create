@@ -1,14 +1,21 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { Starfield } from "./Starfield";
+import { SupportChat } from "./SupportChat";
+import { useSettings } from "@/lib/site-data";
+import { setSoundsEnabled } from "@/lib/sound";
 
 export function Layout({ children }: { children: ReactNode }) {
+  const { data: settings } = useSettings();
+  useEffect(() => {
+    if (settings) setSoundsEnabled(!!settings.sounds_enabled);
+  }, [settings]);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background">
-      {/* Starfield + radial glow background (Brenin-style) */}
       <Starfield />
       <div
         aria-hidden
@@ -22,6 +29,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Footer />
       </div>
       <CartDrawer />
+      <SupportChat />
     </div>
   );
 }

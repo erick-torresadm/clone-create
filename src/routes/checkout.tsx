@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/use-auth";
 import { createCartCheckout, checkPaymentStatus } from "@/lib/checkout.functions";
 import { ArrowLeft, Copy, Loader2, ShieldCheck, CheckCircle2, QrCode, Clock, Zap, Lock } from "lucide-react";
 import { ScarcityPanel } from "@/components/site/Scarcity";
+import { playSuccess } from "@/lib/sound";
 import { toast } from "sonner";
 
 const ENV = (import.meta.env.MODE === "production" ? "live" : "sandbox") as "sandbox" | "live";
@@ -83,6 +84,7 @@ function CheckoutPage() {
         if (r.paid) {
           setPaid(true);
           clear();
+          playSuccess();
           toast.success("Pagamento confirmado!");
           setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
           return;

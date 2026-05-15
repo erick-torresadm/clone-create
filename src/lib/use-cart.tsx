@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { playAddToCart } from "./sound";
 
 export type CartItem = {
   id: string;
@@ -52,6 +53,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return [...prev, { ...item, qty }];
     });
     setDrawerOpen(true);
+    playAddToCart();
   };
 
   const remove: CartCtx["remove"] = (id) =>
