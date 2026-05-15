@@ -43,14 +43,23 @@ function Carrinho() {
       .slice(0, 4);
   }, [items]);
 
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     const c = code.trim().toUpperCase();
-    const coupon = COUPONS[c];
-    if (!coupon) return toast.error("Cupom inválido");
-    if (coupon.min && subtotal < coupon.min)
-      return toast.error(`Pedido mínimo R$ ${formatBRL(coupon.min)} para usar ${c}`);
-    setApplied({ code: c, type: coupon.type, value: coupon.value });
-    toast.success(`Cupom ${c} aplicado!`);
+    if (!c) return toast.error("Digite um cupom");
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("code,discount_type,value,min_order,max_uses,used_count,active,expires_at")
+      .ilike("code", c)
+      .maybeSingle();
+    if (error || !data) return toast.error("Cupom inválido");
+    if (!data.active) return toast.error("Cupom inativo");
+    if (data.expires_at && new Date(data.expires_at) < new Date()) return toast.error("Cupom expirado");
+    if (data.max_uses != null && data.used_count >= data.max_uses) return toast.error("Cupom esgotado");
+    if (data.min_order && subtotal < Number(data.min_order))
+      return toast.error(`Pedido mínimo R$ ${formatBRL(Number(data.min_order))} para usar ${c}`);
+    const type = data.discount_type === "fixed" ? "fixed" : "percent";
+    setApplied({ code: data.code, type, value: Number(data.value) });
+    toast.success(`Cupom ${data.code} aplicado!`);
   };
 
   if (items.length === 0) {
