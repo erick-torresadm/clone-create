@@ -115,6 +115,8 @@ function dbToProduct(p: DBProduct, manualStock?: number): Product {
     badge: p.badge ?? undefined,
     stock: isExternal ? (p.external_quantity ?? 0) : (manualStock ?? 0),
     tags: p.tags ?? [],
+    provider: p.external_provider ?? null,
+    minQuantity: p.external_provider === "maxvia" ? 10 : 1,
   };
 }
 
