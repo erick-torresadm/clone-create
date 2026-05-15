@@ -700,3 +700,80 @@ function ProductPickerModal({ onClose, onPick }: { onClose: () => void; onPick: 
   );
 }
 
+
+function GifPickerModal({ onClose, onPick }: { onClose: () => void; onPick: (url: string) => void }) {
+  const [q, setQ] = useState("");
+  const [debounced, setDebounced] = useState("");
+  useEffect(() => { const t = setTimeout(() => setDebounced(q.trim()), 350); return () => clearTimeout(t); }, [q]);
+
+  const gifs = useQuery({
+    queryKey: ["gif-search", debounced],
+    queryFn: async () => {
+      // GIPHY public beta API key — works for low-volume use
+      const key = "dc6zaTOxFJmzC";
+      const base = "https://api.giphy.com/v1/gifs";
+      const url = debounced
+        ? `${base}/search?api_key=${key}&q=${encodeURIComponent(debounced)}&limit=24&rating=pg-13&lang=pt`
+        : `${base}/trending?api_key=${key}&limit=24&rating=pg-13`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("Falha ao carregar GIFs");
+      const json = await r.json();
+      return (json.data ?? []) as Array<{ id: string; title: string; images: { fixed_width: { url: string }; original: { url: string } } }>;
+    },
+    staleTime: 60_000,
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+            <Smile className="h-4 w-4 text-fuchsia-500" /> Enviar GIF
+            <span className="rounded-full bg-fuchsia-500/10 px-2 py-0.5 text-[10px] font-bold text-fuchsia-500">via GIPHY</span>
+          </div>
+          <button onClick={onClose} className="rounded-full p-1 text-muted-foreground hover:bg-background/60"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="border-b border-border p-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              autoFocus
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Buscar GIF (ex: obrigado, aplauso, ok)..."
+              className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+            />
+          </div>
+        </div>
+        <div className="overflow-y-auto p-3">
+          {gifs.isLoading && (
+            <div className="grid place-items-center py-10 text-sm text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          )}
+          {gifs.isError && (
+            <div className="p-6 text-center text-sm text-destructive">Não foi possível carregar GIFs.</div>
+          )}
+          {!gifs.isLoading && (gifs.data?.length ?? 0) === 0 && (
+            <div className="p-6 text-center text-sm text-muted-foreground">Nenhum GIF encontrado.</div>
+          )}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            {(gifs.data ?? []).map((g) => (
+              <button
+                key={g.id}
+                onClick={() => onPick(g.images.original.url)}
+                className="group relative overflow-hidden rounded-lg border border-border bg-background transition hover:border-fuchsia-500/60"
+                title={g.title}
+              >
+                <img src={g.images.fixed_width.url} alt={g.title} className="h-28 w-full object-cover transition group-hover:scale-105" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
