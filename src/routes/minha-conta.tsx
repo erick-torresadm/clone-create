@@ -87,6 +87,12 @@ function OrderCard({ order }: { order: any }) {
   const [show, setShow] = useState(false);
   const items = Array.isArray(order.items) ? order.items : [];
   const delivered = order.delivered_data;
+  const isPaid = ["paid", "processing", "delivered"].includes(order.status);
+  const manualItems = items.filter((it: any) => !it.provider);
+  const showManualSupport = isPaid && manualItems.length > 0;
+  const waMessage = encodeURIComponent(
+    `Olá! Acabei de comprar e preciso da entrega manual.\n\nPedido: #${String(order.id).slice(0, 8)}\nProdutos:\n${manualItems.map((it: any) => `• ${it.name} × ${it.quantity ?? 1}`).join("\n")}`,
+  );
   const statusColor: Record<string, string> = {
     pending: "bg-yellow-500/15 text-yellow-600",
     paid: "bg-blue-500/15 text-blue-600",
