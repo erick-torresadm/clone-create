@@ -42,6 +42,7 @@ function AdminHome() {
     { to: "/admin/pedidos", icon: Package, title: "Pedidos", desc: "Acompanhe e atualize status." },
     { to: "/admin/saques", icon: HardDrive, title: "Saques de indicação", desc: "Aprove pagamentos PIX dos afiliados." },
     { to: "/admin/suporte", icon: MessageCircle, title: "Suporte ao cliente", desc: "Converse com clientes em tempo real." },
+    { to: "/admin/revendedores", icon: BadgeCheck, title: "Revendedores", desc: "Aprove pedidos de cadastro como revendedor." },
   ];
 
   return (
