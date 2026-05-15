@@ -7,12 +7,15 @@ import { ShoppingCart, ExternalLink, Loader2 } from "lucide-react";
 export function parseChatMedia(body: string):
   | { kind: "image"; url: string }
   | { kind: "audio"; url: string }
+  | { kind: "gif"; url: string }
   | { kind: "product"; id: string }
   | null {
   const img = body.match(/^\[img\](https?:\/\/\S+)$/);
   if (img) return { kind: "image", url: img[1] };
   const aud = body.match(/^\[audio\](https?:\/\/\S+)$/);
   if (aud) return { kind: "audio", url: aud[1] };
+  const gif = body.match(/^\[gif\](https?:\/\/\S+)$/);
+  if (gif) return { kind: "gif", url: gif[1] };
   const prod = body.match(/^\[product\]([0-9a-fA-F-]{36})$/);
   if (prod) return { kind: "product", id: prod[1] };
   return null;
