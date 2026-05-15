@@ -211,8 +211,9 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       externalReference: orderRow.id,
     });
 
-    // 4. QR Code
+    // 4. QR Code — força expiração de 30 minutos para invalidar promoções
     const qr = await getPixQr(env, payment.id);
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
     await supabaseAdmin
       .from("orders")
@@ -220,7 +221,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         asaas_payment_id: payment.id,
         pix_payload: qr.payload,
         pix_qr_base64: qr.encodedImage,
-        pix_expires_at: qr.expirationDate,
+        pix_expires_at: expiresAt,
       })
       .eq("id", orderRow.id);
 
@@ -238,7 +239,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       paymentId: payment.id,
       pixPayload: qr.payload,
       pixQrBase64: qr.encodedImage,
-      expiresAt: qr.expirationDate,
+      expiresAt,
       totalBrl,
     };
   });
