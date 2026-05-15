@@ -157,6 +157,11 @@ function ProductPage() {
             </div>
             <div className="mt-1 text-xs text-muted-foreground">à vista no Pix</div>
 
+            {minQty > 1 && (
+              <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-semibold text-amber-400">
+                ℹ️ Pedido mínimo deste produto: <span className="font-extrabold">{minQty} unidades</span> (exigência do fornecedor).
+              </div>
+            )}
             <div className="mt-5 rounded-xl border border-border bg-background/40 p-4">
               {typeof product.stock === "number" && product.stock > 0 && product.stock <= 10 ? (
                 <div className="text-center text-xs font-semibold text-destructive">
