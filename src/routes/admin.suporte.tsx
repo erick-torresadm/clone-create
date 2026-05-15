@@ -194,9 +194,11 @@ function AdminSupport() {
                     onClick={() => setActiveId(c.id)}
                     className={`flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-background/40 ${isActive ? "bg-background/60" : ""}`}
                   >
-                    <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${c.status === "closed" ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary"}`}>
-                      <MessageCircle className="h-4 w-4" />
-                    </div>
+                    <img
+                      src={userAvatar(c.client_email || c.client_name || c.user_id)}
+                      alt=""
+                      className={`h-9 w-9 shrink-0 rounded-full ring-2 ${c.status === "closed" ? "ring-muted" : "ring-primary/30"}`}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-semibold text-foreground">
