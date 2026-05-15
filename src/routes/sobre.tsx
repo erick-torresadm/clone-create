@@ -25,7 +25,7 @@ function Sobre() {
   ];
   return (
     <Layout>
-      <div className="mx-auto max-w-4xl px-6 py-16">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 py-16">
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
           Sobre nós
         </span>

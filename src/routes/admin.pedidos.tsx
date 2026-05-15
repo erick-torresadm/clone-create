@@ -65,7 +65,7 @@ function AdminPedidos() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <Link to="/admin" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" />Voltar</Link>
         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Pedidos</h1>
 
@@ -85,8 +85,8 @@ function AdminPedidos() {
           </select>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-card">
-          <table className="w-full text-sm">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-card">
+          <table className="w-full min-w-[760px] text-sm">
             <thead className="bg-muted/30 text-left text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="p-3 w-8"></th>

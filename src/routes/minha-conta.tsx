@@ -52,7 +52,7 @@ function MinhaConta() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Minha conta</h1>

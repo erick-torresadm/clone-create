@@ -55,7 +55,7 @@ function RedefinirSenha() {
 
   return (
     <Layout>
-      <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-6 py-16">
+      <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-4 sm:px-6 py-16">
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-xl">
           <div className="mb-6 flex items-center justify-center gap-2">
             <span className="text-xl font-bold text-foreground">ativosfy</span>

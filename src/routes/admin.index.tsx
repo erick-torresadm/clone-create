@@ -24,7 +24,7 @@ function AdminHome() {
   if (!isAdmin) {
     return (
       <Layout>
-        <div className="mx-auto max-w-xl px-6 py-24 text-center">
+        <div className="mx-auto max-w-xl px-4 sm:px-6 py-24 text-center">
           <h1 className="text-2xl font-bold text-foreground">Acesso restrito</h1>
           <p className="mt-2 text-muted-foreground">Sua conta não tem permissão de administrador.</p>
           <button onClick={signOut} className="mt-6 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">Sair</button>
@@ -44,7 +44,7 @@ function AdminHome() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-7xl px-6 py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Painel Admin</h1>
