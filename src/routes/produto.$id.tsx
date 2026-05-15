@@ -14,7 +14,7 @@ import {
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ScarcityPanel } from "@/components/site/Scarcity";
-import { useCatalog, formatBRL, discount } from "@/lib/site-data";
+import { useCatalog, formatBRL, discount, useSettings } from "@/lib/site-data";
 import { useCart } from "@/lib/use-cart";
 
 export const Route = createFileRoute("/produto/$id")({
