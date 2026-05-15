@@ -129,6 +129,25 @@ function AdminSupport() {
 
   const active = allConvos.find((c) => c.id === activeId) ?? null;
 
+  // Phone ringing while there are unread conversations (until admin attends)
+  const [muted, setMuted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("admin_ring_muted") === "1";
+  });
+  useEffect(() => {
+    if (muted) return;
+    if (stats.unread <= 0) return;
+    const stop = startPhoneRing();
+    return () => stop();
+  }, [stats.unread, muted]);
+  function toggleMute() {
+    const next = !muted;
+    setMuted(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("admin_ring_muted", next ? "1" : "0");
+    }
+  }
+
   if (!user || !isAdmin) return null;
 
   return (
