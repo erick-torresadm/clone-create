@@ -148,13 +148,17 @@ function CheckoutPage() {
   }
 
   async function handleGenerate() {
-    if (!user && !emailValid) return toast.error("Informe um e-mail válido");
+    if (!user) {
+      if (!nameValid) return toast.error("Informe seu nome completo");
+      if (!emailValid) return toast.error("Informe um e-mail válido");
+      if (!emailMatches) return toast.error("Os e-mails não conferem");
+      if (!cpfValid) return toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido");
+    }
     setCreating(true);
     try {
       const account = await ensureAuthenticated();
       if (!account) { setCreating(false); return; }
-      const fallbackName = account.email.split("@")[0].replace(/[._-]+/g, " ").trim();
-      const finalName = (name.trim().length >= 2 ? name.trim() : fallbackName).slice(0, 80);
+      const finalName = name.trim().slice(0, 80) || account.email.split("@")[0];
       const res = await checkoutFn({
         data: {
           items: items.map((i) => ({ productId: i.id, quantity: i.qty })),
