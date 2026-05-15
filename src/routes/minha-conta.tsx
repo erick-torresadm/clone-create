@@ -69,6 +69,8 @@ function MinhaConta() {
           </div>
         </div>
 
+        <TelegramSubscriptionCard />
+
         <h2 className="mt-10 flex items-center gap-2 text-xl font-bold text-foreground"><Package className="h-5 w-5 text-primary" />Meus pedidos</h2>
         <div className="mt-4 space-y-4">
           {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
