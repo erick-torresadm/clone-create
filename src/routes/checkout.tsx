@@ -39,6 +39,12 @@ function CheckoutPage() {
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
+  const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { const raw = sessionStorage.getItem("applied_coupon"); if (raw) setCoupon(JSON.parse(raw)); } catch {}
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -46,7 +52,13 @@ function CheckoutPage() {
     else if (!items.length && !pix) navigate({ to: "/carrinho" });
   }, [items.length, navigate, user, authLoading, pix]);
 
-  const total = useMemo(() => items.reduce((s, i) => s + i.qty * i.price, 0), [items]);
+  const subtotal = useMemo(() => items.reduce((s, i) => s + i.qty * i.price, 0), [items]);
+  const discount = useMemo(() => {
+    if (!coupon) return 0;
+    if (coupon.type === "percent") return (subtotal * coupon.value) / 100;
+    return Math.min(coupon.value, subtotal);
+  }, [coupon, subtotal]);
+  const total = Math.max(0, subtotal - discount);
 
   async function handleGenerate() {
     if (!user?.email || !user?.id) return;
@@ -61,6 +73,7 @@ function CheckoutPage() {
           cpfCnpj: cpf.replace(/\D/g, "") || undefined,
           userId: user.id,
           environment: ENV,
+          couponCode: coupon?.code,
         },
       });
       setPix(res);
@@ -84,6 +97,7 @@ function CheckoutPage() {
         if (r.paid) {
           setPaid(true);
           clear();
+          try { sessionStorage.removeItem("applied_coupon"); } catch {}
           playSuccess();
           toast.success("Pagamento confirmado!");
           setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
@@ -245,6 +259,18 @@ function CheckoutPage() {
               </li>
             ))}
           </ul>
+          {coupon && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground">R$ {subtotal.toFixed(2)}</span>
+            </div>
+          )}
+          {coupon && discount > 0 && (
+            <div className="flex items-center justify-between text-xs text-primary">
+              <span>Cupom <b>{coupon.code}</b></span>
+              <span>- R$ {discount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between border-t border-border pt-4 text-base">
             <span className="font-semibold text-foreground">Total</span>
             <span className="text-xl font-extrabold text-primary">R$ {(pix?.totalBrl ?? total).toFixed(2)}</span>

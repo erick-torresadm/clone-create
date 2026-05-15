@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
 import { ShoppingCart, ArrowRight, Trash2, Minus, Plus, Tag, ShieldCheck, Zap } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/lib/use-cart";
 import { useCatalog, formatBRL } from "@/lib/site-data";
 import { toast } from "sonner";
@@ -25,7 +25,15 @@ function Carrinho() {
   const { allProducts: ALL_PRODUCTS } = useCatalog();
   const navigate = useNavigate();
   const [code, setCode] = useState("");
-  const [applied, setApplied] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
+  const [applied, setApplied] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(() => {
+    if (typeof window === "undefined") return null;
+    try { const raw = sessionStorage.getItem("applied_coupon"); return raw ? JSON.parse(raw) : null; } catch { return null; }
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (applied) sessionStorage.setItem("applied_coupon", JSON.stringify(applied));
+    else sessionStorage.removeItem("applied_coupon");
+  }, [applied]);
 
   const discount = useMemo(() => {
     if (!applied) return 0;
