@@ -255,3 +255,21 @@ function CheckoutPage() {
     </Layout>
   );
 }
+
+function PixCountdown({ expiresAt }: { expiresAt: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const ms = Math.max(0, new Date(expiresAt).getTime() - now);
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const expired = ms <= 0;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${expired ? "bg-destructive/15 text-destructive" : "bg-primary/15 text-primary"}`}>
+      <Clock className="h-3.5 w-3.5" />
+      {expired ? "Expirado" : `Expira em ${m}:${String(s).padStart(2, "0")}`}
+    </span>
+  );
+}
