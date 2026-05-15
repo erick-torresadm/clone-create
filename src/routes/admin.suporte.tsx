@@ -4,7 +4,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Send, Loader2, MessageCircle, Search, CheckCircle2, RotateCcw, Inbox, Mail, Globe, Monitor, Image as ImageIcon, Mic, Square, BellOff, Bell, Package, X } from "lucide-react";
+import { ArrowLeft, Send, Loader2, MessageCircle, Search, CheckCircle2, RotateCcw, Inbox, Mail, Globe, Monitor, Image as ImageIcon, Mic, Square, BellOff, Bell, Package, X, Smile } from "lucide-react";
 import { ChatProductCard, parseChatMedia } from "@/components/site/ChatProductCard";
 import { playMessage, startPhoneRing } from "@/lib/sound";
 import { toast } from "sonner";
