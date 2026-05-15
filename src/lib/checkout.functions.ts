@@ -96,7 +96,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const ids = data.items.map((i) => i.productId);
     const { data: products, error } = await supabaseAdmin
       .from("products")
-      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity")
+      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity,min_quantity")
       .in("id", ids);
     if (error) throw new Error(error.message);
     if (!products || products.length !== ids.length) throw new Error("Produto não encontrado");
