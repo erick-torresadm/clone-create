@@ -264,7 +264,7 @@ function CheckoutPage() {
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <h2 className="text-base font-bold text-foreground">Compra rápida</h2>
-                    <p className="text-[11px] text-muted-foreground">Só precisamos do seu e-mail · entrega imediata após o Pix</p>
+                    <p className="text-[11px] text-muted-foreground">Preencha seus dados · entrega imediata após o Pix</p>
                   </div>
                   <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
                     <Lock className="h-3 w-3" /> 100% seguro
