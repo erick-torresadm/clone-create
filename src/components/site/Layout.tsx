@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+
 import { Starfield } from "./Starfield";
 import { SupportChat } from "./SupportChat";
 import { useSettings } from "@/lib/site-data";
