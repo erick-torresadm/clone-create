@@ -13,6 +13,7 @@ type Convo = {
   user_id: string;
   subject: string | null;
   status: string;
+  closed_at?: string | null;
   last_message_at: string;
   unread_user: number;
   unread_admin: number;
