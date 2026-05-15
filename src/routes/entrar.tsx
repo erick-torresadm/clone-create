@@ -35,13 +35,15 @@ function strengthScore(c: ReturnType<typeof checkPassword>) {
 }
 
 function Entrar() {
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const { redirect, ref, mode: initialMode } = Route.useSearch();
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(
+    initialMode === "signup" || initialMode === "forgot" ? (initialMode as any) : "login",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { redirect, ref } = Route.useSearch();
   const [refCode, setRefCode] = useState<string>(ref ?? "");
   useEffect(() => {
     if (typeof window === "undefined") return;
