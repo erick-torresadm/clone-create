@@ -300,17 +300,112 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
     }
   }, [convo.id, convo.unread_admin, qc]);
 
+  // Typing broadcast (admin <-> user)
+  const [userTyping, setUserTyping] = useState(false);
+  const typingChRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingTimeout = useRef<number | null>(null);
+  const lastSent = useRef<number>(0);
+  useEffect(() => {
+    const ch = supabase.channel(`support-typing-${convo.id}`, { config: { broadcast: { self: false } } });
+    ch.on("broadcast", { event: "typing" }, (msg: any) => {
+      if (msg?.payload?.from === "user") {
+        setUserTyping(true);
+        if (typingTimeout.current) window.clearTimeout(typingTimeout.current);
+        typingTimeout.current = window.setTimeout(() => setUserTyping(false), 2500);
+      }
+    });
+    ch.subscribe();
+    typingChRef.current = ch;
+    return () => {
+      if (typingTimeout.current) window.clearTimeout(typingTimeout.current);
+      supabase.removeChannel(ch);
+      typingChRef.current = null;
+    };
+  }, [convo.id]);
+  const broadcastTyping = () => {
+    const ch = typingChRef.current;
+    if (!ch) return;
+    const now = Date.now();
+    if (now - lastSent.current < 1500) return;
+    lastSent.current = now;
+    ch.send({ type: "broadcast", event: "typing", payload: { from: "admin" } });
+  };
+
   const [draft, setDraft] = useState("");
   const sending = useMutation({
     mutationFn: async (body: string) => {
       const { data: u } = await supabase.auth.getUser();
-      const { error } = await supabase.from("support_messages").insert({
-        conversation_id: convo.id, sender: "admin", sender_id: u.user?.id, body,
-      });
+      const { data: inserted, error } = await supabase
+        .from("support_messages")
+        .insert({ conversation_id: convo.id, sender: "admin", sender_id: u.user?.id, body })
+        .select()
+        .single();
       if (error) throw error;
+      return inserted as Msg;
     },
-    onSuccess: () => { setDraft(""); qc.invalidateQueries({ queryKey: ["admin-msgs", convo.id] }); },
+    onSuccess: (msg) => {
+      setDraft("");
+      qc.setQueryData<Msg[]>(["admin-msgs", convo.id], (cur) => {
+        const list = cur ?? [];
+        if (list.some((x) => x.id === msg.id)) return list;
+        return [...list, msg];
+      });
+      qc.invalidateQueries({ queryKey: ["admin-convos"] });
+    },
+    onError: (e: any) => toast.error(e.message || "Erro ao enviar"),
   });
+
+  // Upload image / audio (admin only)
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  async function uploadAndSend(file: File, kind: "image" | "audio") {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || (kind === "image" ? "jpg" : "webm");
+      const path = `${convo.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("support-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("support-media").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const body = `[${kind === "image" ? "img" : "audio"}]${url}`;
+      sending.mutate(body);
+    } catch (e: any) {
+      toast.error(e.message || "Falha ao enviar arquivo");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // Audio recording
+  const [recording, setRecording] = useState(false);
+  const mediaRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  async function toggleRecord() {
+    if (recording) {
+      mediaRef.current?.stop();
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const file = new File([blob], `audio-${Date.now()}.webm`, { type: "audio/webm" });
+        setRecording(false);
+        await uploadAndSend(file, "audio");
+      };
+      mr.start();
+      mediaRef.current = mr;
+      setRecording(true);
+    } catch (e: any) {
+      toast.error("Permissão de microfone negada");
+    }
+  }
 
   const toggleStatus = useMutation({
     mutationFn: async () => {
@@ -327,9 +422,8 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
   });
 
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => { ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: "smooth" }); }, [msgs.length]);
+  useEffect(() => { ref.current?.scrollTo({ top: ref.current.scrollHeight, behavior: "smooth" }); }, [msgs.length, userTyping]);
 
-  // Group by day
   const grouped = useMemo(() => {
     const out: { day: string; items: Msg[] }[] = [];
     for (const m of msgs) {
@@ -341,34 +435,39 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
     return out;
   }, [msgs]);
 
+  const clientAvatar = userAvatar(convo.client_email || convo.client_name || convo.user_id);
+
   return (
     <div className="flex h-[70vh] flex-col">
       <div className="border-b border-border px-5 py-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-              {convo.client_name || convo.client_email || `Cliente ${convo.user_id.slice(0, 8)}…`}
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${convo.status === "closed" ? "bg-muted text-muted-foreground" : "bg-emerald-500/15 text-emerald-500"}`}>
-                {convo.status === "closed" ? "Fechada" : "Aberta"}
-              </span>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-              {convo.client_email && <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" />{convo.client_email}</span>}
-              {convo.client_ip && <span className="inline-flex items-center gap-1"><Globe className="h-3 w-3" />{convo.client_ip}</span>}
-              <span>Total: {msgs.length} {msgs.length === 1 ? "mensagem" : "mensagens"}</span>
-            </div>
-            {convo.client_user_agent && (
-              <div className="mt-0.5 inline-flex items-center gap-1 truncate text-[10px] text-muted-foreground/70" title={convo.client_user_agent}>
-                <Monitor className="h-3 w-3" />{convo.client_user_agent}
+          <div className="flex min-w-0 items-start gap-3">
+            <img src={clientAvatar} alt="" className="h-10 w-10 shrink-0 rounded-full ring-2 ring-primary/30" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-sm font-bold text-foreground">
+                {convo.client_name || convo.client_email || `Cliente ${convo.user_id.slice(0, 8)}…`}
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${convo.status === "closed" ? "bg-muted text-muted-foreground" : "bg-emerald-500/15 text-emerald-500"}`}>
+                  {convo.status === "closed" ? "Fechada" : "Aberta"}
+                </span>
               </div>
-            )}
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                {convo.client_email && <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" />{convo.client_email}</span>}
+                {convo.client_ip && <span className="inline-flex items-center gap-1"><Globe className="h-3 w-3" />{convo.client_ip}</span>}
+                <span>Total: {msgs.length} {msgs.length === 1 ? "mensagem" : "mensagens"}</span>
+              </div>
+              {convo.client_user_agent && (
+                <div className="mt-0.5 inline-flex items-center gap-1 truncate text-[10px] text-muted-foreground/70" title={convo.client_user_agent}>
+                  <Monitor className="h-3 w-3" />{convo.client_user_agent}
+                </div>
+              )}
+            </div>
           </div>
           <button
             onClick={() => toggleStatus.mutate()}
             disabled={toggleStatus.isPending}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-background/60 disabled:opacity-50"
           >
-            {convo.status === "closed" ? <><RotateCcw className="h-3.5 w-3.5" /> Reabrir</> : <><CheckCircle2 className="h-3.5 w-3.5" /> Resolver</>}
+            {convo.status === "closed" ? <><RotateCcw className="h-3.5 w-3.5" /> Reabrir</> : <><CheckCircle2 className="h-3.5 w-3.5" /> Encerrar</>}
           </button>
         </div>
       </div>
@@ -381,28 +480,100 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
               {g.day}
               <div className="h-px flex-1 bg-border" />
             </div>
-            {g.items.map((m) => (
-              <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[70%] rounded-2xl px-3.5 py-2 text-sm ${m.sender === "admin" ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border border-border bg-card text-foreground"}`}>
-                  <div className="whitespace-pre-wrap break-words">{m.body}</div>
-                  <div className={`mt-1 text-[10px] ${m.sender === "admin" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                    {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                </div>
-              </div>
-            ))}
+            {g.items.map((m) => <AdminBubble key={m.id} m={m} clientAvatar={clientAvatar} />)}
           </div>
         ))}
+        {userTyping && (
+          <div className="flex items-end gap-2">
+            <img src={clientAvatar} alt="" className="h-6 w-6 rounded-full" />
+            <div className="rounded-2xl rounded-bl-sm border border-border bg-card px-3 py-2">
+              <span className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
+                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
+              </span>
+            </div>
+          </div>
+        )}
       </div>
       <form
         onSubmit={(e) => { e.preventDefault(); const v = draft.trim(); if (v && !sending.isPending) sending.mutate(v); }}
         className="flex items-center gap-2 border-t border-border p-3"
       >
-        <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Resposta para o cliente..." className="flex-1 rounded-full border border-border bg-background px-3.5 py-2 text-sm text-foreground outline-none focus:border-primary" />
-        <button type="submit" disabled={!draft.trim() || sending.isPending} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-50">
-          {sending.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) uploadAndSend(f, "image");
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading || sending.isPending}
+          title="Enviar imagem"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:opacity-50"
+        >
+          <ImageIcon className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={toggleRecord}
+          disabled={uploading || sending.isPending}
+          title={recording ? "Parar gravação" : "Gravar áudio"}
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border transition disabled:opacity-50 ${recording ? "border-destructive bg-destructive/10 text-destructive animate-pulse" : "border-border text-muted-foreground hover:border-primary/50 hover:text-primary"}`}
+        >
+          {recording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        </button>
+        <input
+          value={draft}
+          onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
+          placeholder="Resposta para o cliente..."
+          className="flex-1 rounded-full border border-border bg-background px-3.5 py-2 text-sm text-foreground outline-none focus:border-primary"
+        />
+        <button type="submit" disabled={!draft.trim() || sending.isPending || uploading} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-50">
+          {sending.isPending || uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>
       </form>
+    </div>
+  );
+}
+
+function AdminBubble({ m, clientAvatar }: { m: Msg; clientAvatar: string }) {
+  const isAdmin = m.sender === "admin";
+  const media = parseMedia(m.body);
+  return (
+    <div className={`flex items-end gap-2 ${isAdmin ? "flex-row-reverse" : ""}`}>
+      <img src={isAdmin ? adminAvatar() : clientAvatar} alt="" className="h-7 w-7 shrink-0 rounded-full" />
+      <div className={`max-w-[70%] rounded-2xl px-3.5 py-2 text-sm ${isAdmin ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border border-border bg-card text-foreground"}`}>
+        {media?.kind === "image" ? (
+          <a href={media.url} target="_blank" rel="noreferrer">
+            <img src={media.url} alt="" className="max-h-56 rounded-lg" />
+          </a>
+        ) : media?.kind === "audio" ? (
+          <audio controls src={media.url} className="max-w-[12rem]" />
+        ) : (
+          <div className="whitespace-pre-wrap break-words">{m.body}</div>
+        )}
+        <div className={`mt-1 text-[10px] ${isAdmin ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+          {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function parseMedia(body: string): { kind: "image" | "audio"; url: string } | null {
+  const img = body.match(/^\[img\](https?:\/\/\S+)$/);
+  if (img) return { kind: "image", url: img[1] };
+  const aud = body.match(/^\[audio\](https?:\/\/\S+)$/);
+  if (aud) return { kind: "audio", url: aud[1] };
+  return null;
+}
     </div>
   );
 }
