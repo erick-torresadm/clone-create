@@ -11,8 +11,8 @@ export const Route = createFileRoute("/entrar")({
   }),
   head: () => ({
     meta: [
-      { title: "Entrar — FDM store" },
-      { name: "description", content: "Acesse sua conta na FDM store." },
+      { title: "Entrar — ativosfy" },
+      { name: "description", content: "Acesse sua conta na ativosfy." },
     ],
     links: [{ rel: "canonical", href: "/entrar" }],
   }),
@@ -32,7 +32,7 @@ function strengthScore(c: ReturnType<typeof checkPassword>) {
 }
 
 function Entrar() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -42,7 +42,9 @@ function Entrar() {
 
   const checks = useMemo(() => checkPassword(password), [password]);
   const score = strengthScore(checks);
-  const canSubmit = mode === "login" ? password.length > 0 : score >= 1 && password.length >= 6;
+  const canSubmit = mode === "forgot"
+    ? email.length > 3
+    : mode === "login" ? password.length > 0 : score >= 1 && password.length >= 6;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +54,14 @@ function Entrar() {
     }
     setLoading(true);
     try {
-      if (mode === "signup") {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/redefinir-senha`,
+        });
+        if (error) throw error;
+        toast.success("Enviamos um link de recuperação para seu e-mail.");
+        setMode("login");
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: `${window.location.origin}/admin` },
@@ -82,32 +91,34 @@ function Entrar() {
       <div className="mx-auto grid min-h-[70vh] max-w-md place-items-center px-6 py-16">
         <div className="w-full rounded-2xl border border-border bg-card p-8 shadow-xl">
           <div className="mb-6 flex items-center justify-center gap-2">
-            <span className="text-xl font-bold text-foreground">FDM store</span>
+            <span className="text-xl font-bold text-foreground">ativosfy</span>
             <BadgeCheck className="h-5 w-5 text-primary" />
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-muted/50 p-1">
-            <button
-              type="button"
-              onClick={() => setMode("login")}
-              className={`rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("signup")}
-              className={`rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              Criar conta
-            </button>
-          </div>
+          {mode !== "forgot" && (
+            <div className="mb-6 grid grid-cols-2 gap-1 rounded-lg bg-muted/50 p-1">
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className={`rounded-md py-2 text-sm font-medium transition ${mode === "login" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Entrar
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className={`rounded-md py-2 text-sm font-medium transition ${mode === "signup" ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Criar conta
+              </button>
+            </div>
+          )}
 
           <h1 className="text-center text-2xl font-bold text-foreground">
-            {mode === "login" ? "Bem-vindo de volta" : "Crie sua conta grátis"}
+            {mode === "login" ? "Bem-vindo de volta" : mode === "signup" ? "Crie sua conta grátis" : "Recuperar senha"}
           </h1>
           <p className="mt-1 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Acesse sua conta para continuar" : "Leva menos de 1 minuto — entrega instantânea"}
+            {mode === "login" ? "Acesse sua conta para continuar" : mode === "signup" ? "Leva menos de 1 minuto — entrega instantânea" : "Enviaremos um link para você criar uma nova senha"}
           </p>
 
           {mode === "signup" && (
@@ -141,73 +152,92 @@ function Entrar() {
               />
             </div>
 
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label className="block text-sm text-muted-foreground">Senha</label>
-                {mode === "signup" && password && (
-                  <span className={`text-[11px] font-medium ${score === 3 ? "text-emerald-600" : score === 2 ? "text-yellow-600" : "text-red-600"}`}>
-                    {strengthLabel}
-                  </span>
+            {mode !== "forgot" && (
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="block text-sm text-muted-foreground">Senha</label>
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode("forgot"); setPassword(""); }}
+                      className="text-[11px] font-medium text-primary hover:underline"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  )}
+                  {mode === "signup" && password && (
+                    <span className={`text-[11px] font-medium ${score === 3 ? "text-emerald-600" : score === 2 ? "text-yellow-600" : "text-red-600"}`}>
+                      {strengthLabel}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    type={showPwd ? "text" : "password"}
+                    minLength={mode === "signup" ? 6 : 1}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    placeholder={mode === "signup" ? "Crie uma senha forte" : "Sua senha"}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((s) => !s)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
+                    tabIndex={-1}
+                  >
+                    {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                {mode === "signup" && (
+                  <>
+                    {password && (
+                      <div className="mt-2 flex gap-1">
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className={`h-1 flex-1 rounded-full transition ${i < score ? strengthColor : "bg-muted"}`} />
+                        ))}
+                      </div>
+                    )}
+                    <ul className="mt-3 space-y-1 rounded-lg bg-muted/40 p-3 text-xs">
+                      <Req ok={checks.length} label="Pelo menos 6 caracteres" />
+                      <Req ok={checks.letter} label="Pelo menos 1 letra (recomendado)" />
+                      <Req ok={checks.number} label="Pelo menos 1 número (recomendado)" />
+                      <li className="mt-2 flex items-start gap-1.5 text-muted-foreground">
+                        <Info className="mt-0.5 h-3 w-3 shrink-0" />
+                        <span>Dica: use uma frase fácil de lembrar, ex: <code className="rounded bg-background px-1">cafe-com-leite-2026</code></span>
+                      </li>
+                    </ul>
+                  </>
                 )}
               </div>
-              <div className="relative">
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  type={showPwd ? "text" : "password"}
-                  minLength={mode === "signup" ? 6 : 1}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  placeholder={mode === "signup" ? "Crie uma senha forte" : "Sua senha"}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd((s) => !s)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
-                  tabIndex={-1}
-                >
-                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-
-              {mode === "signup" && (
-                <>
-                  {password && (
-                    <div className="mt-2 flex gap-1">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className={`h-1 flex-1 rounded-full transition ${i < score ? strengthColor : "bg-muted"}`} />
-                      ))}
-                    </div>
-                  )}
-                  <ul className="mt-3 space-y-1 rounded-lg bg-muted/40 p-3 text-xs">
-                    <Req ok={checks.length} label="Pelo menos 6 caracteres" />
-                    <Req ok={checks.letter} label="Pelo menos 1 letra (recomendado)" />
-                    <Req ok={checks.number} label="Pelo menos 1 número (recomendado)" />
-                    <li className="mt-2 flex items-start gap-1.5 text-muted-foreground">
-                      <Info className="mt-0.5 h-3 w-3 shrink-0" />
-                      <span>Dica: use uma frase fácil de lembrar, ex: <code className="rounded bg-background px-1">cafe-com-leite-2026</code></span>
-                    </li>
-                  </ul>
-                </>
-              )}
-            </div>
+            )}
 
             <button
               disabled={loading || !canSubmit}
               className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_rgba(99,140,255,0.7)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Aguarde..." : mode === "login" ? "Entrar" : "Criar conta"}
+              {loading ? "Aguarde..." : mode === "login" ? "Entrar" : mode === "signup" ? "Criar conta" : "Enviar link de recuperação"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Não tem conta?" : "Já tem conta?"}{" "}
-            <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setPassword(""); }}
-              className="font-medium text-primary hover:underline">
-              {mode === "login" ? "Cadastre-se" : "Entrar"}
-            </button>
+            {mode === "forgot" ? (
+              <button onClick={() => setMode("login")} className="font-medium text-primary hover:underline">
+                Voltar para entrar
+              </button>
+            ) : (
+              <>
+                {mode === "login" ? "Não tem conta?" : "Já tem conta?"}{" "}
+                <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setPassword(""); }}
+                  className="font-medium text-primary hover:underline">
+                  {mode === "login" ? "Cadastre-se" : "Entrar"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>

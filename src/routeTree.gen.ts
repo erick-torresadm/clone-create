@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as GarantiaRouteImport } from './routes/garantia'
@@ -28,11 +29,17 @@ import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminAparenciaRouteImport } from './routes/admin.aparencia'
 import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
+import { Route as ApiPublicSendAbandonedCartRouteImport } from './routes/api/public/send-abandoned-cart'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProdutosRoute = ProdutosRouteImport.update({
@@ -126,6 +133,12 @@ const ApiPublicSyncMaxviaStockRoute =
     path: '/api/public/sync-maxvia-stock',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSendAbandonedCartRoute =
+  ApiPublicSendAbandonedCartRouteImport.update({
+    id: '/api/public/send-abandoned-cart',
+    path: '/api/public/send-abandoned-cart',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas/webhook',
   path: '/api/public/asaas/webhook',
@@ -142,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -151,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
 }
@@ -164,6 +179,7 @@ export interface FileRoutesByTo {
   '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -173,6 +189,7 @@ export interface FileRoutesByTo {
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
 }
@@ -187,6 +204,7 @@ export interface FileRoutesById {
   '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -196,6 +214,7 @@ export interface FileRoutesById {
   '/admin/produtos': typeof AdminProdutosRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
 }
@@ -211,6 +230,7 @@ export interface FileRouteTypes {
     | '/garantia'
     | '/minha-conta'
     | '/produtos'
+    | '/redefinir-senha'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -220,6 +240,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/produto/$id'
     | '/admin/'
+    | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -233,6 +254,7 @@ export interface FileRouteTypes {
     | '/garantia'
     | '/minha-conta'
     | '/produtos'
+    | '/redefinir-senha'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -242,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/produto/$id'
     | '/admin'
+    | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
   id:
@@ -255,6 +278,7 @@ export interface FileRouteTypes {
     | '/garantia'
     | '/minha-conta'
     | '/produtos'
+    | '/redefinir-senha'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -264,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/produtos'
     | '/produto/$id'
     | '/admin/'
+    | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
   fileRoutesById: FileRoutesById
@@ -278,6 +303,7 @@ export interface RootRouteChildren {
   GarantiaRoute: typeof GarantiaRoute
   MinhaContaRoute: typeof MinhaContaRoute
   ProdutosRoute: typeof ProdutosRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SobreRoute: typeof SobreRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
@@ -287,6 +313,7 @@ export interface RootRouteChildren {
   AdminProdutosRoute: typeof AdminProdutosRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
@@ -298,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produtos': {
@@ -426,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSyncMaxviaStockRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/send-abandoned-cart': {
+      id: '/api/public/send-abandoned-cart'
+      path: '/api/public/send-abandoned-cart'
+      fullPath: '/api/public/send-abandoned-cart'
+      preLoaderRoute: typeof ApiPublicSendAbandonedCartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/asaas/webhook': {
       id: '/api/public/asaas/webhook'
       path: '/api/public/asaas/webhook'
@@ -446,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   GarantiaRoute: GarantiaRoute,
   MinhaContaRoute: MinhaContaRoute,
   ProdutosRoute: ProdutosRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   SobreRoute: SobreRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
@@ -455,6 +497,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProdutosRoute: AdminProdutosRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
+  ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
