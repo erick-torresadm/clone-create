@@ -532,6 +532,7 @@ export type Database = {
           client_ip: string | null
           client_name: string | null
           client_user_agent: string | null
+          closed_at: string | null
           created_at: string
           id: string
           last_message_at: string
@@ -546,6 +547,7 @@ export type Database = {
           client_ip?: string | null
           client_name?: string | null
           client_user_agent?: string | null
+          closed_at?: string | null
           created_at?: string
           id?: string
           last_message_at?: string
@@ -560,6 +562,7 @@ export type Database = {
           client_ip?: string | null
           client_name?: string | null
           client_user_agent?: string | null
+          closed_at?: string | null
           created_at?: string
           id?: string
           last_message_at?: string
