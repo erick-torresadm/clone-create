@@ -7,7 +7,9 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { checkPaymentStatus } from "@/lib/checkout.functions";
-import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send, BadgeCheck } from "lucide-react";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send, BadgeCheck, KeyRound, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { translateAuthError } from "@/lib/auth-errors";
 import { getMyTelegramStatus, setTelegramSubscriptionActive } from "@/lib/telegram.functions";
 import { useResellerStatus } from "@/lib/reseller";
 
@@ -116,6 +118,8 @@ function MinhaConta() {
             </Link>
           </div>
         )}
+
+        <PasswordCard email={user.email ?? ""} />
 
         <TelegramSubscriptionCard />
 
@@ -377,6 +381,98 @@ function TelegramSubscriptionCard() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function PasswordCard({ email }: { email: string }) {
+  const [open, setOpen] = useState(false);
+  const [pwd, setPwd] = useState("");
+  const [pwd2, setPwd2] = useState("");
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  async function save() {
+    if (pwd.length < 6) return toast.error("A senha precisa ter pelo menos 6 caracteres");
+    if (pwd !== pwd2) return toast.error("As senhas não conferem");
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: pwd });
+    setSaving(false);
+    if (error) return toast.error(translateAuthError(error.message, "Não foi possível salvar a senha"));
+    setDone(true);
+    setPwd(""); setPwd2("");
+    toast.success("Senha atualizada com sucesso");
+    setTimeout(() => { setDone(false); setOpen(false); }, 1500);
+  }
+
+  async function sendReset() {
+    if (!email) return;
+    setSending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    });
+    setSending(false);
+    if (error) return toast.error(translateAuthError(error.message, "Falha ao enviar e-mail"));
+    toast.success("Enviamos um link de redefinição para " + email);
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <KeyRound className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-foreground">Senha de acesso</h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Acabou de comprar e sua conta foi criada automaticamente? Defina uma senha sua agora.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={sendReset} disabled={sending}>
+            {sending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Enviar link por e-mail
+          </Button>
+          <Button size="sm" onClick={() => setOpen((v) => !v)}>
+            {open ? "Cancelar" : "Trocar senha agora"}
+          </Button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="relative">
+            <Input
+              type={show ? "text" : "password"}
+              value={pwd}
+              onChange={(e) => setPwd(e.target.value)}
+              placeholder="Nova senha (mín. 6 caracteres)"
+              autoComplete="new-password"
+            />
+            <button type="button" onClick={() => setShow((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          <Input
+            type={show ? "text" : "password"}
+            value={pwd2}
+            onChange={(e) => setPwd2(e.target.value)}
+            placeholder="Confirme a nova senha"
+            autoComplete="new-password"
+          />
+          <div className="sm:col-span-2">
+            <Button className="w-full" onClick={save} disabled={saving || done}>
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : done ? <Check className="mr-2 h-4 w-4" /> : null}
+              {done ? "Senha salva!" : "Salvar nova senha"}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
