@@ -6,6 +6,7 @@ import { useLocation } from "@tanstack/react-router";
 import { MessageCircle, X, Send, Loader2, CheckCircle2, Clock } from "lucide-react";
 import { playMessage } from "@/lib/sound";
 import { userAvatar, adminAvatar } from "@/lib/avatar";
+import { parseChatMedia, ChatProductCard } from "@/components/site/ChatProductCard";
 
 type Convo = {
   id: string;
