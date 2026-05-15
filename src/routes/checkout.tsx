@@ -148,11 +148,13 @@ function CheckoutPage() {
     try {
       const account = await ensureAuthenticated();
       if (!account) { setCreating(false); return; }
+      const fallbackName = account.email.split("@")[0].replace(/[._-]+/g, " ").trim();
+      const finalName = (name.trim().length >= 2 ? name.trim() : fallbackName).slice(0, 80);
       const res = await checkoutFn({
         data: {
           items: items.map((i) => ({ productId: i.id, quantity: i.qty })),
           customerEmail: account.email,
-          customerName: name.trim(),
+          customerName: finalName.length >= 2 ? finalName : "Cliente",
           cpfCnpj: cpf.replace(/\D/g, "") || undefined,
           userId: account.id,
           environment: ENV,
