@@ -7,7 +7,8 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { checkPaymentStatus } from "@/lib/checkout.functions";
-import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle } from "lucide-react";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send } from "lucide-react";
+import { getMyTelegramStatus, setTelegramSubscriptionActive } from "@/lib/telegram.functions";
 
 const MANUAL_SUPPORT_WHATSAPP = "5511930070320";
 import { toast } from "sonner";
