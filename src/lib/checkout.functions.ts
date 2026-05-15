@@ -123,10 +123,13 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     function priceFor(p: any): number {
       const base = Number(p.price);
       if (!isReseller) return base;
+      // API: preço baseado no CUSTO (external_price * câmbio * margem), não no preço público
       if (p.source && p.source !== "manual" && p.external_price && brlPerUsd) {
-        const margin = Number(p.external_price) * brlPerUsd * 1.5;
-        return Math.max(base * (1 - discountPct / 100), margin);
+        const marginMult = 1 + discountPct / 100;
+        const costPrice = Number(p.external_price) * brlPerUsd * marginMult;
+        return Math.min(costPrice, base);
       }
+      // Manual: desconto sobre o preço público
       return base * (1 - discountPct / 100);
     }
 

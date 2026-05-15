@@ -57,13 +57,13 @@ export function useResellerStatus(): {
 }
 
 /**
- * Calcula o preço para revendedor, sem expor o custo de fornecedor.
- * - Manual: price * (1 - discountPct/100)
- * - API com external_price: external_price * brl_per_usd * (1 + discountPct/100 invertido)
- *   → na prática, aplica também desconto sobre o preço público.
+ * Preço de revendedor:
+ * - Produto via API com external_price: usa o CUSTO real (external_price * câmbio)
+ *   acrescido de uma margem definida por `discountPct` (ex.: 50 → custo * 1.5).
+ *   Ignora completamente o preço de cliente final — o revendedor paga baseado no custo.
+ * - Produto manual (sem custo de API): aplica desconto `discountPct` sobre o preço público.
  *
- * Mantemos a fórmula consistente: o cliente sempre vê desconto de discountPct
- * sobre o preço público — assim não vaza nenhum dado do fornecedor.
+ * Nunca expomos o custo no front; só o resultado final do cálculo.
  */
 export function resellerPriceFor(
   p: Pick<DBProduct, "price" | "source" | "external_price" | "external_currency">,
@@ -72,9 +72,8 @@ export function resellerPriceFor(
 ): number {
   if (!discountPct || discountPct <= 0) return Number(p.price);
   const base = Number(p.price);
-  const publicDiscount = base * (1 - discountPct / 100);
 
-  // 50% de margem sobre o custo, quando faz sentido
+  // API: preço = custo * câmbio * (1 + margem%)
   if (p.source && p.source !== "manual" && p.external_price && settings) {
     const cur = (p.external_currency || "USD").toUpperCase();
     const rate =
@@ -83,13 +82,15 @@ export function resellerPriceFor(
       : cur === "BRL" ? 1
       : 0;
     if (rate > 0) {
-      const marginPrice = Number(p.external_price) * rate * 1.5;
-      // nunca cobrar abaixo de custo*1.5; nunca acima do preço público
-      const floor = Math.min(marginPrice, base);
-      return round2(Math.max(publicDiscount, floor));
+      const marginMult = 1 + discountPct / 100;
+      const costPrice = Number(p.external_price) * rate * marginMult;
+      // Nunca cobrar acima do preço público (senão deixa de ser vantagem).
+      return round2(Math.min(costPrice, base));
     }
   }
-  return round2(publicDiscount);
+
+  // Manual: desconto sobre o preço público
+  return round2(base * (1 - discountPct / 100));
 }
 
 function round2(n: number) {
