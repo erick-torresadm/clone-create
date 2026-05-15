@@ -233,3 +233,73 @@ function OrderCard({ order }: { order: any }) {
     </div>
   );
 }
+
+function TelegramSubscriptionCard() {
+  const statusFn = useServerFn(getMyTelegramStatus);
+  const toggleFn = useServerFn(setTelegramSubscriptionActive);
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["my-telegram-status"],
+    queryFn: () => statusFn(),
+    refetchInterval: (q) => ((q.state.data as any)?.subscriber ? false : 5000),
+  });
+  const sub = (data as any)?.subscriber;
+  const deepLink = (data as any)?.deepLink;
+  const botUsername = (data as any)?.botUsername;
+
+  async function toggle(active: boolean) {
+    if (!sub) return;
+    try {
+      await toggleFn({ data: { active } });
+      toast.success(active ? "Notificações reativadas" : "Notificações pausadas");
+      refetch();
+    } catch (e: any) {
+      toast.error(e.message || "Erro");
+    }
+  }
+
+  return (
+    <div className="mt-8 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 p-5">
+      <div className="flex items-start gap-3">
+        <div className="rounded-xl bg-primary/15 p-2 text-primary">
+          <Send className="h-5 w-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-bold text-foreground">Notificações de promoções no Telegram</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Receba avisos instantâneos quando lançarmos novos cupons ou produtos em promoção.
+          </p>
+
+          {isLoading && <p className="mt-3 text-xs text-muted-foreground">Carregando…</p>}
+
+          {!isLoading && !sub && deepLink && (
+            <a
+              href={deepLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#229ED9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1b8bc0] transition-colors"
+            >
+              <Send className="h-4 w-4" />
+              Ativar no Telegram
+            </a>
+          )}
+
+          {!isLoading && !sub && !deepLink && botUsername === null && (
+            <p className="mt-3 text-xs text-amber-600">Bot do Telegram ainda não configurado.</p>
+          )}
+
+          {!isLoading && sub && (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${sub.active ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
+                {sub.active ? "🔔 Ativo" : "🔕 Pausado"}
+                {sub.firstName ? ` · ${sub.firstName}` : ""}
+              </span>
+              <Button size="sm" variant="outline" onClick={() => toggle(!sub.active)}>
+                {sub.active ? "Pausar avisos" : "Reativar avisos"}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
