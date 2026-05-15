@@ -210,3 +210,115 @@ async function _getSalesDashboard(_context: any) {
 }
 
 // Re-export with middleware applied (workaround: redefine using the chain properly)
+
+// ============================================================
+// CLEANUP — manter o banco abaixo do limite do free tier
+// ============================================================
+
+type CleanupOptions = {
+  ordersDays: number;          // delete paid/delivered orders older than N days (0 = skip)
+  abandonedPendingDays: number; // delete pending orders older than N days (0 = skip)
+  closedSupportDays: number;    // delete closed support conversations older than N days (0 = skip)
+  deliveredStockDays: number;   // delete delivered product_stock older than N days (0 = skip)
+  broadcastsDays: number;       // delete promo_broadcasts older than N days (0 = skip)
+  dryRun: boolean;
+};
+
+const DEFAULT_CLEANUP: CleanupOptions = {
+  ordersDays: 180,
+  abandonedPendingDays: 7,
+  closedSupportDays: 60,
+  deliveredStockDays: 90,
+  broadcastsDays: 90,
+  dryRun: true,
+};
+
+async function _runCleanup(userId: string, opts: Partial<CleanupOptions>) {
+  await assertAdmin(userId);
+  const o: CleanupOptions = { ...DEFAULT_CLEANUP, ...opts };
+
+  const cutoff = (days: number) => new Date(Date.now() - days * 86400_000).toISOString();
+  const result: Record<string, number> = {};
+
+  // 1) Pending abandonados
+  if (o.abandonedPendingDays > 0) {
+    const c = cutoff(o.abandonedPendingDays);
+    const { count } = await supabaseAdmin.from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending").lt("created_at", c);
+    result.abandonedPending = count ?? 0;
+    if (!o.dryRun && (count ?? 0) > 0) {
+      await supabaseAdmin.from("orders").delete().eq("status", "pending").lt("created_at", c);
+    }
+  }
+
+  // 2) Pedidos antigos pagos/entregues
+  if (o.ordersDays > 0) {
+    const c = cutoff(o.ordersDays);
+    const { count } = await supabaseAdmin.from("orders")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["paid", "delivered", "canceled", "expired", "refunded"])
+      .lt("created_at", c);
+    result.oldOrders = count ?? 0;
+    if (!o.dryRun && (count ?? 0) > 0) {
+      await supabaseAdmin.from("orders").delete()
+        .in("status", ["paid", "delivered", "canceled", "expired", "refunded"])
+        .lt("created_at", c);
+    }
+  }
+
+  // 3) Conversas de suporte fechadas antigas (mensagens vão junto se houver FK cascade; senão apaga manual)
+  if (o.closedSupportDays > 0) {
+    const c = cutoff(o.closedSupportDays);
+    const { data: convos, count } = await supabaseAdmin.from("support_conversations")
+      .select("id", { count: "exact" })
+      .eq("status", "closed").lt("last_message_at", c);
+    result.closedSupport = count ?? 0;
+    if (!o.dryRun && convos && convos.length > 0) {
+      const ids = convos.map((c: any) => c.id);
+      await supabaseAdmin.from("support_messages").delete().in("conversation_id", ids);
+      await supabaseAdmin.from("support_conversations").delete().in("id", ids);
+    }
+  }
+
+  // 4) Estoque já entregue antigo (libera linhas pesadas de content)
+  if (o.deliveredStockDays > 0) {
+    const c = cutoff(o.deliveredStockDays);
+    const { count } = await supabaseAdmin.from("product_stock")
+      .select("id", { count: "exact", head: true })
+      .eq("delivered", true).lt("delivered_at", c);
+    result.deliveredStock = count ?? 0;
+    if (!o.dryRun && (count ?? 0) > 0) {
+      await supabaseAdmin.from("product_stock").delete()
+        .eq("delivered", true).lt("delivered_at", c);
+    }
+  }
+
+  // 5) Broadcasts antigos
+  if (o.broadcastsDays > 0) {
+    const c = cutoff(o.broadcastsDays);
+    const { count } = await supabaseAdmin.from("promo_broadcasts")
+      .select("id", { count: "exact", head: true })
+      .lt("created_at", c);
+    result.oldBroadcasts = count ?? 0;
+    if (!o.dryRun && (count ?? 0) > 0) {
+      await supabaseAdmin.from("promo_broadcasts").delete().lt("created_at", c);
+    }
+  }
+
+  return { dryRun: o.dryRun, options: o, counts: result };
+}
+
+export const previewCleanup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: Partial<CleanupOptions>) => input ?? {})
+  .handler(async ({ context, data }) => {
+    return _runCleanup((context as any).userId, { ...data, dryRun: true });
+  });
+
+export const runCleanup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: Partial<CleanupOptions>) => input ?? {})
+  .handler(async ({ context, data }) => {
+    return _runCleanup((context as any).userId, { ...data, dryRun: false });
+  });
