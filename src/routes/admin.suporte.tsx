@@ -81,7 +81,7 @@ function AdminSupport() {
     refetchInterval: 15000,
   });
 
-  // Realtime: refresh on any new message
+  // Realtime: refresh on any new message (dedupe by id)
   useEffect(() => {
     const ch = supabase
       .channel("admin-support")
@@ -89,7 +89,11 @@ function AdminSupport() {
         const m = p.new as Msg;
         qc.invalidateQueries({ queryKey: ["admin-convos"] });
         qc.invalidateQueries({ queryKey: ["admin-convo-previews"] });
-        qc.setQueryData<Msg[]>(["admin-msgs", m.conversation_id], (cur) => (cur ? [...cur, m] : cur));
+        qc.setQueryData<Msg[]>(["admin-msgs", m.conversation_id], (cur) => {
+          if (!cur) return cur;
+          if (cur.some((x) => x.id === m.id)) return cur;
+          return [...cur, m];
+        });
         if (m.sender === "user") playMessage();
       })
       .subscribe();
