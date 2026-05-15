@@ -21,6 +21,7 @@ const inputSchema = z.object({
   cpfCnpj: z.string().min(11).max(20).optional(),
   userId: z.string().uuid(),
   environment: z.enum(["sandbox", "live"]),
+  trafficSource: z.string().max(120).optional(),
 });
 
 async function loadCoupon(code: string): Promise<{ type: "percent" | "fixed"; value: number; min: number } | null> {
@@ -224,6 +225,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         coupon_code: appliedCoupon,
         status: "pending",
         asaas_customer_id: customer.id,
+        traffic_source: data.trafficSource ?? "site",
       })
       .select("id")
       .single();
