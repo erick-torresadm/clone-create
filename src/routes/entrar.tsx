@@ -39,7 +39,13 @@ function Entrar() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
+  const { redirect, ref } = Route.useSearch();
+  const [refCode, setRefCode] = useState<string>(ref ?? "");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (ref) { try { sessionStorage.setItem("ref_code", ref); } catch {} setRefCode(ref); }
+    else { try { const s = sessionStorage.getItem("ref_code"); if (s) setRefCode(s); } catch {} }
+  }, [ref]);
 
   const checks = useMemo(() => checkPassword(password), [password]);
   const score = strengthScore(checks);
