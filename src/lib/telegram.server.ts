@@ -171,7 +171,7 @@ export async function sendToChat(chatId: number | string, text: string): Promise
         await supabaseAdmin
           .from("telegram_subscribers")
           .update({ active: false })
-          .eq("chat_id", chatId);
+          .eq("chat_id", Number(chatId));
       } catch {}
     }
     console.error(`[telegram] send to ${chatId} failed: ${msg.slice(0, 200)}`);
