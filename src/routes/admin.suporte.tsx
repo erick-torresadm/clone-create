@@ -17,6 +17,10 @@ type Convo = {
   last_message_at: string;
   unread_admin: number;
   unread_user: number;
+  client_email: string | null;
+  client_name: string | null;
+  client_ip: string | null;
+  client_user_agent: string | null;
 };
 type Msg = { id: string; conversation_id: string; sender: "user" | "admin"; body: string; created_at: string };
 
@@ -24,6 +28,18 @@ function AdminSupport() {
   const { user, isAdmin, loading, roleLoading } = useAuth();
   const navigate = useNavigate();
   useEffect(() => { if (!loading && !roleLoading && (!user || !isAdmin)) navigate({ to: "/entrar" }); }, [loading, roleLoading, user, isAdmin, navigate]);
+
+  // Broadcast admin presence so users see "Online"
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+    const ch = supabase.channel("admins-presence", { config: { presence: { key: user.id } } });
+    ch.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await ch.track({ role: "admin", at: Date.now() });
+      }
+    });
+    return () => { supabase.removeChannel(ch); };
+  }, [user?.id, isAdmin]);
 
   const qc = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -87,13 +103,18 @@ function AdminSupport() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold text-foreground">{c.user_id.slice(0, 8)}…</span>
+                      <span className="truncate text-sm font-semibold text-foreground">
+                        {c.client_name || c.client_email || `${c.user_id.slice(0, 8)}…`}
+                      </span>
                       {c.unread_admin > 0 && (
                         <span className="grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
                           {c.unread_admin}
                         </span>
                       )}
                     </div>
+                    {c.client_email && c.client_name && (
+                      <div className="truncate text-[11px] text-muted-foreground">{c.client_email}</div>
+                    )}
                     <div className="truncate text-[11px] text-muted-foreground">
                       {new Date(c.last_message_at).toLocaleString("pt-BR")}
                     </div>
@@ -159,8 +180,19 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
   return (
     <div className="flex h-[70vh] flex-col">
       <div className="border-b border-border px-5 py-3">
-        <div className="text-sm font-bold text-foreground">Cliente {convo.user_id.slice(0, 8)}…</div>
-        <div className="text-[11px] text-muted-foreground">Status: {convo.status}</div>
+        <div className="text-sm font-bold text-foreground">
+          {convo.client_name || convo.client_email || `Cliente ${convo.user_id.slice(0, 8)}…`}
+        </div>
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          {convo.client_email && <span>📧 {convo.client_email}</span>}
+          {convo.client_ip && <span>🌐 {convo.client_ip}</span>}
+          <span>Status: {convo.status}</span>
+        </div>
+        {convo.client_user_agent && (
+          <div className="mt-0.5 truncate text-[10px] text-muted-foreground/70" title={convo.client_user_agent}>
+            {convo.client_user_agent}
+          </div>
+        )}
       </div>
       <div ref={ref} className="flex-1 space-y-2.5 overflow-y-auto bg-background/40 p-5">
         {msgs.map((m) => (

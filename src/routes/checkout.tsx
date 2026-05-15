@@ -11,6 +11,7 @@ import { ArrowLeft, Copy, Loader2, ShieldCheck, CheckCircle2, QrCode, Clock, Zap
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { playSuccess } from "@/lib/sound";
 import { toast } from "sonner";
+import { fbTrack } from "@/lib/meta-pixel";
 
 const ENV = (import.meta.env.MODE === "production" ? "live" : "sandbox") as "sandbox" | "live";
 
@@ -77,6 +78,12 @@ function CheckoutPage() {
         },
       });
       setPix(res);
+      fbTrack("InitiateCheckout", {
+        value: res.totalBrl,
+        currency: "BRL",
+        num_items: items.reduce((s, i) => s + i.qty, 0),
+        content_ids: items.map((i) => i.id),
+      });
     } catch (e: any) {
       toast.error(e.message || "Erro ao gerar Pix");
     } finally {
@@ -99,6 +106,13 @@ function CheckoutPage() {
           clear();
           try { sessionStorage.removeItem("applied_coupon"); } catch {}
           playSuccess();
+          fbTrack("Purchase", {
+            value: pix.totalBrl,
+            currency: "BRL",
+            content_ids: items.map((i) => i.id),
+            num_items: items.reduce((s, i) => s + i.qty, 0),
+            order_id: pix.orderId,
+          });
           toast.success("Pagamento confirmado!");
           setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
           return;

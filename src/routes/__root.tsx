@@ -4,14 +4,17 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/use-auth";
 import { CartProvider } from "@/lib/use-cart";
 import { useSettings } from "@/lib/site-data";
 import { RouteProgress } from "@/components/site/RouteProgress";
+import { initMetaPixel, fbPageView } from "@/lib/meta-pixel";
 
 import appCss from "../styles.css?url";
 
@@ -138,6 +141,16 @@ function RootComponent() {
 
 function SiteThemeBridge() {
   const { data } = useSettings();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    if (data?.meta_pixel_id) initMetaPixel(data.meta_pixel_id);
+  }, [data?.meta_pixel_id]);
+
+  useEffect(() => {
+    if (data?.meta_pixel_id) fbPageView();
+  }, [pathname, data?.meta_pixel_id]);
+
   if (typeof document !== "undefined" && data) {
     const root = document.documentElement;
     if (data.primary_color) root.style.setProperty("--brand-primary", data.primary_color);

@@ -45,6 +45,7 @@ function AdminAparencia() {
         welcome_coupon_text: f.welcome_coupon_text || "CUPOM DE BOAS VINDAS:",
         welcome_coupon_code: f.welcome_coupon_code || "BEMVINDO10",
         sounds_enabled: !!f.sounds_enabled,
+        meta_pixel_id: (f.meta_pixel_id || "").toString().trim() || null,
       };
       const { error } = await supabase.from("site_settings").update(payload).eq("id", 1);
       if (error) throw error;
@@ -113,6 +114,14 @@ function AdminAparencia() {
               <div><Label>BRL por VND</Label><Input type="number" step="0.00001" value={f.brl_per_vnd ?? ""} onChange={(e) => setF({ ...f, brl_per_vnd: e.target.value })} /></div>
               <div><Label>BRL por USD</Label><Input type="number" step="0.01" value={f.brl_per_usd ?? ""} onChange={(e) => setF({ ...f, brl_per_usd: e.target.value })} /></div>
             </div>
+          </div>
+
+          <div className="rounded-lg border border-dashed border-border p-4">
+            <p className="mb-1 text-sm font-semibold text-foreground">Meta Pixel (Facebook Ads)</p>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Cole o <b>ID do Pixel</b> do seu Gerenciador de Eventos (apenas números). Eventos enviados automaticamente: <code>PageView</code>, <code>ViewContent</code>, <code>AddToCart</code>, <code>InitiateCheckout</code>, <code>Purchase</code>.
+            </p>
+            <div><Label>Pixel ID</Label><Input value={f.meta_pixel_id ?? ""} onChange={(e) => setF({ ...f, meta_pixel_id: e.target.value })} placeholder="123456789012345" /></div>
           </div>
 
           <Button onClick={() => save.mutate()} disabled={save.isPending} className="w-full"><Save className="mr-2 h-4 w-4" />Salvar</Button>

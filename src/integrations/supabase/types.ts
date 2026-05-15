@@ -378,6 +378,7 @@ export type Database = {
           home_show_categories: boolean
           id: number
           logo_url: string | null
+          meta_pixel_id: string | null
           primary_color: string
           sounds_enabled: boolean
           store_name: string
@@ -401,6 +402,7 @@ export type Database = {
           home_show_categories?: boolean
           id?: number
           logo_url?: string | null
+          meta_pixel_id?: string | null
           primary_color?: string
           sounds_enabled?: boolean
           store_name?: string
@@ -424,6 +426,7 @@ export type Database = {
           home_show_categories?: boolean
           id?: number
           logo_url?: string | null
+          meta_pixel_id?: string | null
           primary_color?: string
           sounds_enabled?: boolean
           store_name?: string
@@ -438,6 +441,10 @@ export type Database = {
       }
       support_conversations: {
         Row: {
+          client_email: string | null
+          client_ip: string | null
+          client_name: string | null
+          client_user_agent: string | null
           created_at: string
           id: string
           last_message_at: string
@@ -448,6 +455,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          client_email?: string | null
+          client_ip?: string | null
+          client_name?: string | null
+          client_user_agent?: string | null
           created_at?: string
           id?: string
           last_message_at?: string
@@ -458,6 +469,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          client_email?: string | null
+          client_ip?: string | null
+          client_name?: string | null
+          client_user_agent?: string | null
           created_at?: string
           id?: string
           last_message_at?: string
