@@ -124,10 +124,11 @@ export const createCartCheckout = createServerFn({ method: "POST" })
 
       const isMaxvia = p.external_provider === "maxvia" && p.external_id;
 
-      // Fornecedor MaxVia exige pedido mínimo de 10 unidades por produto.
-      if (isMaxvia && it.quantity < 10) {
+      // Pedido mínimo configurado por produto (admin define).
+      const minQty = Math.max(1, Number(p.min_quantity ?? 1));
+      if (it.quantity < minQty) {
         throw new Error(
-          `O fornecedor exige pedido mínimo de 10 unidades para "${p.name}". Aumente a quantidade no carrinho.`,
+          `O fornecedor exige pedido mínimo de ${minQty} unidades para "${p.name}". Aumente a quantidade no carrinho.`,
         );
       }
 
