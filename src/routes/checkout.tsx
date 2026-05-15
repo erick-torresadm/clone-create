@@ -439,7 +439,7 @@ function CheckoutPage() {
               )}
 
               <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-primary/5 shadow-[0_20px_60px_-20px_rgba(99,140,255,0.4)]">
-                <div className="flex items-center justify-between border-b border-border bg-background/40 px-5 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/40 px-5 py-3">
                   <div className="flex items-center gap-2">
                     <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/15 text-primary">
                       <QrCode className="h-4 w-4" />
@@ -455,7 +455,7 @@ function CheckoutPage() {
                 </div>
 
                 {/* Valor em destaque */}
-                <div className="flex items-end justify-between gap-3 border-b border-border px-6 py-4">
+                <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-6 py-4">
                   <div>
                     <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Valor a pagar</div>
                     <div className="text-3xl font-extrabold text-primary">R$ {pix.totalBrl.toFixed(2)}</div>
@@ -466,14 +466,48 @@ function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* COPIA E COLA EM DESTAQUE — primeiro, é como a maioria paga no mobile */}
+                {/* QR + instruções lado a lado, visível por padrão */}
+                <div className="grid gap-5 border-b border-border p-5 md:grid-cols-[auto_1fr] md:items-center">
+                  <div className="mx-auto rounded-2xl bg-white p-3 ring-4 ring-primary/20 md:mx-0">
+                    {pix.pixQrBase64 ? (
+                      <img
+                        src={`data:image/png;base64,${pix.pixQrBase64}`}
+                        alt="QR Code Pix"
+                        className="h-48 w-48 object-contain"
+                      />
+                    ) : (
+                      <div className="grid h-48 w-48 place-items-center text-center text-xs text-muted-foreground">
+                        QR indisponível.<br />Use o código copia e cola abaixo.
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-foreground">Pague pelo QR Code</div>
+                    <ol className="mt-3 space-y-2 text-sm text-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span>
+                        Abra o app do seu banco
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">2</span>
+                        Escolha pagar com Pix → ler QR Code
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">3</span>
+                        Confirme — o site detecta o pagamento automaticamente
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+
+                {/* Copia e cola — alternativa */}
                 <div className="border-b border-border bg-background/40 p-5">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Pix copia e cola
+                      Ou pague com Pix copia e cola
                     </span>
                     <span className="inline-flex items-center gap-1 text-[10px] font-medium text-primary">
-                      <Sparkles className="h-3 w-3" /> Mais rápido
+                      <Sparkles className="h-3 w-3" /> Mais rápido no celular
                     </span>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -492,39 +526,6 @@ function CheckoutPage() {
                     </Button>
                   </div>
                 </div>
-
-                {/* QR Code + Como pagar */}
-                <details className="group border-b border-border">
-                  <summary className="flex cursor-pointer items-center justify-between px-5 py-3 text-sm font-semibold text-foreground hover:bg-background/40">
-                    <span className="flex items-center gap-2">
-                      <QrCode className="h-4 w-4 text-primary" /> Pagar pelo QR Code
-                    </span>
-                    <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
-                  </summary>
-                  <div className="grid gap-5 p-5 pt-0 sm:grid-cols-[auto_1fr] sm:items-center">
-                    <div className="mx-auto rounded-2xl bg-white p-3 ring-4 ring-primary/20 sm:mx-0">
-                      <img
-                        src={`data:image/png;base64,${pix.pixQrBase64}`}
-                        alt="QR Code Pix"
-                        className="h-44 w-44 object-contain"
-                      />
-                    </div>
-                    <ol className="space-y-2 text-sm text-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span>
-                        Abra o app do seu banco
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">2</span>
-                        Escolha pagar com Pix → ler QR Code
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">3</span>
-                        Confirme — você é redirecionado automaticamente
-                      </li>
-                    </ol>
-                  </div>
-                </details>
 
                 <div className="flex items-center justify-center gap-2 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
                   <Loader2 className="h-4 w-4 animate-spin" />
