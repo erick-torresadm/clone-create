@@ -103,13 +103,18 @@ function AdminSupport() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold text-foreground">{c.user_id.slice(0, 8)}…</span>
+                      <span className="truncate text-sm font-semibold text-foreground">
+                        {c.client_name || c.client_email || `${c.user_id.slice(0, 8)}…`}
+                      </span>
                       {c.unread_admin > 0 && (
                         <span className="grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
                           {c.unread_admin}
                         </span>
                       )}
                     </div>
+                    {c.client_email && c.client_name && (
+                      <div className="truncate text-[11px] text-muted-foreground">{c.client_email}</div>
+                    )}
                     <div className="truncate text-[11px] text-muted-foreground">
                       {new Date(c.last_message_at).toLocaleString("pt-BR")}
                     </div>
