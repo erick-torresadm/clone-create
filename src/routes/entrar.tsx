@@ -4,6 +4,7 @@ import { BadgeCheck, Eye, EyeOff, Check, X, Info, Sparkles, ShieldCheck, Zap } f
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/entrar")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -87,7 +88,7 @@ function Entrar() {
         navigate({ to: (redirect as any) || "/admin" });
       }
     } catch (err: any) {
-      toast.error(err.message ?? "Erro ao autenticar");
+      toast.error(translateAuthError(err?.message, "Erro ao autenticar"));
     } finally {
       setLoading(false);
     }
