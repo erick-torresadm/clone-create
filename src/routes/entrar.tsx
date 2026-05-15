@@ -152,73 +152,92 @@ function Entrar() {
               />
             </div>
 
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label className="block text-sm text-muted-foreground">Senha</label>
-                {mode === "signup" && password && (
-                  <span className={`text-[11px] font-medium ${score === 3 ? "text-emerald-600" : score === 2 ? "text-yellow-600" : "text-red-600"}`}>
-                    {strengthLabel}
-                  </span>
+            {mode !== "forgot" && (
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="block text-sm text-muted-foreground">Senha</label>
+                  {mode === "login" && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode("forgot"); setPassword(""); }}
+                      className="text-[11px] font-medium text-primary hover:underline"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  )}
+                  {mode === "signup" && password && (
+                    <span className={`text-[11px] font-medium ${score === 3 ? "text-emerald-600" : score === 2 ? "text-yellow-600" : "text-red-600"}`}>
+                      {strengthLabel}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    type={showPwd ? "text" : "password"}
+                    minLength={mode === "signup" ? 6 : 1}
+                    autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                    placeholder={mode === "signup" ? "Crie uma senha forte" : "Sua senha"}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2.5 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((s) => !s)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
+                    tabIndex={-1}
+                  >
+                    {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                {mode === "signup" && (
+                  <>
+                    {password && (
+                      <div className="mt-2 flex gap-1">
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className={`h-1 flex-1 rounded-full transition ${i < score ? strengthColor : "bg-muted"}`} />
+                        ))}
+                      </div>
+                    )}
+                    <ul className="mt-3 space-y-1 rounded-lg bg-muted/40 p-3 text-xs">
+                      <Req ok={checks.length} label="Pelo menos 6 caracteres" />
+                      <Req ok={checks.letter} label="Pelo menos 1 letra (recomendado)" />
+                      <Req ok={checks.number} label="Pelo menos 1 número (recomendado)" />
+                      <li className="mt-2 flex items-start gap-1.5 text-muted-foreground">
+                        <Info className="mt-0.5 h-3 w-3 shrink-0" />
+                        <span>Dica: use uma frase fácil de lembrar, ex: <code className="rounded bg-background px-1">cafe-com-leite-2026</code></span>
+                      </li>
+                    </ul>
+                  </>
                 )}
               </div>
-              <div className="relative">
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  type={showPwd ? "text" : "password"}
-                  minLength={mode === "signup" ? 6 : 1}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  placeholder={mode === "signup" ? "Crie uma senha forte" : "Sua senha"}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 pr-11 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd((s) => !s)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  aria-label={showPwd ? "Ocultar senha" : "Mostrar senha"}
-                  tabIndex={-1}
-                >
-                  {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-
-              {mode === "signup" && (
-                <>
-                  {password && (
-                    <div className="mt-2 flex gap-1">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className={`h-1 flex-1 rounded-full transition ${i < score ? strengthColor : "bg-muted"}`} />
-                      ))}
-                    </div>
-                  )}
-                  <ul className="mt-3 space-y-1 rounded-lg bg-muted/40 p-3 text-xs">
-                    <Req ok={checks.length} label="Pelo menos 6 caracteres" />
-                    <Req ok={checks.letter} label="Pelo menos 1 letra (recomendado)" />
-                    <Req ok={checks.number} label="Pelo menos 1 número (recomendado)" />
-                    <li className="mt-2 flex items-start gap-1.5 text-muted-foreground">
-                      <Info className="mt-0.5 h-3 w-3 shrink-0" />
-                      <span>Dica: use uma frase fácil de lembrar, ex: <code className="rounded bg-background px-1">cafe-com-leite-2026</code></span>
-                    </li>
-                  </ul>
-                </>
-              )}
-            </div>
+            )}
 
             <button
               disabled={loading || !canSubmit}
               className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_rgba(99,140,255,0.7)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Aguarde..." : mode === "login" ? "Entrar" : "Criar conta"}
+              {loading ? "Aguarde..." : mode === "login" ? "Entrar" : mode === "signup" ? "Criar conta" : "Enviar link de recuperação"}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {mode === "login" ? "Não tem conta?" : "Já tem conta?"}{" "}
-            <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setPassword(""); }}
-              className="font-medium text-primary hover:underline">
-              {mode === "login" ? "Cadastre-se" : "Entrar"}
-            </button>
+            {mode === "forgot" ? (
+              <button onClick={() => setMode("login")} className="font-medium text-primary hover:underline">
+                Voltar para entrar
+              </button>
+            ) : (
+              <>
+                {mode === "login" ? "Não tem conta?" : "Já tem conta?"}{" "}
+                <button onClick={() => { setMode(mode === "login" ? "signup" : "login"); setPassword(""); }}
+                  className="font-medium text-primary hover:underline">
+                  {mode === "login" ? "Cadastre-se" : "Entrar"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </div>
