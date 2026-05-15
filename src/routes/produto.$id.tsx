@@ -60,10 +60,11 @@ function ProductPage() {
   const off = discount(product.oldPrice, product.price);
   const related = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
+  const minQty = product.minQuantity ?? 1;
   const handleAdd = () =>
-    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+    add({ id: product.id, name: product.name, price: product.price, image: product.image }, minQty);
   const handleBuyNow = () => {
-    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+    add({ id: product.id, name: product.name, price: product.price, image: product.image }, minQty);
     navigate({ to: "/carrinho" });
   };
 
