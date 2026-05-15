@@ -11,8 +11,8 @@ export const Route = createFileRoute("/entrar")({
   }),
   head: () => ({
     meta: [
-      { title: "Entrar — FDM store" },
-      { name: "description", content: "Acesse sua conta na FDM store." },
+      { title: "Entrar — ativosfy" },
+      { name: "description", content: "Acesse sua conta na ativosfy." },
     ],
     links: [{ rel: "canonical", href: "/entrar" }],
   }),
