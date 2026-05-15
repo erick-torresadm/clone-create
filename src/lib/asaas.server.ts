@@ -116,3 +116,48 @@ export async function getPayment(env: AsaasEnv, paymentId: string): Promise<Asaa
 export function isPaid(status: string): boolean {
   return ["RECEIVED", "CONFIRMED", "RECEIVED_IN_CASH"].includes(status);
 }
+
+export type AsaasBalance = { balance: number };
+export async function getAccountBalance(env: AsaasEnv): Promise<number> {
+  try {
+    const r = await asaasFetch<AsaasBalance>(env, `/finance/balance`, { method: "GET" });
+    return Number(r?.balance ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+export type AsaasFinanceTransfer = { value: number; status: string };
+export async function getPendingTransfers(env: AsaasEnv): Promise<{ count: number; total: number }> {
+  try {
+    const r = await asaasFetch<{ data: AsaasFinanceTransfer[]; totalCount?: number }>(
+      env,
+      `/transfers?status=PENDING&limit=100`,
+      { method: "GET" },
+    );
+    const list = r?.data ?? [];
+    return {
+      count: list.length,
+      total: list.reduce((s, t) => s + Number(t.value || 0), 0),
+    };
+  } catch {
+    return { count: 0, total: 0 };
+  }
+}
+
+export async function getNextPayoutEstimate(env: AsaasEnv): Promise<number> {
+  // Soma valores RECEIVED ainda não liberados (anticipations não tratadas aqui).
+  try {
+    const today = new Date();
+    const start = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const r = await asaasFetch<{ data: Array<{ value: number; netValue?: number; status: string; creditDate?: string }> }>(
+      env,
+      `/payments?status=CONFIRMED&dateCreated[ge]=${start}&limit=100`,
+      { method: "GET" },
+    );
+    const list = r?.data ?? [];
+    return list.reduce((s, p) => s + Number(p.netValue ?? p.value ?? 0), 0);
+  } catch {
+    return 0;
+  }
+}
