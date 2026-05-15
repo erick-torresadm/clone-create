@@ -15,6 +15,7 @@ import { CartProvider } from "@/lib/use-cart";
 import { useSettings } from "@/lib/site-data";
 import { RouteProgress } from "@/components/site/RouteProgress";
 import { initMetaPixel, fbPageView } from "@/lib/meta-pixel";
+import { captureUtmFromUrl } from "@/lib/utm";
 
 import appCss from "../styles.css?url";
 
@@ -150,6 +151,10 @@ function SiteThemeBridge() {
   useEffect(() => {
     if (data?.meta_pixel_id) fbPageView();
   }, [pathname, data?.meta_pixel_id]);
+
+  useEffect(() => {
+    captureUtmFromUrl();
+  }, [pathname]);
 
   if (typeof document !== "undefined" && data) {
     const root = document.documentElement;
