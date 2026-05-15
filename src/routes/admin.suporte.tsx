@@ -159,11 +159,19 @@ function AdminSupport() {
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Suporte aos clientes</h1>
             <p className="mt-1 text-sm text-muted-foreground">Leia e responda todas as conversas em tempo real.</p>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <StatChip label="Total" value={stats.total} />
             <StatChip label="Não lidas" value={stats.unread} tone="destructive" />
             <StatChip label="Abertas" value={stats.open} tone="primary" />
             <StatChip label="Fechadas" value={stats.closed} />
+            <button
+              onClick={toggleMute}
+              title={muted ? "Ativar som de chamada" : "Silenciar chamada"}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-semibold transition ${muted ? "border-border bg-card text-muted-foreground hover:text-foreground" : "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"}`}
+            >
+              {muted ? <BellOff className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
+              {muted ? "Som off" : "Tocando"}
+            </button>
           </div>
         </div>
 
