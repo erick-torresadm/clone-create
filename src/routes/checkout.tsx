@@ -222,8 +222,8 @@ function CheckoutPage() {
 
   return (
     <Layout>
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.4fr_1fr]">
-        <div>
+      <div className="mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,1fr)]">
+        <div className="order-2 min-w-0 lg:order-1">
           <Link to="/carrinho" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" /> Voltar ao carrinho
           </Link>
@@ -568,7 +568,7 @@ function CheckoutPage() {
           )}
         </div>
 
-        <aside className="h-fit space-y-4 rounded-2xl border border-border bg-card/80 p-5 backdrop-blur lg:sticky lg:top-24">
+        <aside className="order-1 h-fit space-y-4 rounded-2xl border border-border bg-card/80 p-4 backdrop-blur sm:p-5 lg:sticky lg:top-24 lg:order-2">
           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Resumo do pedido</h2>
           <ul className="space-y-3">
             {items.map((it) => (
