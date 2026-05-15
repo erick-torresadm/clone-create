@@ -1,16 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
 import { useCoupons } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { broadcastCoupon } from "@/lib/telegram.functions";
 
 export const Route = createFileRoute("/admin/cupons")({ component: AdminCupons });
 
@@ -22,22 +24,32 @@ function AdminCupons() {
 
   const { data: coupons = [] } = useCoupons();
   const qc = useQueryClient();
-  const [f, setF] = useState({ code: "", discount_type: "percent", value: "", min_order: "0", max_uses: "", expires_at: "" });
+  const [f, setF] = useState({ code: "", discount_type: "percent", value: "", min_order: "0", max_uses: "", expires_at: "", notify: true });
+  const broadcastFn = useServerFn(broadcastCoupon);
 
   const create = useMutation({
     mutationFn: async () => {
       if (!f.code || !f.value) throw new Error("Código e valor obrigatórios");
-      const { error } = await supabase.from("coupons").insert({
+      const { data: inserted, error } = await supabase.from("coupons").insert({
         code: f.code.toUpperCase(),
         discount_type: f.discount_type as any,
         value: Number(f.value),
         min_order: Number(f.min_order || 0),
         max_uses: f.max_uses ? Number(f.max_uses) : null,
         expires_at: f.expires_at || null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (f.notify && inserted?.id) {
+        try {
+          const r: any = await broadcastFn({ data: { couponId: inserted.id } });
+          if (r?.skipped) toast.info("Aviso já enviado anteriormente");
+          else if (r?.sent > 0) toast.success(`Cupom enviado para ${r.sent} inscrito(s) no Telegram`);
+        } catch (e: any) {
+          toast.warning(`Cupom criado, mas aviso falhou: ${e.message}`);
+        }
+      }
     },
-    onSuccess: () => { toast.success("Cupom criado"); setF({ code: "", discount_type: "percent", value: "", min_order: "0", max_uses: "", expires_at: "" }); qc.invalidateQueries({ queryKey: ["coupons"] }); },
+    onSuccess: () => { toast.success("Cupom criado"); setF({ code: "", discount_type: "percent", value: "", min_order: "0", max_uses: "", expires_at: "", notify: true }); qc.invalidateQueries({ queryKey: ["coupons"] }); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -90,6 +102,11 @@ function AdminCupons() {
               <div><Label>Usos máx</Label><Input type="number" value={f.max_uses} onChange={(e) => setF({ ...f, max_uses: e.target.value })} /></div>
             </div>
             <div><Label>Expira em</Label><Input type="datetime-local" value={f.expires_at} onChange={(e) => setF({ ...f, expires_at: e.target.value })} /></div>
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <Switch checked={f.notify} onCheckedChange={(v) => setF({ ...f, notify: v })} />
+              <Send className="h-3.5 w-3.5 text-primary" />
+              Avisar inscritos no Telegram
+            </label>
             <Button onClick={() => create.mutate()} disabled={create.isPending} className="w-full"><Plus className="mr-2 h-4 w-4" />Criar</Button>
           </div>
         </div>

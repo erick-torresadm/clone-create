@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
+import { Route as AdminTelegramRouteImport } from './routes/admin.telegram'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
 import { Route as AdminRevendedoresRouteImport } from './routes/admin.revendedores'
@@ -35,6 +36,7 @@ import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminAparenciaRouteImport } from './routes/admin.aparencia'
 import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
 import { Route as ApiPublicSendAbandonedCartRouteImport } from './routes/api/public/send-abandoned-cart'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 
 const SobreRoute = SobreRouteImport.update({
@@ -112,6 +114,11 @@ const MinhaContaIndicacoesRoute = MinhaContaIndicacoesRouteImport.update({
   path: '/indicacoes',
   getParentRoute: () => MinhaContaRoute,
 } as any)
+const AdminTelegramRoute = AdminTelegramRouteImport.update({
+  id: '/admin/telegram',
+  path: '/admin/telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSuporteRoute = AdminSuporteRouteImport.update({
   id: '/admin/suporte',
   path: '/admin/suporte',
@@ -169,6 +176,12 @@ const ApiPublicSendAbandonedCartRoute =
     path: '/api/public/send-abandoned-cart',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas/webhook',
   path: '/api/public/asaas/webhook',
@@ -197,12 +210,14 @@ export interface FileRoutesByFullPath {
   '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/admin/telegram': typeof AdminTelegramRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -226,12 +241,14 @@ export interface FileRoutesByTo {
   '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/admin/telegram': typeof AdminTelegramRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -256,12 +273,14 @@ export interface FileRoutesById {
   '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
+  '/admin/telegram': typeof AdminTelegramRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -287,12 +306,14 @@ export interface FileRouteTypes {
     | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
+    | '/admin/telegram'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
+    | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -316,12 +337,14 @@ export interface FileRouteTypes {
     | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
+    | '/admin/telegram'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
+    | '/api/public/telegram/webhook'
   id:
     | '__root__'
     | '/'
@@ -345,12 +368,14 @@ export interface FileRouteTypes {
     | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
+    | '/admin/telegram'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
+    | '/api/public/telegram/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -375,11 +400,13 @@ export interface RootRouteChildren {
   AdminRevendedoresRoute: typeof AdminRevendedoresRoute
   AdminSaquesRoute: typeof AdminSaquesRoute
   AdminSuporteRoute: typeof AdminSuporteRoute
+  AdminTelegramRoute: typeof AdminTelegramRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -489,6 +516,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MinhaContaIndicacoesRouteImport
       parentRoute: typeof MinhaContaRoute
     }
+    '/admin/telegram': {
+      id: '/admin/telegram'
+      path: '/admin/telegram'
+      fullPath: '/admin/telegram'
+      preLoaderRoute: typeof AdminTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/suporte': {
       id: '/admin/suporte'
       path: '/admin/suporte'
@@ -566,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSendAbandonedCartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/telegram/webhook': {
+      id: '/api/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/asaas/webhook': {
       id: '/api/public/asaas/webhook'
       path: '/api/public/asaas/webhook'
@@ -610,11 +651,13 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRevendedoresRoute: AdminRevendedoresRoute,
   AdminSaquesRoute: AdminSaquesRoute,
   AdminSuporteRoute: AdminSuporteRoute,
+  AdminTelegramRoute: AdminTelegramRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

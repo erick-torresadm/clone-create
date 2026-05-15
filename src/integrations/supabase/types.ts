@@ -343,6 +343,36 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_broadcasts: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          kind: string
+          recipients_count: number
+          reference_id: string | null
+          title: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          recipients_count?: number
+          reference_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          recipients_count?: number
+          reference_id?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       referral_commissions: {
         Row: {
           amount: number
@@ -609,6 +639,42 @@ export type Database = {
           },
         ]
       }
+      telegram_subscribers: {
+        Row: {
+          active: boolean
+          chat_id: number
+          first_name: string | null
+          id: string
+          last_notified_at: string | null
+          link_token: string | null
+          subscribed_at: string
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          active?: boolean
+          chat_id: number
+          first_name?: string | null
+          id?: string
+          last_notified_at?: string | null
+          link_token?: string | null
+          subscribed_at?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          active?: boolean
+          chat_id?: number
+          first_name?: string | null
+          id?: string
+          last_notified_at?: string | null
+          link_token?: string | null
+          subscribed_at?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -682,6 +748,7 @@ export type Database = {
         }[]
       }
       get_db_size: { Args: never; Returns: number }
+      get_or_create_telegram_link_token: { Args: never; Returns: string }
       get_stock_counts: {
         Args: never
         Returns: {

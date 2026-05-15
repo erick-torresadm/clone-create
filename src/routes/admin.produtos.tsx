@@ -8,7 +8,8 @@ import { useProducts, useSections, useSettings } from "@/lib/site-data";
 import { supabase } from "@/integrations/supabase/client";
 import { maxviaBalance, maxviaCategories, maxviaProducts, maxviaImportProduct, maxviaAiSuggest } from "@/lib/maxvia.functions";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil, Boxes, Upload, FileText, FileArchive } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, RefreshCw, Download, Wallet, Pencil, Boxes, Upload, FileText, FileArchive, Send } from "lucide-react";
+import { broadcastProductPromo } from "@/lib/telegram.functions";
 import JSZip from "jszip";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -197,6 +198,7 @@ function ProductRow({ product: p, onToggle, onEdit, onRemove, onSavedQuick }: { 
         </Button>
       )}
       <Button variant="outline" size="sm" onClick={onEdit} className="h-8"><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button>
+      <PromoNotifyButton product={p} />
       <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4" /></Button>
       {stockOpen && <StockDialog product={p} onClose={() => setStockOpen(false)} />}
     </div>
@@ -802,5 +804,26 @@ function SectionRow({ section: s, isPromo, onUpdate, onRemove }: { section: any;
       <Switch checked={s.active} onCheckedChange={(v) => onUpdate({ active: v })} />
       <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4" /></Button>
     </div>
+  );
+}
+
+function PromoNotifyButton({ product }: { product: any }) {
+  const fn = useServerFn(broadcastProductPromo);
+  const isPromo = product.old_price && Number(product.old_price) > Number(product.price);
+  if (!isPromo || !product.active) return null;
+  async function notify() {
+    if (!confirm(`Enviar aviso de promoção de "${product.name}" para todos os inscritos no Telegram?`)) return;
+    try {
+      const r: any = await fn({ data: { productId: product.id } });
+      if (r?.skipped) toast.info("Aviso já enviado para este preço");
+      else toast.success(`Enviado para ${r.sent} inscrito(s)`);
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  }
+  return (
+    <Button variant="outline" size="sm" onClick={notify} className="h-8 border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10" title="Avisar inscritos no Telegram">
+      <Send className="mr-1 h-3.5 w-3.5" />Avisar
+    </Button>
   );
 }
