@@ -151,8 +151,8 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     let discountCents = 0;
     let appliedCoupon: string | null = null;
     if (data.couponCode) {
-      const c = COUPONS[data.couponCode.trim().toUpperCase()];
-      if (!c) throw new Error("Cupom inválido");
+      const c = await loadCoupon(data.couponCode);
+      if (!c) throw new Error("Cupom inválido ou expirado");
       if (c.min && subtotalCents < c.min * 100) throw new Error(`Cupom requer pedido mínimo de R$ ${c.min}`);
       discountCents = c.type === "percent"
         ? Math.round((subtotalCents * c.value) / 100)

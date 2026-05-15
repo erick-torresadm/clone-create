@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as GarantiaRouteImport } from './routes/garantia'
@@ -33,6 +34,11 @@ import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/a
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProdutosRoute = ProdutosRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/garantia': typeof GarantiaRoute
   '/minha-conta': typeof MinhaContaRoute
   '/produtos': typeof ProdutosRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/garantia'
     | '/minha-conta'
     | '/produtos'
+    | '/redefinir-senha'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/garantia'
     | '/minha-conta'
     | '/produtos'
+    | '/redefinir-senha'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/garantia'
     | '/minha-conta'
     | '/produtos'
+    | '/redefinir-senha'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -278,6 +290,7 @@ export interface RootRouteChildren {
   GarantiaRoute: typeof GarantiaRoute
   MinhaContaRoute: typeof MinhaContaRoute
   ProdutosRoute: typeof ProdutosRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   SobreRoute: typeof SobreRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produtos': {
@@ -446,6 +466,7 @@ const rootRouteChildren: RootRouteChildren = {
   GarantiaRoute: GarantiaRoute,
   MinhaContaRoute: MinhaContaRoute,
   ProdutosRoute: ProdutosRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   SobreRoute: SobreRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
