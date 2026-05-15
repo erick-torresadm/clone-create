@@ -91,6 +91,7 @@ export type Database = {
           stripe_session_id: string | null
           subtotal: number
           total: number
+          traffic_source: string | null
           user_id: string | null
         }
         Insert: {
@@ -112,6 +113,7 @@ export type Database = {
           stripe_session_id?: string | null
           subtotal: number
           total: number
+          traffic_source?: string | null
           user_id?: string | null
         }
         Update: {
@@ -133,6 +135,7 @@ export type Database = {
           stripe_session_id?: string | null
           subtotal?: number
           total?: number
+          traffic_source?: string | null
           user_id?: string | null
         }
         Relationships: []
