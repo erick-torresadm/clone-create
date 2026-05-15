@@ -198,6 +198,7 @@ function ProductRow({ product: p, onToggle, onEdit, onRemove, onSavedQuick }: { 
         </Button>
       )}
       <Button variant="outline" size="sm" onClick={onEdit} className="h-8"><Pencil className="mr-1 h-3.5 w-3.5" />Editar</Button>
+      <PromoNotifyButton product={p} />
       <Button variant="ghost" size="icon" onClick={onRemove}><Trash2 className="h-4 w-4" /></Button>
       {stockOpen && <StockDialog product={p} onClose={() => setStockOpen(false)} />}
     </div>
