@@ -7,7 +7,9 @@ import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { checkPaymentStatus } from "@/lib/checkout.functions";
-import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send, BadgeCheck } from "lucide-react";
+import { LogOut, Package, Eye, EyeOff, Copy, Loader2, Download, MessageCircle, Send, BadgeCheck, KeyRound, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { translateAuthError } from "@/lib/auth-errors";
 import { getMyTelegramStatus, setTelegramSubscriptionActive } from "@/lib/telegram.functions";
 import { useResellerStatus } from "@/lib/reseller";
 
