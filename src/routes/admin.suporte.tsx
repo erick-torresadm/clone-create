@@ -600,6 +600,8 @@ function AdminBubble({ m, clientAvatar }: { m: Msg; clientAvatar: string }) {
           </a>
         ) : media?.kind === "audio" ? (
           <audio controls src={media.url} className="max-w-[12rem]" />
+        ) : media?.kind === "gif" ? (
+          <img src={media.url} alt="gif" className="max-h-56 rounded-lg" />
         ) : media?.kind === "product" ? (
           <ChatProductCard id={media.id} dark={isAdmin} />
         ) : (
