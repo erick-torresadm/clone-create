@@ -180,8 +180,19 @@ function Thread({ convo, qc }: { convo: Convo; qc: ReturnType<typeof useQueryCli
   return (
     <div className="flex h-[70vh] flex-col">
       <div className="border-b border-border px-5 py-3">
-        <div className="text-sm font-bold text-foreground">Cliente {convo.user_id.slice(0, 8)}…</div>
-        <div className="text-[11px] text-muted-foreground">Status: {convo.status}</div>
+        <div className="text-sm font-bold text-foreground">
+          {convo.client_name || convo.client_email || `Cliente ${convo.user_id.slice(0, 8)}…`}
+        </div>
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          {convo.client_email && <span>📧 {convo.client_email}</span>}
+          {convo.client_ip && <span>🌐 {convo.client_ip}</span>}
+          <span>Status: {convo.status}</span>
+        </div>
+        {convo.client_user_agent && (
+          <div className="mt-0.5 truncate text-[10px] text-muted-foreground/70" title={convo.client_user_agent}>
+            {convo.client_user_agent}
+          </div>
+        )}
       </div>
       <div ref={ref} className="flex-1 space-y-2.5 overflow-y-auto bg-background/40 p-5">
         {msgs.map((m) => (
