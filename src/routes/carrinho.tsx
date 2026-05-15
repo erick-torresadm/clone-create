@@ -20,12 +20,6 @@ export const Route = createFileRoute("/carrinho")({
   component: Carrinho,
 });
 
-const COUPONS: Record<string, { type: "percent" | "fixed"; value: number; min?: number }> = {
-  BLUE10: { type: "percent", value: 10 },
-  BLUE20: { type: "percent", value: 20, min: 200 },
-  PRIME50: { type: "fixed", value: 50, min: 300 },
-};
-
 function Carrinho() {
   const { items, subtotal, setQty, remove, add, clear } = useCart();
   const { allProducts: ALL_PRODUCTS } = useCatalog();
