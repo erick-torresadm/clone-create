@@ -13,6 +13,7 @@ type Convo = {
   user_id: string;
   subject: string | null;
   status: string;
+  closed_at?: string | null;
   last_message_at: string;
   unread_user: number;
   unread_admin: number;
@@ -75,10 +76,18 @@ function SupportChatInner({
         .order("last_message_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      return (data as Convo | null) ?? null;
+      const c = (data as Convo | null) ?? null;
+      // Hide closed conversations after 48h
+      if (c && c.status === "closed" && c.closed_at) {
+        const ageMs = Date.now() - new Date(c.closed_at).getTime();
+        if (ageMs > 48 * 60 * 60 * 1000) return null;
+      }
+      return c;
     },
+    refetchInterval: 60_000,
   });
   const convo = convoQ.data;
+  const isClosed = convo?.status === "closed";
 
   const msgsQ = useQuery({
     queryKey: ["support-msgs", convo?.id],
@@ -130,29 +139,37 @@ function SupportChatInner({
   }, [open, convo?.id, convo?.unread_user, qc]);
 
   const [draft, setDraft] = useState("");
+  const startNew = useMutation({
+    mutationFn: async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const meta = (u.user?.user_metadata ?? {}) as any;
+      const name = meta.display_name || meta.full_name || meta.name || u.user?.email?.split("@")[0] || null;
+      const ip = await getClientIp();
+      const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
+      const { data: created, error } = await supabase
+        .from("support_conversations")
+        .insert({
+          user_id: userId,
+          subject: "Suporte",
+          client_email: u.user?.email ?? null,
+          client_name: name,
+          client_ip: ip,
+          client_user_agent: ua,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return created as Convo;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["support-convo-mine"] }),
+  });
+
   const sending = useMutation({
     mutationFn: async (body: string) => {
-      let id = convo?.id;
+      let id = (!convo || isClosed) ? undefined : convo.id;
       if (!id) {
-        const { data: u } = await supabase.auth.getUser();
-        const meta = (u.user?.user_metadata ?? {}) as any;
-        const name = meta.display_name || meta.full_name || meta.name || u.user?.email?.split("@")[0] || null;
-        const ip = await getClientIp();
-        const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
-        const { data: created, error } = await supabase
-          .from("support_conversations")
-          .insert({
-            user_id: userId,
-            subject: "Suporte",
-            client_email: u.user?.email ?? null,
-            client_name: name,
-            client_ip: ip,
-            client_user_agent: ua,
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        id = (created as Convo).id;
+        const created = await startNew.mutateAsync();
+        id = created.id;
       }
       const { data: inserted, error: e2 } = await supabase
         .from("support_messages")
@@ -313,9 +330,10 @@ function SupportChatInner({
             </div>
           )}
 
-          {convo?.status === "closed" && (
+          {isClosed && (
             <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Conversa encerrada. Envie uma nova mensagem para reabrir.
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              <span>Conversa encerrada. Histórico disponível por 48h.</span>
             </div>
           )}
 
@@ -338,29 +356,45 @@ function SupportChatInner({
             )}
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const v = draft.trim();
-              if (!v || sending.isPending) return;
-              sending.mutate(v);
-            }}
-            className="flex items-center gap-2 border-t border-border bg-card p-3"
-          >
-            <input
-              value={draft}
-              onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
-              placeholder={convo?.status === "closed" ? "Reabrir com nova mensagem..." : "Escreva sua mensagem..."}
-              className="flex-1 rounded-full border border-border bg-background px-3.5 py-2 text-sm text-foreground outline-none focus:border-primary"
-            />
-            <button
-              type="submit"
-              disabled={!draft.trim() || sending.isPending}
-              className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground transition disabled:opacity-50"
+          {isClosed ? (
+            <div className="border-t border-border bg-card p-3">
+              <button
+                onClick={() => { if (!startNew.isPending) startNew.mutate(); }}
+                disabled={startNew.isPending}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition disabled:opacity-50"
+              >
+                {startNew.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+                Falar novamente
+              </button>
+              <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+                Nova conversa passará pela fila de 5 minutos.
+              </p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const v = draft.trim();
+                if (!v || sending.isPending) return;
+                sending.mutate(v);
+              }}
+              className="flex items-center gap-2 border-t border-border bg-card p-3"
             >
-              {sending.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </button>
-          </form>
+              <input
+                value={draft}
+                onChange={(e) => { setDraft(e.target.value); broadcastTyping(); }}
+                placeholder="Escreva sua mensagem..."
+                className="flex-1 rounded-full border border-border bg-background px-3.5 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={!draft.trim() || sending.isPending}
+                className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground transition disabled:opacity-50"
+              >
+                {sending.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </form>
+          )}
         </div>
       )}
     </>
