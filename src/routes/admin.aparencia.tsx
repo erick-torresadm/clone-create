@@ -41,6 +41,10 @@ function AdminAparencia() {
         home_show_categories: !!f.home_show_categories,
         home_show_all_products: !!f.home_show_all_products,
         home_grid_cols: Math.max(2, Math.min(6, Number(f.home_grid_cols) || 4)),
+        welcome_coupon_enabled: !!f.welcome_coupon_enabled,
+        welcome_coupon_text: f.welcome_coupon_text || "CUPOM DE BOAS VINDAS:",
+        welcome_coupon_code: f.welcome_coupon_code || "BEMVINDO10",
+        sounds_enabled: !!f.sounds_enabled,
       };
       const { error } = await supabase.from("site_settings").update(payload).eq("id", 1);
       if (error) throw error;
