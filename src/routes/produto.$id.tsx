@@ -60,10 +60,11 @@ function ProductPage() {
   const off = discount(product.oldPrice, product.price);
   const related = allProducts.filter((p) => p.id !== product.id).slice(0, 4);
 
+  const minQty = product.minQuantity ?? 1;
   const handleAdd = () =>
-    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+    add({ id: product.id, name: product.name, price: product.price, image: product.image }, minQty);
   const handleBuyNow = () => {
-    add({ id: product.id, name: product.name, price: product.price, image: product.image });
+    add({ id: product.id, name: product.name, price: product.price, image: product.image }, minQty);
     navigate({ to: "/carrinho" });
   };
 
@@ -129,7 +130,7 @@ function ProductPage() {
                   {product.stock > 0 ? `${product.stock} em estoque` : "Esgotado"}
                 </span>
               )}
-              {product.sold && (
+              {(product.sold ?? 0) > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-3 py-1 font-semibold text-foreground">
                   <Flame className="h-3 w-3 text-destructive" /> + {product.sold} vendidos
                 </span>
@@ -156,6 +157,11 @@ function ProductPage() {
             </div>
             <div className="mt-1 text-xs text-muted-foreground">à vista no Pix</div>
 
+            {minQty > 1 && (
+              <div className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs font-semibold text-amber-400">
+                ℹ️ Pedido mínimo deste produto: <span className="font-extrabold">{minQty} unidades</span> (exigência do fornecedor).
+              </div>
+            )}
             <div className="mt-5 rounded-xl border border-border bg-background/40 p-4">
               {typeof product.stock === "number" && product.stock > 0 && product.stock <= 10 ? (
                 <div className="text-center text-xs font-semibold text-destructive">

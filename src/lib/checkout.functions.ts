@@ -122,8 +122,17 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       const p: any = pmap.get(it.productId);
       if (!p) throw new Error("Produto não encontrado");
 
+      const isMaxvia = p.external_provider === "maxvia" && p.external_id;
+
+      // Fornecedor MaxVia exige pedido mínimo de 10 unidades por produto.
+      if (isMaxvia && it.quantity < 10) {
+        throw new Error(
+          `O fornecedor exige pedido mínimo de 10 unidades para "${p.name}". Aumente a quantidade no carrinho.`,
+        );
+      }
+
       let availableQty: number | null = null;
-      if (p.external_provider === "maxvia" && p.external_id) {
+      if (isMaxvia) {
         const liveData = live.get(String(p.external_id));
         availableQty = liveData ? liveData.quantity : (p.external_quantity ?? 0);
       } else if (typeof p.external_quantity === "number") {
