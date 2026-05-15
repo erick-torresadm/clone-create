@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/use-cart";
 import { useAuth } from "@/lib/use-auth";
 import { createCartCheckout, checkPaymentStatus } from "@/lib/checkout.functions";
+import { getTrafficSource } from "@/lib/utm";
 import { supabase } from "@/integrations/supabase/client";
 import { translateAuthError } from "@/lib/auth-errors";
 import { ArrowLeft, Copy, Loader2, ShieldCheck, CheckCircle2, QrCode, Clock, Zap, Lock, Mail, User as UserIcon, Sparkles, ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
@@ -143,6 +144,7 @@ function CheckoutPage() {
           userId: account.id,
           environment: ENV,
           couponCode: coupon?.code,
+          trafficSource: getTrafficSource(),
         },
       });
       setPix(res);
