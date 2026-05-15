@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
-import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle } from "lucide-react";
+import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/")({
@@ -42,6 +42,7 @@ function AdminHome() {
     { to: "/admin/pedidos", icon: Package, title: "Pedidos", desc: "Acompanhe e atualize status." },
     { to: "/admin/saques", icon: HardDrive, title: "Saques de indicação", desc: "Aprove pagamentos PIX dos afiliados." },
     { to: "/admin/suporte", icon: MessageCircle, title: "Suporte ao cliente", desc: "Converse com clientes em tempo real." },
+    { to: "/admin/revendedores", icon: BadgeCheck, title: "Revendedores", desc: "Aprove pedidos de cadastro como revendedor." },
   ];
 
   return (

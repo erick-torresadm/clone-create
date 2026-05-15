@@ -382,6 +382,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reseller_accounts: {
+        Row: {
+          admin_note: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          discount_pct: number
+          reason: string | null
+          status: string
+          telegram: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          discount_pct?: number
+          reason?: string | null
+          status?: string
+          telegram?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          discount_pct?: number
+          reason?: string | null
+          status?: string
+          telegram?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       sections: {
         Row: {
           active: boolean
@@ -653,12 +695,22 @@ export type Database = {
       }
       increment_coupon_usage: { Args: { _code: string }; Returns: undefined }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_approved_reseller: { Args: { _user_id: string }; Returns: boolean }
+      my_reseller_discount: { Args: never; Returns: number }
+      process_reseller: {
+        Args: { _approve: boolean; _note: string; _user_id: string }
+        Returns: undefined
+      }
       process_withdrawal: {
         Args: { _approve: boolean; _note: string; _request_id: string }
         Returns: undefined
       }
       register_referral_commission: {
         Args: { _order_id: string }
+        Returns: undefined
+      }
+      request_reseller: {
+        Args: { _reason: string; _telegram: string; _whatsapp: string }
         Returns: undefined
       }
       request_withdrawal: {

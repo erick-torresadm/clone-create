@@ -96,12 +96,38 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const ids = data.items.map((i) => i.productId);
     const { data: products, error } = await supabaseAdmin
       .from("products")
-      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity,min_quantity")
+      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity,external_price,min_quantity")
       .in("id", ids);
     if (error) throw new Error(error.message);
     if (!products || products.length !== ids.length) throw new Error("Produto não encontrado");
 
     const pmap = new Map(products.map((p: any) => [p.id, p]));
+
+    // Reseller pricing: server-side authority
+    const { data: resellerRow } = await supabaseAdmin
+      .from("reseller_accounts")
+      .select("status, discount_pct")
+      .eq("user_id", data.userId)
+      .maybeSingle();
+    const isReseller = resellerRow?.status === "approved";
+    const discountPct = isReseller ? Number(resellerRow!.discount_pct ?? 50) : 0;
+
+    let brlPerUsd = 5.5;
+    if (isReseller) {
+      const { data: settings } = await supabaseAdmin
+        .from("site_settings").select("brl_per_usd").eq("id", 1).maybeSingle();
+      if (settings?.brl_per_usd) brlPerUsd = Number(settings.brl_per_usd);
+    }
+
+    function priceFor(p: any): number {
+      const base = Number(p.price);
+      if (!isReseller) return base;
+      if (p.source && p.source !== "manual" && p.external_price && brlPerUsd) {
+        const margin = Number(p.external_price) * brlPerUsd * 1.5;
+        return Math.max(base * (1 - discountPct / 100), margin);
+      }
+      return base * (1 - discountPct / 100);
+    }
 
     const maxviaExtIds = products
       .filter((p: any) => p.external_provider === "maxvia" && p.external_id)
@@ -145,14 +171,15 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       if (availableQty === null && !p.active) {
         throw new Error(`Produto indisponível: ${p.name}`);
       }
-      const unit = Math.round(Number(p.price) * 100);
+      const unitBrl = priceFor(p);
+      const unit = Math.round(unitBrl * 100);
       if (!unit || unit < 50) throw new Error(`Preço inválido para ${p.name}`);
       subtotalCents += unit * it.quantity;
       orderItems.push({
         productId: p.id,
         name: p.name,
         quantity: it.quantity,
-        unitPriceBrl: Number(p.price),
+        unitPriceBrl: unitBrl,
         provider: p.external_provider ?? null,
         externalId: p.external_id ? String(p.external_id) : null,
       });

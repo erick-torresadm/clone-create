@@ -100,13 +100,23 @@ const DEFAULT_DESC = `Entrega 100% automática após confirmação do pagamento.
 
 Após o pagamento via Pix, o acesso é enviado em poucos minutos.`;
 
-function dbToProduct(p: DBProduct, manualStock?: number): Product {
+function dbToProduct(
+  p: DBProduct,
+  manualStock: number | undefined,
+  resellerPrice: number | null,
+): Product {
   const isExternal = !!p.source && p.source !== "manual";
+  const publicPrice = Number(p.price);
+  const finalPrice = resellerPrice ?? publicPrice;
+  // Quando revendedor: o preço público vira o "old price" riscado
+  const oldPrice = resellerPrice != null
+    ? publicPrice
+    : Number(p.old_price ?? p.price);
   return {
     id: p.id,
     name: p.name,
-    price: Number(p.price),
-    oldPrice: Number(p.old_price ?? p.price),
+    price: finalPrice,
+    oldPrice,
     sold: p.sold ?? undefined,
     description: p.description ?? DEFAULT_DESC,
     rating: p.rating ?? undefined,
@@ -133,17 +143,26 @@ export function useStockCounts() {
   });
 }
 
+import { useResellerStatus, resellerPriceFor } from "@/lib/reseller";
+
 export function useCatalog() {
   const products = useProducts();
   const sections = useSections();
   const stock = useStockCounts();
+  const settings = useSettings();
+  const reseller = useResellerStatus();
 
   const ready = !products.isLoading && !sections.isLoading;
   const dbProducts = (products.data ?? []).filter((p) => p.active);
   const dbSections = sections.data ?? [];
   const stockMap = stock.data ?? new Map<string, number>();
 
-  const toProd = (p: DBProduct) => dbToProduct(p, stockMap.get(p.id));
+  const toProd = (p: DBProduct) => {
+    const rp = reseller.data.isReseller
+      ? resellerPriceFor(p, settings.data, reseller.data.discountPct)
+      : null;
+    return dbToProduct(p, stockMap.get(p.id), rp);
+  };
   const allProducts: Product[] = dbProducts.map(toProd);
 
   const sectionsList: Section[] = dbSections
@@ -162,5 +181,7 @@ export function useCatalog() {
     sections: sectionsList,
     allProducts,
     getProduct: (id: string) => allProducts.find((p) => p.id === id),
+    isReseller: reseller.data.isReseller,
+    resellerDiscount: reseller.data.discountPct,
   };
 }

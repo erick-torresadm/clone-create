@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { Share2, ShoppingCart } from "lucide-react";
+import { Share2, ShoppingCart, BadgeCheck } from "lucide-react";
 import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
+import { useResellerStatus } from "@/lib/reseller";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = discount(product.oldPrice, product.price);
   const { add } = useCart();
+  const { data: reseller } = useResellerStatus();
+  const isReseller = reseller.isReseller;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -82,11 +85,16 @@ export function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-auto pt-3">
           <span className="text-xs text-muted-foreground line-through">R$ {formatBRL(product.oldPrice)}</span>
-          <div className="mt-0.5 flex items-center gap-2">
-            <span className="text-lg font-bold text-primary sm:text-xl">R$ {formatBRL(product.price)}</span>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2">
+            <span className={`text-lg font-bold sm:text-xl ${isReseller ? "text-emerald-400" : "text-primary"}`}>R$ {formatBRL(product.price)}</span>
             {off > 0 && (
-              <span className="rounded-full bg-destructive px-2 py-0.5 text-[10px] font-bold text-destructive-foreground sm:text-xs">
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold sm:text-xs ${isReseller ? "bg-emerald-500 text-white" : "bg-destructive text-destructive-foreground"}`}>
                 -{off}%
+              </span>
+            )}
+            {isReseller && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
+                <BadgeCheck className="h-3 w-3" /> Revendedor
               </span>
             )}
           </div>

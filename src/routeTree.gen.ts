@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as RevendedorRouteImport } from './routes/revendedor'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
@@ -25,6 +26,7 @@ import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
+import { Route as AdminRevendedoresRouteImport } from './routes/admin.revendedores'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
@@ -38,6 +40,11 @@ import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/a
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RevendedorRoute = RevendedorRouteImport.update({
+  id: '/revendedor',
+  path: '/revendedor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
@@ -115,6 +122,11 @@ const AdminSaquesRoute = AdminSaquesRouteImport.update({
   path: '/admin/saques',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRevendedoresRoute = AdminRevendedoresRouteImport.update({
+  id: '/admin/revendedores',
+  path: '/admin/revendedores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
   id: '/admin/produtos',
   path: '/admin/produtos',
@@ -174,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -181,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
@@ -201,6 +215,7 @@ export interface FileRoutesByTo {
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -208,6 +223,7 @@ export interface FileRoutesByTo {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
@@ -229,6 +245,7 @@ export interface FileRoutesById {
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -236,6 +253,7 @@ export interface FileRoutesById {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/revendedores': typeof AdminRevendedoresRoute
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
@@ -258,6 +276,7 @@ export interface FileRouteTypes {
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
+    | '/revendedor'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -265,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
     | '/minha-conta/indicacoes'
@@ -285,6 +305,7 @@ export interface FileRouteTypes {
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
+    | '/revendedor'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -292,6 +313,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
     | '/minha-conta/indicacoes'
@@ -312,6 +334,7 @@ export interface FileRouteTypes {
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
+    | '/revendedor'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -319,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/revendedores'
     | '/admin/saques'
     | '/admin/suporte'
     | '/minha-conta/indicacoes'
@@ -340,6 +364,7 @@ export interface RootRouteChildren {
   MinhaContaRoute: typeof MinhaContaRouteWithChildren
   ProdutosRoute: typeof ProdutosRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  RevendedorRoute: typeof RevendedorRoute
   SobreRoute: typeof SobreRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
@@ -347,6 +372,7 @@ export interface RootRouteChildren {
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminPopupsRoute: typeof AdminPopupsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
+  AdminRevendedoresRoute: typeof AdminRevendedoresRoute
   AdminSaquesRoute: typeof AdminSaquesRoute
   AdminSuporteRoute: typeof AdminSuporteRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
@@ -363,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/revendedor': {
+      id: '/revendedor'
+      path: '/revendedor'
+      fullPath: '/revendedor'
+      preLoaderRoute: typeof RevendedorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/redefinir-senha': {
@@ -470,6 +503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSaquesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/revendedores': {
+      id: '/admin/revendedores'
+      path: '/admin/revendedores'
+      fullPath: '/admin/revendedores'
+      preLoaderRoute: typeof AdminRevendedoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/produtos': {
       id: '/admin/produtos'
       path: '/admin/produtos'
@@ -559,6 +599,7 @@ const rootRouteChildren: RootRouteChildren = {
   MinhaContaRoute: MinhaContaRouteWithChildren,
   ProdutosRoute: ProdutosRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  RevendedorRoute: RevendedorRoute,
   SobreRoute: SobreRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
@@ -566,6 +607,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPedidosRoute: AdminPedidosRoute,
   AdminPopupsRoute: AdminPopupsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
+  AdminRevendedoresRoute: AdminRevendedoresRoute,
   AdminSaquesRoute: AdminSaquesRoute,
   AdminSuporteRoute: AdminSuporteRoute,
   ProdutoIdRoute: ProdutoIdRoute,
