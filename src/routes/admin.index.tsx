@@ -152,6 +152,17 @@ function formatBytes(bytes: number) {
   return `${n.toFixed(n >= 10 || i === 0 ? 0 : 2)} ${units[i]}`;
 }
 
+function PlatformCleanupSection() {
+  const fetchStats = useServerFn(getPlatformStats);
+  const { data } = useQuery({
+    queryKey: ["admin", "platform-stats"],
+    queryFn: () => fetchStats(),
+    staleTime: 60_000,
+  });
+  const pct = data?.db.limit ? (data.db.used / data.db.limit) * 100 : 0;
+  return <StorageCleanup dbPct={pct} />;
+}
+
 function PlatformStats() {
   const fetchStats = useServerFn(getPlatformStats);
   const { data, isLoading } = useQuery({
