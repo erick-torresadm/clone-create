@@ -111,19 +111,22 @@ function CheckoutPage() {
           </div>
 
           {!pix && (
-            <div className="mt-6 space-y-4 rounded-3xl border border-border bg-card p-6">
-              <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome completo *</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como aparece no seu CPF" />
+            <div className="mt-6 space-y-4">
+              <ScarcityPanel seed={items.map((i) => i.id).join("-") || "checkout"} compact />
+              <div className="space-y-4 rounded-3xl border border-border bg-card p-6">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome completo *</label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como aparece no seu CPF" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ <span className="text-muted-foreground/60">(opcional)</span></label>
+                  <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" inputMode="numeric" />
+                </div>
+                <Button size="lg" className="w-full" onClick={handleGenerate} disabled={creating}>
+                  {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
+                  Gerar QR Code Pix · R$ {total.toFixed(2)}
+                </Button>
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ <span className="text-muted-foreground/60">(opcional)</span></label>
-                <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" inputMode="numeric" />
-              </div>
-              <Button size="lg" className="w-full" onClick={handleGenerate} disabled={creating}>
-                {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <QrCode className="mr-2 h-4 w-4" />}
-                Gerar QR Code Pix · R$ {total.toFixed(2)}
-              </Button>
             </div>
           )}
 
