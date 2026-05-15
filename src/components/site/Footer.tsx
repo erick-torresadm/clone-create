@@ -10,7 +10,7 @@ export function Footer() {
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="text-lg font-extrabold text-foreground">Blue<span className="text-primary">Prime</span></span>
+            <span className="text-lg font-extrabold text-foreground">ativos<span className="text-primary">fy</span></span>
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             Contas Facebook, Business Managers e ativos digitais premium —
