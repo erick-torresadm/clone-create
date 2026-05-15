@@ -136,7 +136,11 @@ export async function fulfillPaidOrder(order: any): Promise<DeliveredItem[]> {
 
   // Incrementa contagem de uso do cupom (se houver)
   if (order.coupon_code) {
-    await supabaseAdmin.rpc("increment_coupon_usage", { _code: order.coupon_code }).catch(() => {});
+    try {
+      await supabaseAdmin.rpc("increment_coupon_usage", { _code: order.coupon_code });
+    } catch (e) {
+      console.warn("[fulfill] coupon usage increment failed:", e);
+    }
   }
 
   await notifyOrderPaid({
