@@ -129,8 +129,7 @@ function CheckoutPage() {
   }
 
   async function handleGenerate() {
-    if (!name.trim()) return toast.error("Informe seu nome completo");
-    if (!user && !email.trim()) return toast.error("Informe seu e-mail");
+    if (!user && !emailValid) return toast.error("Informe um e-mail válido");
     setCreating(true);
     try {
       const account = await ensureAuthenticated();
