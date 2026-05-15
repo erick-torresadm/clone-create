@@ -51,6 +51,11 @@ function Carrinho() {
       .slice(0, 4);
   }, [items]);
 
+  // FastProxy upsell — só aparece se tem perfis ou BMs no carrinho
+  const needsProxy = useMemo(() => {
+    return items.some((it) => /perfil|perfis|\bbm\b|gerenciador|conta gerente/i.test(it.name));
+  }, [items]);
+
   const applyCoupon = async () => {
     const c = code.trim().toUpperCase();
     if (!c) return toast.error("Digite um cupom");
