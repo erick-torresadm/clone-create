@@ -63,13 +63,12 @@ function categorizeSource(src: string | null | undefined): "site" | "ads" | "ref
 }
 
 export const getSalesDashboard = createServerFn({ method: "GET" })
-  .handler(async ({ context }: any) => {
-    // requireSupabaseAuth runs via middleware; manually verify admin
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
     return _getSalesDashboard(context);
   });
 
 async function _getSalesDashboard(_context: any) {
-  // re-read user via middleware context if available
   const userId = _context?.userId;
   if (!userId) throw new Error("Unauthorized");
   await assertAdmin(userId);
