@@ -328,39 +328,57 @@ function CheckoutPage() {
           {pix && !paid && (
             <div className="mt-6 space-y-4">
               {accountCreated && (
-                <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
-                  <div className="font-bold text-foreground">Conta criada automaticamente</div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Salve seus dados de acesso. Você pode trocar a senha depois em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>.
-                  </p>
-                  <div className="mt-2 grid gap-1.5 text-xs">
-                    <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
-                      <span className="text-muted-foreground">E-mail</span>
-                      <code className="font-mono text-foreground">{accountCreated.email}</code>
+                <div className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-emerald-500/5">
+                  <button
+                    type="button"
+                    onClick={() => setShowAccount((s) => !s)}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm hover:bg-emerald-500/10"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      <span className="font-semibold text-foreground">Conta criada com sucesso</span>
+                      <span className="hidden text-[11px] text-muted-foreground sm:inline">— guarde sua senha</span>
                     </div>
-                    <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
-                      <span className="text-muted-foreground">Senha</span>
-                      <div className="flex items-center gap-2">
-                        <code className="font-mono text-foreground">{accountCreated.password}</code>
-                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(accountCreated.password); toast.success("Senha copiada"); }}>
-                          <Copy className="h-3 w-3" />
-                        </Button>
+                    {showAccount ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                  </button>
+                  {showAccount && (
+                    <div className="border-t border-emerald-500/20 bg-background/40 p-4">
+                      <p className="mb-3 text-xs text-muted-foreground">
+                        Acesse com estes dados em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>. Você pode trocar a senha a qualquer momento.
+                      </p>
+                      <div className="grid gap-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">E-mail</span>
+                          <code className="truncate font-mono text-foreground">{accountCreated.email}</code>
+                        </div>
+                        <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Senha</span>
+                          <div className="flex items-center gap-1">
+                            <code className="font-mono text-foreground">
+                              {showPwd ? accountCreated.password : "•".repeat(accountCreated.password.length)}
+                            </code>
+                            <Button size="sm" variant="ghost" className="h-7 px-1.5" onClick={() => setShowPwd((s) => !s)}>
+                              {showPwd ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 px-1.5" onClick={() => { navigator.clipboard.writeText(accountCreated.password); toast.success("Senha copiada"); }}>
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
-              <ScarcityPanel seed={pix.orderId} compact />
 
               <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-primary/5 shadow-[0_20px_60px_-20px_rgba(99,140,255,0.4)]">
-                {/* Header strip */}
                 <div className="flex items-center justify-between border-b border-border bg-background/40 px-5 py-3">
                   <div className="flex items-center gap-2">
                     <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/15 text-primary">
                       <QrCode className="h-4 w-4" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-foreground">Pix • Pagamento instantâneo</div>
+                      <div className="text-sm font-bold text-foreground">Pix · Pagamento instantâneo</div>
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
                         Pedido #{pix.orderId.slice(0, 8)}
                       </div>
@@ -369,55 +387,85 @@ function CheckoutPage() {
                   <PixCountdown expiresAt={pix.expiresAt} />
                 </div>
 
-                <div className="grid gap-5 p-6 sm:grid-cols-[auto_1fr] sm:items-center">
-                  <div className="mx-auto rounded-2xl bg-white p-3 ring-4 ring-primary/20 sm:mx-0">
-                    <img
-                      src={`data:image/png;base64,${pix.pixQrBase64}`}
-                      alt="QR Code Pix"
-                      className="h-52 w-52 object-contain"
-                    />
+                {/* Valor em destaque */}
+                <div className="flex items-end justify-between gap-3 border-b border-border px-6 py-4">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Valor a pagar</div>
+                    <div className="text-3xl font-extrabold text-primary">R$ {pix.totalBrl.toFixed(2)}</div>
                   </div>
+                  <div className="hidden text-right text-[11px] text-muted-foreground sm:block">
+                    <div className="font-bold text-foreground">Confirmação automática</div>
+                    em até 30 segundos após o pagamento
+                  </div>
+                </div>
 
-                  <div className="space-y-3">
-                    <ol className="space-y-1.5 text-sm text-foreground">
+                {/* COPIA E COLA EM DESTAQUE — primeiro, é como a maioria paga no mobile */}
+                <div className="border-b border-border bg-background/40 p-5">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Pix copia e cola
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-primary">
+                      <Sparkles className="h-3 w-3" /> Mais rápido
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <code className="min-w-0 flex-1 truncate rounded-xl border border-border bg-background px-3 py-3 font-mono text-xs text-foreground">
+                      {pix.pixPayload}
+                    </code>
+                    <Button
+                      size="lg"
+                      className="h-12 shrink-0 font-bold sm:h-auto"
+                      onClick={() => {
+                        navigator.clipboard.writeText(pix.pixPayload);
+                        toast.success("Código Pix copiado");
+                      }}
+                    >
+                      <Copy className="mr-1.5 h-4 w-4" /> Copiar código
+                    </Button>
+                  </div>
+                </div>
+
+                {/* QR Code + Como pagar */}
+                <details className="group border-b border-border">
+                  <summary className="flex cursor-pointer items-center justify-between px-5 py-3 text-sm font-semibold text-foreground hover:bg-background/40">
+                    <span className="flex items-center gap-2">
+                      <QrCode className="h-4 w-4 text-primary" /> Pagar pelo QR Code
+                    </span>
+                    <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                  </summary>
+                  <div className="grid gap-5 p-5 pt-0 sm:grid-cols-[auto_1fr] sm:items-center">
+                    <div className="mx-auto rounded-2xl bg-white p-3 ring-4 ring-primary/20 sm:mx-0">
+                      <img
+                        src={`data:image/png;base64,${pix.pixQrBase64}`}
+                        alt="QR Code Pix"
+                        className="h-44 w-44 object-contain"
+                      />
+                    </div>
+                    <ol className="space-y-2 text-sm text-foreground">
                       <li className="flex items-start gap-2">
                         <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span>
                         Abra o app do seu banco
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">2</span>
-                        Escaneie o QR ou cole o código
+                        Escolha pagar com Pix → ler QR Code
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">3</span>
-                        Confirme — entrega automática
+                        Confirme — você é redirecionado automaticamente
                       </li>
                     </ol>
-                    <div className="text-2xl font-extrabold text-primary">R$ {pix.totalBrl.toFixed(2)}</div>
                   </div>
-                </div>
+                </details>
 
-                <div className="border-t border-border bg-background/40 p-4">
-                  <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pix copia e cola</div>
-                  <div className="flex items-center gap-2 rounded-xl border border-border bg-background p-2">
-                    <code className="flex-1 truncate font-mono text-xs text-foreground">{pix.pixPayload}</code>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(pix.pixPayload);
-                        toast.success("Código Pix copiado");
-                      }}
-                    >
-                      <Copy className="mr-1.5 h-3.5 w-3.5" /> Copiar
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center gap-2 border-t border-primary/20 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary">
+                <div className="flex items-center justify-center gap-2 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Aguardando pagamento... confirmação automática
                 </div>
               </div>
+
+              <ScarcityPanel seed={pix.orderId} compact />
 
               <div className="grid grid-cols-3 gap-3 text-center text-[11px] text-muted-foreground">
                 <div className="rounded-xl border border-border bg-card/60 p-3">
@@ -437,10 +485,17 @@ function CheckoutPage() {
           )}
 
           {paid && (
-            <div className="mt-6 flex flex-col items-center rounded-3xl border border-emerald-500/30 bg-emerald-500/10 p-10 text-center">
-              <CheckCircle2 className="h-16 w-16 text-emerald-500" />
-              <h2 className="mt-4 text-2xl font-bold text-foreground">Pagamento confirmado!</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Redirecionando para suas contas...</p>
+            <div className="mt-6 flex flex-col items-center rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-10 text-center shadow-[0_20px_60px_-20px_rgba(16,185,129,0.4)]">
+              <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-500/20 ring-4 ring-emerald-500/10">
+                <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+              </div>
+              <h2 className="mt-5 text-2xl font-extrabold text-foreground sm:text-3xl">Pagamento confirmado!</h2>
+              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                Estamos preparando suas contas. Você será redirecionado em instantes para visualizá-las.
+              </p>
+              <div className="mt-5 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Redirecionando para suas contas...
+              </div>
             </div>
           )}
         </div>
