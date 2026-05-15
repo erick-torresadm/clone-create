@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/use-cart";
 import { useAuth } from "@/lib/use-auth";
 import { createCartCheckout, checkPaymentStatus } from "@/lib/checkout.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
 import { ArrowLeft, Copy, Loader2, ShieldCheck, CheckCircle2, QrCode, Clock, Zap, Lock } from "lucide-react";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { playSuccess } from "@/lib/sound";
@@ -36,10 +38,12 @@ function CheckoutPage() {
   const checkFn = useServerFn(checkPaymentStatus);
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
+  const [accountCreated, setAccountCreated] = useState<{ email: string; password: string } | null>(null);
   const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
 
   useEffect(() => {
@@ -49,8 +53,8 @@ function CheckoutPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) navigate({ to: "/entrar", search: { redirect: "/checkout" } as any });
-    else if (!items.length && !pix) navigate({ to: "/carrinho" });
+    if (user?.email) setEmail((e) => e || user.email!);
+    if (!items.length && !pix) navigate({ to: "/carrinho" });
   }, [items.length, navigate, user, authLoading, pix]);
 
   const subtotal = useMemo(() => items.reduce((s, i) => s + i.qty * i.price, 0), [items]);
@@ -61,18 +65,63 @@ function CheckoutPage() {
   }, [coupon, subtotal]);
   const total = Math.max(0, subtotal - discount);
 
+  function generatePassword() {
+    // Senha aleatória forte para evitar bloqueio anti-pwned
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    let p = "";
+    const arr = new Uint32Array(14);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < arr.length; i++) p += chars[arr[i] % chars.length];
+    return p + "!9";
+  }
+
+  async function ensureAuthenticated(): Promise<{ id: string; email: string } | null> {
+    if (user?.id && user.email) return { id: user.id, email: user.email };
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) { toast.error("Informe seu e-mail"); return null; }
+    // Tenta criar conta automaticamente
+    const password = generatePassword();
+    const { data, error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/minha-conta`,
+        data: { display_name: name.trim() || cleanEmail.split("@")[0] },
+      },
+    });
+    if (error) {
+      const msg = error.message?.toLowerCase() || "";
+      if (msg.includes("already registered") || msg.includes("already been registered") || msg.includes("user already")) {
+        toast.error("Este e-mail já tem cadastro. Faça login para continuar.", {
+          action: { label: "Entrar", onClick: () => navigate({ to: "/entrar", search: { redirect: "/checkout" } as any }) },
+        });
+        return null;
+      }
+      toast.error(translateAuthError(error.message, "Não foi possível criar a conta"));
+      return null;
+    }
+    if (!data.session || !data.user) {
+      toast.error("Conta criada, mas não foi possível iniciar a sessão. Faça login.");
+      return null;
+    }
+    setAccountCreated({ email: cleanEmail, password });
+    return { id: data.user.id, email: cleanEmail };
+  }
+
   async function handleGenerate() {
-    if (!user?.email || !user?.id) return;
     if (!name.trim()) return toast.error("Informe seu nome completo");
+    if (!user && !email.trim()) return toast.error("Informe seu e-mail");
     setCreating(true);
     try {
+      const account = await ensureAuthenticated();
+      if (!account) { setCreating(false); return; }
       const res = await checkoutFn({
         data: {
           items: items.map((i) => ({ productId: i.id, quantity: i.qty })),
-          customerEmail: user.email,
+          customerEmail: account.email,
           customerName: name.trim(),
           cpfCnpj: cpf.replace(/\D/g, "") || undefined,
-          userId: user.id,
+          userId: account.id,
           environment: ENV,
           couponCode: coupon?.code,
         },
@@ -124,7 +173,7 @@ function CheckoutPage() {
     return () => { stop = true; polling.current = false; };
   }, [pix, paid, checkFn, clear, navigate]);
 
-  if (authLoading || !user) return null;
+  if (authLoading) return null;
 
   return (
     <Layout>
@@ -148,6 +197,16 @@ function CheckoutPage() {
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome completo *</label>
                   <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como aparece no seu CPF" />
                 </div>
+                {!user && (
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">E-mail *</label>
+                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" autoComplete="email" />
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      Criamos sua conta automaticamente para entregar seus produtos. Já tem conta?{" "}
+                      <Link to="/entrar" search={{ redirect: "/checkout" } as any} className="text-primary hover:underline">Entrar</Link>
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ <span className="text-muted-foreground/60">(opcional)</span></label>
                   <Input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" inputMode="numeric" />
@@ -162,6 +221,29 @@ function CheckoutPage() {
 
           {pix && !paid && (
             <div className="mt-6 space-y-4">
+              {accountCreated && (
+                <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                  <div className="font-bold text-foreground">Conta criada automaticamente</div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Salve seus dados de acesso. Você pode trocar a senha depois em <Link to="/minha-conta" className="text-primary hover:underline">Minha conta</Link>.
+                  </p>
+                  <div className="mt-2 grid gap-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                      <span className="text-muted-foreground">E-mail</span>
+                      <code className="font-mono text-foreground">{accountCreated.email}</code>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background p-2">
+                      <span className="text-muted-foreground">Senha</span>
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-foreground">{accountCreated.password}</code>
+                        <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { navigator.clipboard.writeText(accountCreated.password); toast.success("Senha copiada"); }}>
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <ScarcityPanel seed={pix.orderId} compact />
 
               <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-primary/5 shadow-[0_20px_60px_-20px_rgba(99,140,255,0.4)]">
