@@ -272,57 +272,88 @@ function CheckoutPage() {
                 </div>
 
                 {!user && (
-                  <div>
-                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      <Mail className="h-3 w-3" /> E-mail para receber os produtos *
-                    </label>
-                    <div className="relative">
-                      <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seu@email.com"
-                        autoComplete="email"
-                        inputMode="email"
-                        className={emailValid ? "h-12 pr-9 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
-                      />
-                      {emailValid && (
-                        <CheckCircle2 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
-                      )}
-                    </div>
-                    <p className="mt-1.5 text-[11px] text-muted-foreground">
-                      <Sparkles className="mr-1 inline h-3 w-3 text-primary" />
-                      Sem senha agora. Criamos sua conta automaticamente e enviamos o acesso.
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setShowOptional((s) => !s)}
-                  className="flex w-full items-center justify-between text-[11px] font-medium text-muted-foreground hover:text-foreground"
-                >
-                  <span>Adicionar nome e CPF (opcional, para nota fiscal)</span>
-                  {showOptional ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                </button>
-                {showOptional && (
-                  <div className="space-y-3 rounded-xl border border-dashed border-border bg-background/40 p-3">
+                  <div className="space-y-4">
                     <div>
                       <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        <UserIcon className="h-3 w-3" /> Nome completo
+                        <UserIcon className="h-3 w-3" /> Nome completo *
                       </label>
-                      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Como no documento" autoComplete="name" />
+                      <Input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Como no documento"
+                        autoComplete="name"
+                        className={nameValid ? "h-12 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
+                      />
                     </div>
+
                     <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPF / CNPJ</label>
+                      <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Mail className="h-3 w-3" /> E-mail para receber os produtos *
+                      </label>
+                      <div className="relative">
+                        <Input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="seu@email.com"
+                          autoComplete="email"
+                          inputMode="email"
+                          className={emailValid ? "h-12 pr-9 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
+                        />
+                        {emailValid && (
+                          <CheckCircle2 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Mail className="h-3 w-3" /> Confirme o e-mail *
+                      </label>
+                      <div className="relative">
+                        <Input
+                          type="email"
+                          value={emailConfirm}
+                          onChange={(e) => setEmailConfirm(e.target.value)}
+                          placeholder="confirme seu e-mail"
+                          autoComplete="off"
+                          inputMode="email"
+                          onPaste={(e) => e.preventDefault()}
+                          className={
+                            emailConfirm.length === 0
+                              ? "h-12"
+                              : emailMatches
+                                ? "h-12 pr-9 border-emerald-500/50 focus-visible:ring-emerald-500/30"
+                                : "h-12 pr-9 border-destructive/60 focus-visible:ring-destructive/30"
+                          }
+                        />
+                        {emailMatches && (
+                          <CheckCircle2 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+                        )}
+                      </div>
+                      {emailConfirm.length > 0 && !emailMatches && (
+                        <p className="mt-1 text-[11px] font-medium text-destructive">Os e-mails não conferem</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        CPF ou CNPJ *
+                      </label>
                       <Input
                         value={cpf}
                         onChange={(e) => setCpf(maskCpf(e.target.value))}
                         placeholder="000.000.000-00"
                         inputMode="numeric"
                         autoComplete="off"
+                        className={cpfValid ? "h-12 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
                       />
                     </div>
+
+                    <p className="text-[11px] text-muted-foreground">
+                      <Sparkles className="mr-1 inline h-3 w-3 text-primary" />
+                      Sem senha agora. Criamos sua conta automaticamente e enviamos o acesso ao e-mail informado.
+                    </p>
                   </div>
                 )}
 
@@ -342,7 +373,7 @@ function CheckoutPage() {
                   size="lg"
                   className="h-14 w-full text-base font-bold shadow-[0_10px_30px_-10px_rgba(99,140,255,0.7)] transition hover:brightness-110"
                   onClick={handleGenerate}
-                  disabled={creating || (!user && !emailValid)}
+                  disabled={creating || !formValid}
                 >
                   {creating ? (
                     <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Gerando Pix...</>
