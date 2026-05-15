@@ -22,6 +22,7 @@ import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPopupsRouteImport } from './routes/admin.popups'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
@@ -97,6 +98,11 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
   path: '/produto/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSuporteRoute = AdminSuporteRouteImport.update({
+  id: '/admin/suporte',
+  path: '/admin/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
   id: '/admin/produtos',
   path: '/admin/produtos',
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/suporte': typeof AdminSuporteRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/suporte': typeof AdminSuporteRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/popups': typeof AdminPopupsRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/suporte': typeof AdminSuporteRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/suporte'
     | '/produto/$id'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
@@ -262,6 +272,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/suporte'
     | '/produto/$id'
     | '/admin'
     | '/api/public/send-abandoned-cart'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/admin/pedidos'
     | '/admin/popups'
     | '/admin/produtos'
+    | '/admin/suporte'
     | '/produto/$id'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
@@ -311,6 +323,7 @@ export interface RootRouteChildren {
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminPopupsRoute: typeof AdminPopupsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
+  AdminSuporteRoute: typeof AdminSuporteRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
@@ -411,6 +424,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/suporte': {
+      id: '/admin/suporte'
+      path: '/admin/suporte'
+      fullPath: '/admin/suporte'
+      preLoaderRoute: typeof AdminSuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/produtos': {
       id: '/admin/produtos'
       path: '/admin/produtos'
@@ -495,6 +515,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPedidosRoute: AdminPedidosRoute,
   AdminPopupsRoute: AdminPopupsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
+  AdminSuporteRoute: AdminSuporteRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
@@ -504,3 +525,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
