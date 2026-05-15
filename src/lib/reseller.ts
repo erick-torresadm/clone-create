@@ -66,24 +66,30 @@ export function useResellerStatus(): {
  * sobre o preço público — assim não vaza nenhum dado do fornecedor.
  */
 export function resellerPriceFor(
-  p: Pick<DBProduct, "price" | "source" | "external_price">,
-  settings: Pick<DBSettings, "brl_per_usd"> | null | undefined,
+  p: Pick<DBProduct, "price" | "source" | "external_price" | "external_currency">,
+  settings: Pick<DBSettings, "brl_per_usd" | "brl_per_vnd"> | null | undefined,
   discountPct: number,
 ): number {
   if (!discountPct || discountPct <= 0) return Number(p.price);
   const base = Number(p.price);
+  const publicDiscount = base * (1 - discountPct / 100);
+
   // 50% de margem sobre o custo, quando faz sentido
-  if (
-    p.source && p.source !== "manual" &&
-    p.external_price && settings?.brl_per_usd
-  ) {
-    const marginPrice = Number(p.external_price) * Number(settings.brl_per_usd) * 1.5;
-    // pega o menor entre desconto sobre preço público e preço com margem,
-    // garantindo que nunca cobramos abaixo do custo*1.5
-    const publicDiscount = base * (1 - discountPct / 100);
-    return round2(Math.max(publicDiscount, marginPrice));
+  if (p.source && p.source !== "manual" && p.external_price && settings) {
+    const cur = (p.external_currency || "USD").toUpperCase();
+    const rate =
+      cur === "VND" ? Number(settings.brl_per_vnd)
+      : cur === "USD" ? Number(settings.brl_per_usd)
+      : cur === "BRL" ? 1
+      : 0;
+    if (rate > 0) {
+      const marginPrice = Number(p.external_price) * rate * 1.5;
+      // nunca cobrar abaixo de custo*1.5; nunca acima do preço público
+      const floor = Math.min(marginPrice, base);
+      return round2(Math.max(publicDiscount, floor));
+    }
   }
-  return round2(base * (1 - discountPct / 100));
+  return round2(publicDiscount);
 }
 
 function round2(n: number) {
