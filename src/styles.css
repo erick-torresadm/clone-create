@@ -299,6 +299,10 @@
 /* Make all anchors and buttons feel clickable */
 a, button, [role="button"] {
   transition: transform 0.18s ease, opacity 0.18s ease, color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+a[aria-disabled="true"], button:disabled, [role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
 }
 a:active:not([aria-disabled="true"]),
 button:active:not(:disabled),
