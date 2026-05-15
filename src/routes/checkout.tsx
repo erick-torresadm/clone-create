@@ -173,7 +173,7 @@ function CheckoutPage() {
     return () => { stop = true; polling.current = false; };
   }, [pix, paid, checkFn, clear, navigate]);
 
-  if (authLoading || !user) return null;
+  if (authLoading) return null;
 
   return (
     <Layout>
