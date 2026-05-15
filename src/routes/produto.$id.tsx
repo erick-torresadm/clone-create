@@ -96,7 +96,7 @@ function ProductPage() {
                 alt={product.name}
                 width={800}
                 height={800}
-                className="absolute inset-0 h-full w-full object-cover"
+                className={`absolute inset-0 h-full w-full object-cover ${typeof product.stock === "number" && product.stock <= 0 ? "grayscale opacity-50" : ""}`}
               />
             ) : (
               <div className="absolute inset-0 grid place-items-center text-sm uppercase tracking-[0.3em] text-muted-foreground/40">
