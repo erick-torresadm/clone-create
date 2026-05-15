@@ -72,11 +72,17 @@ function ProductPage() {
   return (
     <Layout>
       {/* Top promo strip */}
-      <div className="border-b border-border/60 bg-primary/10">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-xs font-semibold text-primary">
-          💸 CUPOM DE BOAS VINDAS: <span className="rounded bg-primary px-2 py-0.5 text-primary-foreground">FDM20</span> 💸
+      {settings?.welcome_coupon_enabled && settings?.welcome_coupon_code && (
+        <div className="border-b border-border/60 bg-primary/10">
+          <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-xs font-semibold text-primary">
+            💸 {settings.welcome_coupon_text}{" "}
+            <span className="rounded bg-primary px-2 py-0.5 text-primary-foreground">
+              {settings.welcome_coupon_code}
+            </span>{" "}
+            💸
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mx-auto max-w-7xl px-6 py-8">
         {/* Breadcrumb */}
