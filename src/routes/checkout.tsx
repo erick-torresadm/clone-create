@@ -16,7 +16,7 @@ import { playSuccess } from "@/lib/sound";
 import { toast } from "sonner";
 import { fbTrack } from "@/lib/meta-pixel";
 
-const ENV = (import.meta.env.MODE === "production" ? "live" : "sandbox") as "sandbox" | "live";
+const ENV = "live" as "sandbox" | "live";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
