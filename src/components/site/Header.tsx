@@ -8,7 +8,7 @@ export function Header() {
   const { count, openDrawer } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-primary/20 bg-card/80 px-6 py-4 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-primary/20 bg-card/80 px-4 sm:px-6 py-4 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-primary to-primary/60 text-lg font-extrabold text-primary-foreground shadow-[0_0_18px_rgba(59,130,246,0.5)]">

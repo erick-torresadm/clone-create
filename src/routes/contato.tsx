@@ -21,7 +21,7 @@ function Contato() {
   const [sent, setSent] = useState(false);
   return (
     <Layout>
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 py-16 lg:grid-cols-2">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
             Vamos conversar.

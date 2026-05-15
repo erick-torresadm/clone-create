@@ -61,7 +61,7 @@ function Carrinho() {
   if (items.length === 0) {
     return (
       <Layout>
-        <div className="mx-auto max-w-3xl px-6 py-20 text-center">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-20 text-center">
           <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl border border-border bg-card text-primary">
             <ShoppingCart className="h-7 w-7" />
           </div>

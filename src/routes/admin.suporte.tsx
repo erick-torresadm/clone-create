@@ -62,7 +62,7 @@ function AdminSupport() {
 
   return (
     <Layout>
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
         <Link to="/admin" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" />Voltar</Link>
         <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Suporte aos clientes</h1>
 

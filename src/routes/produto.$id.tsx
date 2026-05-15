@@ -39,7 +39,7 @@ function ProductPage() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="mx-auto max-w-3xl px-6 py-24 text-center text-muted-foreground">Carregando...</div>
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center text-muted-foreground">Carregando...</div>
       </Layout>
     );
   }
@@ -47,7 +47,7 @@ function ProductPage() {
   if (!product) {
     return (
       <Layout>
-        <div className="mx-auto max-w-3xl px-6 py-24 text-center">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-24 text-center">
           <h1 className="text-3xl font-bold text-foreground">Produto não encontrado</h1>
           <p className="mt-3 text-muted-foreground">O produto que você procura não existe ou foi removido.</p>
           <Link to="/produtos" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground">
@@ -74,7 +74,7 @@ function ProductPage() {
       {/* Top promo strip */}
       {settings?.welcome_coupon_enabled && settings?.welcome_coupon_code && (
         <div className="border-b border-border/60 bg-primary/10">
-          <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-6 py-2 text-xs font-semibold text-primary">
+          <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 sm:px-6 py-2 text-xs font-semibold text-primary">
             💸 {settings.welcome_coupon_text}{" "}
             <span className="rounded bg-primary px-2 py-0.5 text-primary-foreground">
               {settings.welcome_coupon_code}
@@ -84,7 +84,7 @@ function ProductPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6 flex items-center gap-1 text-xs text-muted-foreground">
           <Link to="/" className="hover:text-foreground">Início</Link>

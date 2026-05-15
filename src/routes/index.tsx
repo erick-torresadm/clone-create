@@ -53,7 +53,7 @@ function Index() {
 
   return (
     <Layout>
-      <main className="mx-auto max-w-7xl px-6 py-6">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6">
         {/* Search + Categories */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 sm:max-w-sm">
