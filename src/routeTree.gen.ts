@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as RevendedorRouteImport } from './routes/revendedor'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
@@ -38,6 +39,11 @@ import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/a
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RevendedorRoute = RevendedorRouteImport.update({
+  id: '/revendedor',
+  path: '/revendedor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
+    | '/revendedor'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
+    | '/revendedor'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
+    | '/revendedor'
     | '/sobre'
     | '/admin/aparencia'
     | '/admin/cupons'
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   MinhaContaRoute: typeof MinhaContaRouteWithChildren
   ProdutosRoute: typeof ProdutosRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
+  RevendedorRoute: typeof RevendedorRoute
   SobreRoute: typeof SobreRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
@@ -363,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/sobre'
       fullPath: '/sobre'
       preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/revendedor': {
+      id: '/revendedor'
+      path: '/revendedor'
+      fullPath: '/revendedor'
+      preLoaderRoute: typeof RevendedorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/redefinir-senha': {
@@ -559,6 +579,7 @@ const rootRouteChildren: RootRouteChildren = {
   MinhaContaRoute: MinhaContaRouteWithChildren,
   ProdutosRoute: ProdutosRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
+  RevendedorRoute: RevendedorRoute,
   SobreRoute: SobreRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
@@ -577,3 +598,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
