@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { playAddToCart } from "./sound";
 
 export type CartItem = {
   id: string;
