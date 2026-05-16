@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CREDIT_PACKAGES, createCreditCheckout, checkCreditPayment, type CreditPackage } from "@/lib/credits.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { CreditProgressCard } from "@/components/site/CreditProgressCard";
+
+const LS_KEY = "credits-active-purchase";
 import { Sparkles, Zap, Copy, CheckCircle2, Loader2, Clock, ShieldCheck, ArrowLeft, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
@@ -66,6 +69,27 @@ function CreditsPage() {
     return () => clearInterval(t);
   }, []);
 
+  // Restaura compra ativa do localStorage ao carregar a página
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { purchaseId: string; lovableEmail: string };
+      if (saved?.purchaseId) {
+        setPaid(true);
+        setLovableEmail(saved.lovableEmail || "");
+        setPix({
+          purchaseId: saved.purchaseId,
+          paymentId: "",
+          pixPayload: "",
+          pixQrBase64: "",
+          expiresAt: new Date().toISOString(),
+          totalBrl: 0,
+        });
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (!pix || paid) return;
     pollRef.current = setInterval(async () => {
@@ -73,12 +97,18 @@ function CreditsPage() {
         const r = await checkFn({ data: { paymentId: pix.paymentId, environment: ENV } });
         if (r.paid) {
           setPaid(true);
+          try {
+            localStorage.setItem(
+              LS_KEY,
+              JSON.stringify({ purchaseId: pix.purchaseId, lovableEmail: lovableEmail.trim() }),
+            );
+          } catch {}
           if (pollRef.current) clearInterval(pollRef.current);
         }
       } catch {}
     }, 4000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [pix, paid, checkFn]);
+  }, [pix, paid, checkFn, lovableEmail]);
 
   async function startCheckout() {
     if (!formValid || !selected) return;
@@ -106,6 +136,7 @@ function CreditsPage() {
   }
 
   function reset() {
+    try { localStorage.removeItem(LS_KEY); } catch {}
     setPix(null);
     setPaid(false);
     setSelected(null);
@@ -173,6 +204,9 @@ function CreditsPage() {
               </div>
             </li>
           </ol>
+
+          <CreditProgressCard purchaseId={pix.purchaseId} />
+
 
           <div className="mt-8 text-center">
             <Button variant="outline" onClick={reset}>Comprar mais créditos</Button>

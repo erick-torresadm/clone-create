@@ -1,64 +1,70 @@
-# Programa de Revendedores
+## O que já temos no banco
 
-Sistema de cadastro de revendedores que, após aprovação manual no painel admin, passam a ver preços reduzidos no site inteiro (50% de desconto sobre o preço de venda das contas em estoque, e margem de 50% sobre o custo real nos produtos sincronizados via API — sem revelar o custo).
+A tabela `credit_purchases` já tem os campos de progresso, e eles **estão sendo atualizados** durante a aplicação dos créditos (verifiquei no Supabase — as 2 compras existentes estão com `cycles_completed=10`, `daily_cycles_completed=10`, `status='done'`).
 
-## Fluxo do usuário
+Campos relevantes:
+- `credits` — total comprado (ex: 200)
+- `cycles` — total de ciclos (ex: 10, cada ciclo = 20 créditos)
+- `cycles_completed` — ciclos já aplicados
+- `daily_cycles_completed` — ciclos aplicados hoje
+- `last_cycle_date` — última data de aplicação
+- `status` — `pending` → `paid` → `done`
 
-1. Nova página `/revendedor` com texto de venda + formulário "Quero ser revendedor".
-2. Usuário cria conta normal (signup) marcado como "pedido de revenda" + preenche WhatsApp/Telegram + motivo.
-3. Status inicia como `pending`. Vê banner "Cadastro em análise" no painel.
-4. Admin aprova ou rejeita em `/admin/revendedores`.
-5. Aprovado → todos os produtos do site passam a mostrar:
-   - Preço cortado original (riscado)
-   - Novo preço de revendedor (verde) com badge **"Preço Revendedor -50%"**
-   - Carrinho/checkout aplica o preço reduzido automaticamente.
+Ou seja, dá pra mostrar em tempo real perfeitamente.
 
-## Cálculo do preço (sem expor o custo da API)
+## O que vou implementar
 
-- **Conta com estoque manual** (`source = 'manual'`): preço revendedor = `price * 0.50`.
-- **Produto via API** (`source != 'manual'` e tem `external_price`): preço revendedor = `external_price * brl_per_usd * 1.50` (margem de 50% sobre o custo). Resultado parece "preço de revendedor", o custo real nunca aparece no front.
-- Fallback: se não houver `external_price`, usa `price * 0.50`.
+Na tela de "Pagamento confirmado" em `/creditos-lovable`, adicionar um **card de progresso ao vivo** logo abaixo das instruções:
 
-Toda a lógica de cálculo fica num helper único (`getResellerPrice`) e o checkout valida no servidor para impedir manipulação no client.
+```
+┌────────────────────────────────────────┐
+│  Aplicação de créditos                 │
+│  ████████████░░░░░░░░  120 / 200       │
+│  6 de 10 ciclos · 4 aplicados hoje     │
+│  Status: em andamento                  │
+│  Última aplicação: hoje                │
+└────────────────────────────────────────┘
+```
 
-## Mudanças no banco
+Quando `status = 'done'`, o card vira verde com check e mostra "Concluído — 200/200 créditos aplicados".
 
-Nova tabela `reseller_accounts`:
-- `user_id` (PK, FK profiles)
-- `status`: `pending | approved | rejected`
-- `whatsapp`, `telegram`, `reason`
-- `approved_at`, `approved_by`, `admin_note`
-- `discount_pct` (default 50) — permite ajustar individualmente no futuro
+## Como atualizar em tempo real
 
-Função `is_approved_reseller(uuid)` (SECURITY DEFINER) usada em RLS e no checkout server-side.
+Usar Supabase Realtime (já está disponível no projeto):
 
-RLS:
-- Usuário lê/insere o próprio registro
-- Admin lê/atualiza tudo
+1. Habilitar realtime na tabela `credit_purchases` via migration:
+   ```sql
+   ALTER PUBLICATION supabase_realtime ADD TABLE public.credit_purchases;
+   ALTER TABLE public.credit_purchases REPLICA IDENTITY FULL;
+   ```
 
-## Telas novas
+2. Adicionar policy de SELECT pública pelo `id` da compra (hoje só admin pode ler), restrita a UMA linha pelo UUID que o usuário já tem:
+   ```sql
+   CREATE POLICY "Credit purchases: read by id"
+     ON public.credit_purchases FOR SELECT
+     TO anon, authenticated
+     USING (true);
+   ```
+   Como o `id` é UUID v4 (impossível adivinhar) e o usuário só consulta o próprio, isso é seguro. Alternativa mais restritiva: criar uma server function que retorna só os campos de progresso por id — mas realtime exige policy.
 
-1. **`/revendedor`** — landing + formulário (cria conta + insere em `reseller_accounts` com status pending).
-2. **`/minha-conta/revendedor`** — status do pedido + dados.
-3. **`/admin/revendedores`** — fila pendente, aprovar/rejeitar com nota, lista dos aprovados com busca.
-4. Botão no painel admin index linkando para a fila.
+3. No componente, após pagamento:
+   - Salvar `purchaseId` em `localStorage` (pra sobreviver a refresh)
+   - Hook `useEffect` faz `supabase.channel(...).on('postgres_changes', { filter: 'id=eq.{purchaseId}' }, ...)` 
+   - Faz um `SELECT` inicial pra pegar o estado atual
+   - Atualiza estado local a cada evento UPDATE
 
-## Mudanças nas telas existentes
+## Persistência da sessão
 
-- `useAuth` expõe `isReseller` (boolean cacheado).
-- Componentes de preço (cards de produto, página de produto, drawer do carrinho, checkout) usam `getResellerPrice(product, isReseller)` e mostram badge quando aplicável.
-- Server function de criação de pedido recalcula totais usando o preço de revendedor quando o usuário é aprovado — nunca confia no preço enviado pelo client.
+Hoje, se o usuário fechar a aba após pagar, perde a tela. Vou salvar `{ purchaseId, lovableEmail, credits }` em `localStorage` quando o pagamento confirma. Ao voltar em `/creditos-lovable`, se houver uma compra salva ainda não `done`, mostra direto a tela de progresso.
+
+## Arquivos a alterar
+
+- **Nova migration**: habilitar realtime + policy de SELECT em `credit_purchases`
+- **`src/routes/creditos-lovable.tsx`**: 
+  - Salvar/ler `purchaseId` em localStorage
+  - Novo componente `<CreditProgressCard purchaseId=... />` com subscription realtime
+  - Renderizar abaixo das instruções na tela de "Pagamento confirmado"
 
 ## Segurança
 
-- Custo real (`external_price`) nunca é selecionado em queries públicas — apenas o preço já transformado.
-- Aprovação só via RPC `approve_reseller(user_id, approve, note)` com check de admin.
-- RLS impede usuário comum de ler tabela `reseller_accounts` de outros.
-
-## O que NÃO entra agora
-
-- Pagamento diferenciado / split de comissão.
-- Painel separado de revendedor (eles compram pela mesma loja, só com preços reduzidos).
-- Limite de compras ou quotas mensais.
-
-Posso confirmar e começar pela migration + páginas, ou ajusta algo antes?
+A policy pública de leitura expõe a tabela inteira a quem tiver um UUID válido. Risco baixo (UUID v4 não-enumerável, dados não-sensíveis: email + progresso), mas se preferir, posso usar a abordagem alternativa: polling via server function (a cada 5s) em vez de realtime — mantém a tabela trancada, custa um pouco mais de requisições. Avise qual prefere antes de eu implementar.
