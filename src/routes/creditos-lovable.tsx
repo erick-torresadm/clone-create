@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Zap, Copy, CheckCircle2, Loader2, Clock, ShieldCheck, ArrowLeft, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
-const ENV = "live" as "sandbox" | "live";
+const ENV = "sandbox" as "sandbox" | "live";
 const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 
 export const Route = createFileRoute("/creditos-lovable")({
