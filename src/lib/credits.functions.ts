@@ -9,6 +9,7 @@ import {
   getPayment,
   isPaid,
 } from "@/lib/asaas.server";
+import { notifyAdmin } from "@/lib/telegram.server";
 
 export type CreditPackage = {
   id: string;
@@ -96,6 +97,20 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
         pix_expires_at: expiresAt,
       })
       .eq("id", row.id);
+
+    // 🔔 Telegram: PIX gerado (créditos Lovable)
+    notifyAdmin(
+      [
+        `🟡 <b>Novo PIX gerado — Créditos Lovable</b>`,
+        `<b>Pacote:</b> ${pkg.credits} créditos (${pkg.cycles} ciclos) — R$ ${pkg.priceBrl.toFixed(2)}`,
+        `<b>Cliente:</b> ${buyer}`,
+        `<b>Conta Lovable:</b> ${lovable}`,
+        `<b>Compra:</b> <code>${row.id}</code>`,
+        `<b>Cobrança:</b> <code>${payment.id}</code>`,
+        `<b>Ambiente:</b> ${env}`,
+        `<b>Status:</b> aguardando pagamento`,
+      ].join("\n"),
+    ).catch(() => {});
 
     return {
       purchaseId: row.id,
