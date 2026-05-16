@@ -51,8 +51,8 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
       name: buyer.split("@")[0],
     });
 
-    const { data: row, error: insErr } = await supabaseAdmin
-      .from("credit_purchases" as any)
+    const { data: row, error: insErr } = await (supabaseAdmin as any)
+      .from("credit_purchases")
       .insert({
         buyer_email: buyer,
         lovable_email: lovable,
@@ -78,8 +78,8 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
     const qr = await getPixQr(env, payment.id);
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
-    await supabaseAdmin
-      .from("credit_purchases" as any)
+    await (supabaseAdmin as any)
+      .from("credit_purchases")
       .update({
         asaas_payment_id: payment.id,
         pix_payload: qr.payload,
@@ -115,18 +115,18 @@ export const checkCreditPayment = createServerFn({ method: "POST" })
     } catch { /* ignore */ }
 
     if (paid) {
-      await supabaseAdmin
-        .from("credit_purchases" as any)
+      await (supabaseAdmin as any)
+        .from("credit_purchases")
         .update({ status: "paid", paid_at: new Date().toISOString() })
         .eq("asaas_payment_id", data.paymentId)
         .eq("status", "pending");
     }
 
-    const { data: row } = await supabaseAdmin
-      .from("credit_purchases" as any)
+    const { data: row } = await (supabaseAdmin as any)
+      .from("credit_purchases")
       .select("status")
       .eq("asaas_payment_id", data.paymentId)
       .maybeSingle();
 
-    return { paid: paid || (row as any)?.status === "paid", status: (row as any)?.status ?? "pending", rawStatus: raw };
+    return { paid: paid || row?.status === "paid", status: row?.status ?? "pending", rawStatus: raw };
   });
