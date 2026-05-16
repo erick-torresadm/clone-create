@@ -11,6 +11,7 @@ import {
   type CreditPackage,
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
+import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
   Copy,
@@ -20,6 +21,8 @@ import {
   ShieldCheck,
   ArrowLeft,
   QrCode,
+  X,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
