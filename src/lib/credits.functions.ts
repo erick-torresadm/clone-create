@@ -60,21 +60,6 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
       cpfCnpj: data.cpfCnpj,
     });
 
-export const createCreditCheckout = createServerFn({ method: "POST" })
-  .inputValidator((d) => createSchema.parse(d))
-  .handler(async ({ data }) => {
-    const pkg = CREDIT_PACKAGES.find((p) => p.id === data.packageId);
-    if (!pkg) throw new Error("Pacote inválido.");
-    const env: AsaasEnv = data.environment;
-
-    const buyer = data.buyerEmail.trim().toLowerCase();
-    const lovable = data.lovableEmail.trim().toLowerCase();
-
-    const customer = await findOrCreateCustomer(env, {
-      email: buyer,
-      name: buyer.split("@")[0],
-    });
-
     const { data: row, error: insErr } = await (supabaseAdmin as any)
       .from("credit_purchases")
       .insert({
