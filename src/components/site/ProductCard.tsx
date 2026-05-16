@@ -10,9 +10,15 @@ export function ProductCard({ product }: { product: Product }) {
   const { data: reseller } = useResellerStatus();
   const isReseller = reseller.isReseller;
 
+  const isCredits = !!product.tags?.includes("creditos-lovable");
+
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isCredits) {
+      window.location.href = "/creditos-lovable";
+      return;
+    }
     add({ id: product.id, name: product.name, price: product.price, image: product.image });
   };
 
