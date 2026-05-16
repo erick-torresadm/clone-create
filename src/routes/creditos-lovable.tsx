@@ -122,6 +122,7 @@ function CreditsPage() {
           packageId: selected.id,
           buyerEmail: buyerEmail.trim(),
           lovableEmail: lovableEmail.trim(),
+          cpfCnpj: cpfDigits,
           environment: ENV,
         },
       });
