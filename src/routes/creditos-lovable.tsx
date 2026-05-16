@@ -465,6 +465,35 @@ function CreditsPage() {
                 É nessa conta que os créditos serão liberados. Confira antes de comprar.
               </p>
             </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground">CPF ou CNPJ</label>
+              <Input
+                inputMode="numeric"
+                placeholder="000.000.000-00"
+                value={cpfCnpj}
+                onChange={(e) => {
+                  const d = e.target.value.replace(/\D/g, "").slice(0, 14);
+                  let v = d;
+                  if (d.length <= 11) {
+                    v = d
+                      .replace(/^(\d{3})(\d)/, "$1.$2")
+                      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+                      .replace(/\.(\d{3})(\d)/, ".$1-$2");
+                  } else {
+                    v = d
+                      .replace(/^(\d{2})(\d)/, "$1.$2")
+                      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+                      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+                      .replace(/(\d{4})(\d)/, "$1-$2");
+                  }
+                  setCpfCnpj(v);
+                }}
+                className="mt-1"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Exigido pelo provedor de pagamento para gerar o PIX.
+              </p>
+            </div>
             <Button
               onClick={startCheckout}
               disabled={!formValid || creating}
