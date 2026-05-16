@@ -81,23 +81,16 @@ function CreditsPage() {
 
   async function startCheckout() {
     if (!formValid || !selected) return;
-    setCreating(true);
-    try {
-      const res = await createFn({
-        data: {
-          packageId: selected.id,
-          buyerEmail: buyerEmail.trim(),
-          lovableEmail: lovableEmail.trim(),
-          environment: ENV,
-        },
-      });
-      setPix(res);
-      setPaid(false);
-    } catch (e: any) {
-      toast.error(e?.message || "Falha ao gerar PIX");
-    } finally {
-      setCreating(false);
-    }
+    // MODO TESTE: pula o PIX e libera direto a tela de instruções
+    setPix({
+      purchaseId: "test-" + Date.now(),
+      paymentId: "test",
+      pixPayload: "",
+      pixQrBase64: "",
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      totalBrl: selected.priceBrl,
+    });
+    setPaid(true);
   }
 
   function copy(text: string) {
