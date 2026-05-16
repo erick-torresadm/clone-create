@@ -115,7 +115,12 @@ export function ProductCard({ product }: { product: Product }) {
               </span>
             )}
           </div>
-          {typeof product.stock === "number" && (
+          {isCredits ? (
+            <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="text-emerald-400">Sempre disponível</span>
+            </div>
+          ) : typeof product.stock === "number" && (
             <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium">
               <span className={`inline-block h-1.5 w-1.5 rounded-full ${product.stock > 0 ? "bg-emerald-500" : "bg-destructive"}`} />
               <span className={product.stock > 0 ? "text-emerald-400" : "text-destructive"}>
