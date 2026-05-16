@@ -24,12 +24,11 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="glow-border group relative flex h-full flex-col rounded-xl bg-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_20px_50px_-15px_rgba(59,130,246,0.45)]">
-      <Link
-        to="/produto/$id"
-        params={{ id: product.id }}
-        className="relative block"
-        aria-label={`Ver ${product.name}`}
-      >
+      {isCredits ? (
+        <Link to="/creditos-lovable" className="relative block" aria-label={`Ver ${product.name}`}>
+      ) : (
+        <Link to="/produto/$id" params={{ id: product.id }} className="relative block" aria-label={`Ver ${product.name}`}>
+      )}
         <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-secondary via-card to-background">
           {product.image ? (
             <img
