@@ -25,7 +25,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
-import { Route as CreditosLovableCheckoutRouteImport } from './routes/creditos-lovable.checkout'
+import { Route as CreditosLovableCheckoutRouteImport } from './routes/creditos-lovable_.checkout'
 import { Route as AdminTelegramRouteImport } from './routes/admin.telegram'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
@@ -122,9 +122,9 @@ const MinhaContaIndicacoesRoute = MinhaContaIndicacoesRouteImport.update({
   getParentRoute: () => MinhaContaRoute,
 } as any)
 const CreditosLovableCheckoutRoute = CreditosLovableCheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => CreditosLovableRoute,
+  id: '/creditos-lovable_/checkout',
+  path: '/creditos-lovable/checkout',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminTelegramRoute = AdminTelegramRouteImport.update({
   id: '/admin/telegram',
@@ -205,7 +205,7 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
-  '/creditos-lovable': typeof CreditosLovableRouteWithChildren
+  '/creditos-lovable': typeof CreditosLovableRoute
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -238,7 +238,7 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
-  '/creditos-lovable': typeof CreditosLovableRouteWithChildren
+  '/creditos-lovable': typeof CreditosLovableRoute
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -272,7 +272,7 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
-  '/creditos-lovable': typeof CreditosLovableRouteWithChildren
+  '/creditos-lovable': typeof CreditosLovableRoute
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -291,7 +291,7 @@ export interface FileRoutesById {
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/admin/telegram': typeof AdminTelegramRoute
-  '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
+  '/creditos-lovable_/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -392,7 +392,7 @@ export interface FileRouteTypes {
     | '/admin/saques'
     | '/admin/suporte'
     | '/admin/telegram'
-    | '/creditos-lovable/checkout'
+    | '/creditos-lovable_/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
@@ -407,7 +407,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
   ContatoRoute: typeof ContatoRoute
-  CreditosLovableRoute: typeof CreditosLovableRouteWithChildren
+  CreditosLovableRoute: typeof CreditosLovableRoute
   DicasRoute: typeof DicasRoute
   EntrarRoute: typeof EntrarRoute
   GarantiaRoute: typeof GarantiaRoute
@@ -426,6 +426,7 @@ export interface RootRouteChildren {
   AdminSaquesRoute: typeof AdminSaquesRoute
   AdminSuporteRoute: typeof AdminSuporteRoute
   AdminTelegramRoute: typeof AdminTelegramRoute
+  CreditosLovableCheckoutRoute: typeof CreditosLovableCheckoutRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
@@ -548,12 +549,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MinhaContaIndicacoesRouteImport
       parentRoute: typeof MinhaContaRoute
     }
-    '/creditos-lovable/checkout': {
-      id: '/creditos-lovable/checkout'
-      path: '/checkout'
+    '/creditos-lovable_/checkout': {
+      id: '/creditos-lovable_/checkout'
+      path: '/creditos-lovable/checkout'
       fullPath: '/creditos-lovable/checkout'
       preLoaderRoute: typeof CreditosLovableCheckoutRouteImport
-      parentRoute: typeof CreditosLovableRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/telegram': {
       id: '/admin/telegram'
@@ -656,18 +657,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CreditosLovableRouteChildren {
-  CreditosLovableCheckoutRoute: typeof CreditosLovableCheckoutRoute
-}
-
-const CreditosLovableRouteChildren: CreditosLovableRouteChildren = {
-  CreditosLovableCheckoutRoute: CreditosLovableCheckoutRoute,
-}
-
-const CreditosLovableRouteWithChildren = CreditosLovableRoute._addFileChildren(
-  CreditosLovableRouteChildren,
-)
-
 interface MinhaContaRouteChildren {
   MinhaContaIndicacoesRoute: typeof MinhaContaIndicacoesRoute
 }
@@ -685,7 +674,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
   ContatoRoute: ContatoRoute,
-  CreditosLovableRoute: CreditosLovableRouteWithChildren,
+  CreditosLovableRoute: CreditosLovableRoute,
   DicasRoute: DicasRoute,
   EntrarRoute: EntrarRoute,
   GarantiaRoute: GarantiaRoute,
@@ -704,6 +693,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSaquesRoute: AdminSaquesRoute,
   AdminSuporteRoute: AdminSuporteRoute,
   AdminTelegramRoute: AdminTelegramRoute,
+  CreditosLovableCheckoutRoute: CreditosLovableCheckoutRoute,
   ProdutoIdRoute: ProdutoIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
@@ -714,3 +704,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
