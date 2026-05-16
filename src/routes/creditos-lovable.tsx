@@ -92,12 +92,12 @@ function CreditsLanding() {
               <span>· +2.300 clientes</span>
             </div>
             <span className="hidden h-3 w-px bg-border sm:block" />
-            <div className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 font-semibold text-destructive">
+            <div className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-semibold text-emerald-400">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-destructive" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
               </span>
-              <Flame className="h-3 w-3" /> Vagas limitadas hoje
+              <CheckCircle2 className="h-3 w-3" /> Sempre disponível
             </div>
           </div>
 
@@ -105,7 +105,7 @@ function CreditsLanding() {
             <ScarcityPanel seed="creditos-lovable-hero" compact />
           </div>
           <p className="mx-auto mt-3 max-w-xs text-[10px] text-muted-foreground">
-            Atendemos por ordem de chegada. Após esgotar a fila do dia, novas compras entram em espera.
+            Estoque ilimitado · entrega automática 24/7.
           </p>
         </div>
       </section>
