@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
 import { notifyOrderStatus } from "@/lib/telegram.server";
+import { sendCreditsCapiEvent, creditsPurchaseEventId } from "@/lib/meta-capi.server";
 import type { AsaasEnv } from "@/lib/asaas.server";
 
 // Webhook do Asaas. Configure em "Integrações > Webhooks" apontando para
