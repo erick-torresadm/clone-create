@@ -36,6 +36,12 @@ function ProductPage() {
   const { add } = useCart();
   const navigate = useNavigate();
 
+  // Redireciona produto especial "Créditos Lovable" para a página dedicada
+  if (product?.tags?.includes("creditos-lovable")) {
+    if (typeof window !== "undefined") window.location.replace("/creditos-lovable");
+    return null;
+  }
+
   if (isLoading) {
     return (
       <Layout>
