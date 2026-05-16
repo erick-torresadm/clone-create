@@ -422,6 +422,33 @@ function CheckoutPage() {
           <ArrowLeft className="h-4 w-4" />
           Trocar pacote
         </Link>
+
+        {recent && (
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                Você tem uma compra em andamento
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {recent.lovableEmail ? `Conta: ${recent.lovableEmail}` : "Acompanhe o progresso dos créditos."}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" onClick={resumeRecent} className="rounded-full">
+                  Ver progresso
+                </Button>
+                <Button size="sm" variant="ghost" onClick={dismissRecent} className="rounded-full">
+                  <X className="mr-1 h-3.5 w-3.5" /> Iniciar nova compra
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <ScarcityPanel seed={`credits-${selected?.id ?? "p"}`} compact />
+        </div>
+
         <div
           id="credit-checkout-form"
           className="rounded-2xl border border-border bg-card p-6 shadow-xl"
