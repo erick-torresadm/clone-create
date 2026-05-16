@@ -4,6 +4,21 @@ import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
 import { useResellerStatus } from "@/lib/reseller";
 
+function CardLink({
+  isCredits, productId, className, ariaLabel, children,
+}: {
+  isCredits: boolean; productId: string; className?: string; ariaLabel?: string; children: React.ReactNode;
+}) {
+  if (isCredits) {
+    return <a href="/creditos-lovable" className={className} aria-label={ariaLabel}>{children}</a>;
+  }
+  return (
+    <Link to="/produto/$id" params={{ id: productId }} className={className} aria-label={ariaLabel}>
+      {children}
+    </Link>
+  );
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const off = discount(product.oldPrice, product.price);
   const { add } = useCart();
