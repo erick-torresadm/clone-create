@@ -14,6 +14,11 @@ import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
+  initCreditsPixel,
+  fbCreditsTrack,
+  creditsPurchaseEventId,
+} from "@/lib/meta-pixel-credits";
+import {
   Copy,
   CheckCircle2,
   Loader2,
@@ -105,17 +110,22 @@ function CheckoutPage() {
     return () => clearInterval(t);
   }, []);
 
-  // 🎯 Meta Pixel: InitiateCheckout ao entrar na página com pacote
+  // 🎯 Pixel dedicado do funil de créditos: init + InitiateCheckout
+  useEffect(() => {
+    initCreditsPixel();
+  }, []);
   useEffect(() => {
     if (!selected) return;
-    fbTrack("InitiateCheckout", {
+    const payload = {
       content_ids: [selected.id],
       content_name: `${selected.credits} créditos Lovable`,
       content_type: "product",
       value: selected.priceBrl,
       currency: "BRL",
       num_items: 1,
-    });
+    };
+    fbTrack("InitiateCheckout", payload);
+    fbCreditsTrack("InitiateCheckout", payload);
   }, [selected]);
 
   // 💾 Detecta compra recente (apenas notifica, NÃO bloqueia nova compra)
@@ -173,17 +183,20 @@ function CheckoutPage() {
               }),
             );
           } catch {}
-          // 🎯 Meta Pixel: Purchase
+          // 🎯 Meta Pixel: Purchase (browser) - mesmo event_id que o server (CAPI) usa
           if (!purchaseFiredRef.current && selected) {
             purchaseFiredRef.current = true;
-            fbTrack("Purchase", {
+            const payload = {
               content_ids: [selected.id],
               content_name: `${selected.credits} créditos Lovable`,
               content_type: "product",
               value: pix.totalBrl || selected.priceBrl,
               currency: "BRL",
               num_items: 1,
-            });
+            };
+            const eventId = creditsPurchaseEventId(pix.purchaseId);
+            fbTrack("Purchase", payload);
+            fbCreditsTrack("Purchase", payload, eventId);
           }
           if (pollRef.current) clearInterval(pollRef.current);
         }
@@ -198,12 +211,14 @@ function CheckoutPage() {
     if (!formValid || !selected) return;
     setCreating(true);
     try {
-      // 🎯 Meta Pixel: AddPaymentInfo
-      fbTrack("AddPaymentInfo", {
+      // 🎯 Meta Pixel: AddPaymentInfo (browser + funil dedicado)
+      const payInfo = {
         content_ids: [selected.id],
         value: selected.priceBrl,
         currency: "BRL",
-      });
+      };
+      fbTrack("AddPaymentInfo", payInfo);
+      fbCreditsTrack("AddPaymentInfo", payInfo);
       const r = await createFn({
         data: {
           packageId: selected.id,

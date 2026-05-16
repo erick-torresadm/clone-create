@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
 import { notifyOrderStatus } from "@/lib/telegram.server";
+import { sendCreditsCapiEvent, creditsPurchaseEventId } from "@/lib/meta-capi.server";
 import type { AsaasEnv } from "@/lib/asaas.server";
 
 // Webhook do Asaas. Configure em "Integrações > Webhooks" apontando para
@@ -36,11 +37,30 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
 
         if (event === "PAYMENT_RECEIVED" || event === "PAYMENT_CONFIRMED") {
           // Créditos Lovable
-          await (supabaseAdmin as any)
+          const { data: creditRow } = await (supabaseAdmin as any)
             .from("credit_purchases")
             .update({ status: "paid", paid_at: new Date().toISOString() })
             .eq("asaas_payment_id", paymentId)
-            .eq("status", "pending");
+            .eq("status", "pending")
+            .select("id, buyer_email, price_brl, package_id, credits")
+            .maybeSingle();
+
+          // 🎯 Meta CAPI: Purchase server-side do funil de créditos
+          if (creditRow?.id) {
+            await sendCreditsCapiEvent({
+              eventName: "Purchase",
+              eventId: creditsPurchaseEventId(creditRow.id),
+              eventSourceUrl: "https://ativosfy.store/creditos-lovable/checkout",
+              valueBrl: Number(creditRow.price_brl) || 0,
+              contentIds: [creditRow.package_id],
+              contentName: `${creditRow.credits} créditos Lovable`,
+              user: {
+                email: creditRow.buyer_email,
+                clientIp: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null,
+                userAgent: request.headers.get("user-agent"),
+              },
+            }).catch((e) => console.error(`[asaas-webhook] capi error: ${e?.message}`));
+          }
 
           await supabaseAdmin
             .from("orders")
