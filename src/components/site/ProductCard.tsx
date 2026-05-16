@@ -4,26 +4,42 @@ import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
 import { useResellerStatus } from "@/lib/reseller";
 
+function CardLink({
+  isCredits, productId, className, ariaLabel, children,
+}: {
+  isCredits: boolean; productId: string; className?: string; ariaLabel?: string; children: React.ReactNode;
+}) {
+  if (isCredits) {
+    return <a href="/creditos-lovable" className={className} aria-label={ariaLabel}>{children}</a>;
+  }
+  return (
+    <Link to="/produto/$id" params={{ id: productId }} className={className} aria-label={ariaLabel}>
+      {children}
+    </Link>
+  );
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const off = discount(product.oldPrice, product.price);
   const { add } = useCart();
   const { data: reseller } = useResellerStatus();
   const isReseller = reseller.isReseller;
 
+  const isCredits = !!product.tags?.includes("creditos-lovable");
+
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isCredits) {
+      window.location.href = "/creditos-lovable";
+      return;
+    }
     add({ id: product.id, name: product.name, price: product.price, image: product.image });
   };
 
   return (
     <div className="glow-border group relative flex h-full flex-col rounded-xl bg-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_20px_50px_-15px_rgba(59,130,246,0.45)]">
-      <Link
-        to="/produto/$id"
-        params={{ id: product.id }}
-        className="relative block"
-        aria-label={`Ver ${product.name}`}
-      >
+      <CardLink isCredits={isCredits} productId={product.id} className="relative block" ariaLabel={`Ver ${product.name}`}>
         <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-secondary via-card to-background">
           {product.image ? (
             <img
@@ -49,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           )}
         </div>
-      </Link>
+      </CardLink>
 
       <button
         aria-label="Compartilhar"
@@ -60,15 +76,11 @@ export function ProductCard({ product }: { product: Product }) {
       </button>
 
       <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <Link
-          to="/produto/$id"
-          params={{ id: product.id }}
-          className="block"
-        >
+        <CardLink isCredits={isCredits} productId={product.id} className="block">
           <h3 className="line-clamp-2 text-[15px] font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-base">
             {product.name}
           </h3>
-        </Link>
+        </CardLink>
 
         {product.tags && product.tags.length > 0 && (
           <div className="mt-2 hidden flex-wrap gap-1.5 sm:flex">
