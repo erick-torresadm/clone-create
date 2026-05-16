@@ -80,6 +80,7 @@ function CheckoutPage() {
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [recent, setRecent] = useState<{ purchaseId: string; lovableEmail: string } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const purchaseFiredRef = useRef(false);
 
