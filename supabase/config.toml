@@ -1,1 +1,4 @@
 project_id = "btlncxsfdxzuxvpcxcwg"
+
+[functions.nova-compra]
+verify_jwt = false
