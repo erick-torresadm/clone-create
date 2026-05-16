@@ -4,8 +4,10 @@ const LIVE_BASE = "https://api.asaas.com/v3";
 
 export type AsaasEnv = "sandbox" | "live";
 
-function getApiKey(): string {
-  const k = process.env.ASAAS_API_KEY;
+function getApiKey(env: AsaasEnv): string {
+  const k = env === "sandbox"
+    ? (process.env.ASAAS_SANDBOX_API_KEY || process.env.ASAAS_API_KEY)
+    : process.env.ASAAS_API_KEY;
   if (!k) throw new Error("ASAAS_API_KEY não configurada");
   return k;
 }
@@ -23,7 +25,7 @@ async function asaasFetch<T = any>(env: AsaasEnv, path: string, init?: RequestIn
     headers: {
       "Content-Type": "application/json",
       "User-Agent": "Ativosfy/1.0",
-      access_token: getApiKey(),
+      access_token: getApiKey(env),
       ...(init?.headers || {}),
     },
   });

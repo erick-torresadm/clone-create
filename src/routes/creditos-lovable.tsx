@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Zap, Copy, CheckCircle2, Loader2, Clock, ShieldCheck, ArrowLeft, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
-const ENV = "live" as "sandbox" | "live";
+const ENV = "sandbox" as "sandbox" | "live";
 const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 
 export const Route = createFileRoute("/creditos-lovable")({
@@ -84,29 +84,18 @@ function CreditsPage() {
     if (!formValid || !selected) return;
     setCreating(true);
     try {
-      // MODO TESTE: chama a edge function 'nova-compra' e libera direto
-      const { data, error } = await supabase.functions.invoke("nova-compra", {
-        body: {
-          buyer_email: buyerEmail.trim(),
-          lovable_email: lovableEmail.trim(),
-          credits: selected.credits,
-          price_brl: selected.priceBrl,
-          package_id: selected.id,
+      const r = await createFn({
+        data: {
+          packageId: selected.id,
+          buyerEmail: buyerEmail.trim(),
+          lovableEmail: lovableEmail.trim(),
+          environment: ENV,
         },
       });
-      if (error) throw error;
-      const purchaseId = (data as any)?.purchase?.id ?? "test-" + Date.now();
-      setPix({
-        purchaseId,
-        paymentId: "test",
-        pixPayload: "",
-        pixQrBase64: "",
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-        totalBrl: selected.priceBrl,
-      });
-      setPaid(true);
+      setPix(r);
+      setPaid(false);
     } catch (e: any) {
-      toast.error(e?.message || "Erro ao registrar compra");
+      toast.error(e?.message || "Erro ao gerar PIX");
     } finally {
       setCreating(false);
     }
