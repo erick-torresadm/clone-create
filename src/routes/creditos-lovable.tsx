@@ -81,16 +81,34 @@ function CreditsPage() {
 
   async function startCheckout() {
     if (!formValid || !selected) return;
-    // MODO TESTE: pula o PIX e libera direto a tela de instruções
-    setPix({
-      purchaseId: "test-" + Date.now(),
-      paymentId: "test",
-      pixPayload: "",
-      pixQrBase64: "",
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      totalBrl: selected.priceBrl,
-    });
-    setPaid(true);
+    setCreating(true);
+    try {
+      // MODO TESTE: chama a edge function 'nova-compra' e libera direto
+      const { data, error } = await supabase.functions.invoke("nova-compra", {
+        body: {
+          buyer_email: buyerEmail.trim(),
+          lovable_email: lovableEmail.trim(),
+          credits: selected.credits,
+          price_brl: selected.priceBrl,
+          package_id: selected.id,
+        },
+      });
+      if (error) throw error;
+      const purchaseId = (data as any)?.purchase?.id ?? "test-" + Date.now();
+      setPix({
+        purchaseId,
+        paymentId: "test",
+        pixPayload: "",
+        pixQrBase64: "",
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        totalBrl: selected.priceBrl,
+      });
+      setPaid(true);
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao registrar compra");
+    } finally {
+      setCreating(false);
+    }
   }
 
   function copy(text: string) {
