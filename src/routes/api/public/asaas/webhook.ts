@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
-import { notifyOrderStatus } from "@/lib/telegram.server";
+import { notifyOrderStatus, notifyAdmin } from "@/lib/telegram.server";
 import { sendCreditsCapiEvent, creditsPurchaseEventId } from "@/lib/meta-capi.server";
 import type { AsaasEnv } from "@/lib/asaas.server";
 
@@ -42,8 +42,22 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
             .update({ status: "paid", paid_at: new Date().toISOString() })
             .eq("asaas_payment_id", paymentId)
             .eq("status", "pending")
-            .select("id, buyer_email, price_brl, package_id, credits")
+            .select("id, buyer_email, lovable_email, price_brl, package_id, credits, cycles")
             .maybeSingle();
+
+          // 🔔 Telegram: pagamento aprovado (créditos Lovable)
+          if (creditRow?.id) {
+            await notifyAdmin(
+              [
+                `✅ <b>Pagamento aprovado — Créditos Lovable</b>`,
+                `<b>Pacote:</b> ${creditRow.credits} créditos (${creditRow.cycles} ciclos) — R$ ${Number(creditRow.price_brl).toFixed(2)}`,
+                `<b>Cliente:</b> ${creditRow.buyer_email}`,
+                `<b>Conta Lovable:</b> ${creditRow.lovable_email}`,
+                `<b>Compra:</b> <code>${creditRow.id}</code>`,
+                `<b>Cobrança:</b> <code>${paymentId}</code>`,
+              ].join("\n"),
+            ).catch(() => {});
+          }
 
           // 🎯 Meta CAPI: Purchase server-side do funil de créditos
           if (creditRow?.id) {
