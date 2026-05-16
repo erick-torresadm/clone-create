@@ -205,6 +205,9 @@ function CreditsPage() {
             </li>
           </ol>
 
+          <CreditProgressCard purchaseId={pix.purchaseId} />
+
+
           <div className="mt-8 text-center">
             <Button variant="outline" onClick={reset}>Comprar mais créditos</Button>
           </div>
