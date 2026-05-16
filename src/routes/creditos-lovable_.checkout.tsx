@@ -29,7 +29,7 @@ const LS_KEY = "credits-active-purchase";
 
 type CheckoutSearch = { pkg?: string };
 
-export const Route = createFileRoute("/creditos-lovable/checkout")({
+export const Route = createFileRoute("/creditos-lovable_/checkout")({
   validateSearch: (search: Record<string, unknown>): CheckoutSearch => ({
     pkg: typeof search.pkg === "string" ? search.pkg : undefined,
   }),
