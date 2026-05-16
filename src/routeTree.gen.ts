@@ -25,6 +25,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
+import { Route as CreditosLovableCheckoutRouteImport } from './routes/creditos-lovable.checkout'
 import { Route as AdminTelegramRouteImport } from './routes/admin.telegram'
 import { Route as AdminSuporteRouteImport } from './routes/admin.suporte'
 import { Route as AdminSaquesRouteImport } from './routes/admin.saques'
@@ -120,6 +121,11 @@ const MinhaContaIndicacoesRoute = MinhaContaIndicacoesRouteImport.update({
   path: '/indicacoes',
   getParentRoute: () => MinhaContaRoute,
 } as any)
+const CreditosLovableCheckoutRoute = CreditosLovableCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => CreditosLovableRoute,
+} as any)
 const AdminTelegramRoute = AdminTelegramRouteImport.update({
   id: '/admin/telegram',
   path: '/admin/telegram',
@@ -199,7 +205,7 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
-  '/creditos-lovable': typeof CreditosLovableRoute
+  '/creditos-lovable': typeof CreditosLovableRouteWithChildren
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/admin/telegram': typeof AdminTelegramRoute
+  '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -231,7 +238,7 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
-  '/creditos-lovable': typeof CreditosLovableRoute
+  '/creditos-lovable': typeof CreditosLovableRouteWithChildren
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/admin/telegram': typeof AdminTelegramRoute
+  '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
@@ -264,7 +272,7 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
-  '/creditos-lovable': typeof CreditosLovableRoute
+  '/creditos-lovable': typeof CreditosLovableRouteWithChildren
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/admin/saques': typeof AdminSaquesRoute
   '/admin/suporte': typeof AdminSuporteRoute
   '/admin/telegram': typeof AdminTelegramRoute
+  '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/admin/saques'
     | '/admin/suporte'
     | '/admin/telegram'
+    | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/admin/saques'
     | '/admin/suporte'
     | '/admin/telegram'
+    | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/admin/saques'
     | '/admin/suporte'
     | '/admin/telegram'
+    | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
     | '/admin/'
@@ -395,7 +407,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
   ContatoRoute: typeof ContatoRoute
-  CreditosLovableRoute: typeof CreditosLovableRoute
+  CreditosLovableRoute: typeof CreditosLovableRouteWithChildren
   DicasRoute: typeof DicasRoute
   EntrarRoute: typeof EntrarRoute
   GarantiaRoute: typeof GarantiaRoute
@@ -536,6 +548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MinhaContaIndicacoesRouteImport
       parentRoute: typeof MinhaContaRoute
     }
+    '/creditos-lovable/checkout': {
+      id: '/creditos-lovable/checkout'
+      path: '/checkout'
+      fullPath: '/creditos-lovable/checkout'
+      preLoaderRoute: typeof CreditosLovableCheckoutRouteImport
+      parentRoute: typeof CreditosLovableRoute
+    }
     '/admin/telegram': {
       id: '/admin/telegram'
       path: '/admin/telegram'
@@ -637,6 +656,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface CreditosLovableRouteChildren {
+  CreditosLovableCheckoutRoute: typeof CreditosLovableCheckoutRoute
+}
+
+const CreditosLovableRouteChildren: CreditosLovableRouteChildren = {
+  CreditosLovableCheckoutRoute: CreditosLovableCheckoutRoute,
+}
+
+const CreditosLovableRouteWithChildren = CreditosLovableRoute._addFileChildren(
+  CreditosLovableRouteChildren,
+)
+
 interface MinhaContaRouteChildren {
   MinhaContaIndicacoesRoute: typeof MinhaContaIndicacoesRoute
 }
@@ -654,7 +685,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
   ContatoRoute: ContatoRoute,
-  CreditosLovableRoute: CreditosLovableRoute,
+  CreditosLovableRoute: CreditosLovableRouteWithChildren,
   DicasRoute: DicasRoute,
   EntrarRoute: EntrarRoute,
   GarantiaRoute: GarantiaRoute,
