@@ -48,6 +48,7 @@ function CreditsPage() {
   const [selected, setSelected] = useState<CreditPackage | null>(null);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [lovableEmail, setLovableEmail] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState("");
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
@@ -57,7 +58,9 @@ function CreditsPage() {
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const buyerValid = emailRe.test(buyerEmail.trim());
   const lovableValid = emailRe.test(lovableEmail.trim());
-  const formValid = !!selected && buyerValid && lovableValid;
+  const cpfDigits = cpfCnpj.replace(/\D/g, "");
+  const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
+  const formValid = !!selected && buyerValid && lovableValid && cpfValid;
 
   const remaining = useMemo(() => {
     if (!pix) return 0;
