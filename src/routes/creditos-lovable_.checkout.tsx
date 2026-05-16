@@ -118,29 +118,40 @@ function CheckoutPage() {
     });
   }, [selected]);
 
-  // 💾 Restaura compra ativa
+  // 💾 Detecta compra recente (apenas notifica, NÃO bloqueia nova compra)
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
-      const saved = JSON.parse(raw) as {
-        purchaseId: string;
-        lovableEmail: string;
-      };
-      if (saved?.purchaseId) {
-        setPaid(true);
-        setLovableEmail(saved.lovableEmail || "");
-        setPix({
-          purchaseId: saved.purchaseId,
-          paymentId: "",
-          pixPayload: "",
-          pixQrBase64: "",
-          expiresAt: new Date().toISOString(),
-          totalBrl: 0,
-        });
+      const saved = JSON.parse(raw) as { purchaseId: string; lovableEmail: string; savedAt?: number };
+      if (!saved?.purchaseId) return;
+      // expira em 7 dias para não poluir indefinidamente
+      if (saved.savedAt && Date.now() - saved.savedAt > 7 * 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(LS_KEY);
+        return;
       }
+      setRecent({ purchaseId: saved.purchaseId, lovableEmail: saved.lovableEmail || "" });
+      if (saved.lovableEmail) setLovableEmail(saved.lovableEmail);
     } catch {}
   }, []);
+
+  function resumeRecent() {
+    if (!recent) return;
+    setPaid(true);
+    setPix({
+      purchaseId: recent.purchaseId,
+      paymentId: "",
+      pixPayload: "",
+      pixQrBase64: "",
+      expiresAt: new Date().toISOString(),
+      totalBrl: 0,
+    });
+  }
+
+  function dismissRecent() {
+    try { localStorage.removeItem(LS_KEY); } catch {}
+    setRecent(null);
+  }
 
   // 🔄 Polling do PIX
   useEffect(() => {
