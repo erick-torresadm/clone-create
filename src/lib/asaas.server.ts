@@ -54,7 +54,22 @@ export async function findOrCreateCustomer(
     `/customers?email=${encodeURIComponent(input.email)}&limit=1`,
     { method: "GET" },
   );
-  if (list.data?.length) return list.data[0];
+  if (list.data?.length) {
+    const customer = list.data[0];
+    if (input.cpfCnpj) {
+      return asaasFetch<AsaasCustomer>(env, `/customers/${customer.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          name: customer.name || input.name,
+          email: customer.email || input.email,
+          cpfCnpj: input.cpfCnpj,
+          ...(input.externalReference ? { externalReference: input.externalReference } : {}),
+          notificationDisabled: true,
+        }),
+      });
+    }
+    return customer;
+  }
   return asaasFetch<AsaasCustomer>(env, `/customers`, {
     method: "POST",
     body: JSON.stringify({
