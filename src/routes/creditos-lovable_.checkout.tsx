@@ -169,6 +169,7 @@ function CheckoutPage() {
               JSON.stringify({
                 purchaseId: pix.purchaseId,
                 lovableEmail: lovableEmail.trim(),
+                savedAt: Date.now(),
               }),
             );
           } catch {}
