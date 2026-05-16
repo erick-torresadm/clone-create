@@ -11,6 +11,7 @@ import {
   type CreditPackage,
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
+import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
   Copy,
@@ -20,6 +21,8 @@ import {
   ShieldCheck,
   ArrowLeft,
   QrCode,
+  X,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -77,6 +80,7 @@ function CheckoutPage() {
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [recent, setRecent] = useState<{ purchaseId: string; lovableEmail: string } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const purchaseFiredRef = useRef(false);
 
@@ -114,29 +118,40 @@ function CheckoutPage() {
     });
   }, [selected]);
 
-  // 💾 Restaura compra ativa
+  // 💾 Detecta compra recente (apenas notifica, NÃO bloqueia nova compra)
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (!raw) return;
-      const saved = JSON.parse(raw) as {
-        purchaseId: string;
-        lovableEmail: string;
-      };
-      if (saved?.purchaseId) {
-        setPaid(true);
-        setLovableEmail(saved.lovableEmail || "");
-        setPix({
-          purchaseId: saved.purchaseId,
-          paymentId: "",
-          pixPayload: "",
-          pixQrBase64: "",
-          expiresAt: new Date().toISOString(),
-          totalBrl: 0,
-        });
+      const saved = JSON.parse(raw) as { purchaseId: string; lovableEmail: string; savedAt?: number };
+      if (!saved?.purchaseId) return;
+      // expira em 7 dias para não poluir indefinidamente
+      if (saved.savedAt && Date.now() - saved.savedAt > 7 * 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(LS_KEY);
+        return;
       }
+      setRecent({ purchaseId: saved.purchaseId, lovableEmail: saved.lovableEmail || "" });
+      if (saved.lovableEmail) setLovableEmail(saved.lovableEmail);
     } catch {}
   }, []);
+
+  function resumeRecent() {
+    if (!recent) return;
+    setPaid(true);
+    setPix({
+      purchaseId: recent.purchaseId,
+      paymentId: "",
+      pixPayload: "",
+      pixQrBase64: "",
+      expiresAt: new Date().toISOString(),
+      totalBrl: 0,
+    });
+  }
+
+  function dismissRecent() {
+    try { localStorage.removeItem(LS_KEY); } catch {}
+    setRecent(null);
+  }
 
   // 🔄 Polling do PIX
   useEffect(() => {
@@ -154,6 +169,7 @@ function CheckoutPage() {
               JSON.stringify({
                 purchaseId: pix.purchaseId,
                 lovableEmail: lovableEmail.trim(),
+                savedAt: Date.now(),
               }),
             );
           } catch {}
@@ -406,6 +422,33 @@ function CheckoutPage() {
           <ArrowLeft className="h-4 w-4" />
           Trocar pacote
         </Link>
+
+        {recent && (
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
+            <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                Você tem uma compra em andamento
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {recent.lovableEmail ? `Conta: ${recent.lovableEmail}` : "Acompanhe o progresso dos créditos."}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button size="sm" onClick={resumeRecent} className="rounded-full">
+                  Ver progresso
+                </Button>
+                <Button size="sm" variant="ghost" onClick={dismissRecent} className="rounded-full">
+                  <X className="mr-1 h-3.5 w-3.5" /> Iniciar nova compra
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mb-4">
+          <ScarcityPanel seed={`credits-${selected?.id ?? "p"}`} compact />
+        </div>
+
         <div
           id="credit-checkout-form"
           className="rounded-2xl border border-border bg-card p-6 shadow-xl"
