@@ -35,6 +35,13 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
         console.log(`[asaas-webhook] event=${event} payment=${paymentId} status=${payment?.status}`);
 
         if (event === "PAYMENT_RECEIVED" || event === "PAYMENT_CONFIRMED") {
+          // Créditos Lovable
+          await (supabaseAdmin as any)
+            .from("credit_purchases")
+            .update({ status: "paid", paid_at: new Date().toISOString() })
+            .eq("asaas_payment_id", paymentId)
+            .eq("status", "pending");
+
           await supabaseAdmin
             .from("orders")
             .update({ status: "paid" })

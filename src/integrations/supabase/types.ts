@@ -71,6 +71,69 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_purchases: {
+        Row: {
+          asaas_customer_id: string | null
+          asaas_payment_id: string | null
+          buyer_email: string
+          created_at: string
+          credits: number
+          cycles: number
+          cycles_completed: number
+          daily_cycles_completed: number
+          id: string
+          last_cycle_date: string | null
+          lovable_email: string
+          package_id: string
+          paid_at: string | null
+          pix_expires_at: string | null
+          pix_payload: string | null
+          pix_qr_base64: string | null
+          price_brl: number
+          status: string
+        }
+        Insert: {
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
+          buyer_email: string
+          created_at?: string
+          credits: number
+          cycles: number
+          cycles_completed?: number
+          daily_cycles_completed?: number
+          id?: string
+          last_cycle_date?: string | null
+          lovable_email: string
+          package_id: string
+          paid_at?: string | null
+          pix_expires_at?: string | null
+          pix_payload?: string | null
+          pix_qr_base64?: string | null
+          price_brl: number
+          status?: string
+        }
+        Update: {
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
+          buyer_email?: string
+          created_at?: string
+          credits?: number
+          cycles?: number
+          cycles_completed?: number
+          daily_cycles_completed?: number
+          id?: string
+          last_cycle_date?: string | null
+          lovable_email?: string
+          package_id?: string
+          paid_at?: string | null
+          pix_expires_at?: string | null
+          pix_payload?: string | null
+          pix_qr_base64?: string | null
+          price_brl?: number
+          status?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           abandoned_email_sent_at: string | null

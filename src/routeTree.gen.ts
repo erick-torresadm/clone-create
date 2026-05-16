@@ -17,6 +17,7 @@ import { Route as MinhaContaRouteImport } from './routes/minha-conta'
 import { Route as GarantiaRouteImport } from './routes/garantia'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as DicasRouteImport } from './routes/dicas'
+import { Route as CreditosLovableRouteImport } from './routes/creditos-lovable'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
@@ -77,6 +78,11 @@ const EntrarRoute = EntrarRouteImport.update({
 const DicasRoute = DicasRouteImport.update({
   id: '/dicas',
   path: '/dicas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditosLovableRoute = CreditosLovableRouteImport.update({
+  id: '/creditos-lovable',
+  path: '/creditos-lovable',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContatoRoute = ContatoRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
+  '/creditos-lovable': typeof CreditosLovableRoute
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
+  '/creditos-lovable': typeof CreditosLovableRoute
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/checkout': typeof CheckoutRoute
   '/contato': typeof ContatoRoute
+  '/creditos-lovable': typeof CreditosLovableRoute
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/contato'
+    | '/creditos-lovable'
     | '/dicas'
     | '/entrar'
     | '/garantia'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/contato'
+    | '/creditos-lovable'
     | '/dicas'
     | '/entrar'
     | '/garantia'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/checkout'
     | '/contato'
+    | '/creditos-lovable'
     | '/dicas'
     | '/entrar'
     | '/garantia'
@@ -383,6 +395,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   CheckoutRoute: typeof CheckoutRoute
   ContatoRoute: typeof ContatoRoute
+  CreditosLovableRoute: typeof CreditosLovableRoute
   DicasRoute: typeof DicasRoute
   EntrarRoute: typeof EntrarRoute
   GarantiaRoute: typeof GarantiaRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       path: '/dicas'
       fullPath: '/dicas'
       preLoaderRoute: typeof DicasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creditos-lovable': {
+      id: '/creditos-lovable'
+      path: '/creditos-lovable'
+      fullPath: '/creditos-lovable'
+      preLoaderRoute: typeof CreditosLovableRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contato': {
@@ -634,6 +654,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   CheckoutRoute: CheckoutRoute,
   ContatoRoute: ContatoRoute,
+  CreditosLovableRoute: CreditosLovableRoute,
   DicasRoute: DicasRoute,
   EntrarRoute: EntrarRoute,
   GarantiaRoute: GarantiaRoute,
@@ -662,13 +683,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
