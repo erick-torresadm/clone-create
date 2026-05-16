@@ -25,7 +25,7 @@ async function asaasFetch<T = any>(env: AsaasEnv, path: string, init?: RequestIn
     headers: {
       "Content-Type": "application/json",
       "User-Agent": "Ativosfy/1.0",
-      access_token: getApiKey(),
+      access_token: getApiKey(env),
       ...(init?.headers || {}),
     },
   });
