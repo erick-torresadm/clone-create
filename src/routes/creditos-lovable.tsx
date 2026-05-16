@@ -136,6 +136,7 @@ function CreditsPage() {
   }
 
   function reset() {
+    try { localStorage.removeItem(LS_KEY); } catch {}
     setPix(null);
     setPaid(false);
     setSelected(null);
