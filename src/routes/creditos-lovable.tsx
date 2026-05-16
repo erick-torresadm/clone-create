@@ -202,8 +202,13 @@ function CreditsPage() {
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">Pronto!</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Em alguns minutos os créditos serão liberados na conta <strong>{lovableEmail || pix.purchaseId}</strong>.
+                    Os créditos serão liberados na conta <strong>{lovableEmail || pix.purchaseId}</strong>.
                   </p>
+                  <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-left">
+                    <p className="text-xs text-amber-200">
+                      ⏱️ <strong>Atenção:</strong> devido à alta demanda, pode levar até <strong>10 minutos</strong> para a contagem dos créditos começar. Mantenha esta página aberta para acompanhar em tempo real.
+                    </p>
+                  </div>
                 </div>
               </div>
             </li>
