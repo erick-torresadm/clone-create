@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CREDIT_PACKAGES, createCreditCheckout, checkCreditPayment, type CreditPackage } from "@/lib/credits.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { CreditProgressCard } from "@/components/site/CreditProgressCard";
+
+const LS_KEY = "credits-active-purchase";
 import { Sparkles, Zap, Copy, CheckCircle2, Loader2, Clock, ShieldCheck, ArrowLeft, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
