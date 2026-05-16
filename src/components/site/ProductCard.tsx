@@ -61,15 +61,11 @@ export function ProductCard({ product }: { product: Product }) {
       </button>
 
       <div className="flex flex-1 flex-col p-3 sm:p-5">
-        <Link
-          to="/produto/$id"
-          params={{ id: product.id }}
-          className="block"
-        >
+        <CardLink isCredits={isCredits} productId={product.id} className="block">
           <h3 className="line-clamp-2 text-[15px] font-bold leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-base">
             {product.name}
           </h3>
-        </Link>
+        </CardLink>
 
         {product.tags && product.tags.length > 0 && (
           <div className="mt-2 hidden flex-wrap gap-1.5 sm:flex">
