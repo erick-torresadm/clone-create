@@ -40,6 +40,7 @@ const createSchema = z.object({
   packageId: z.string().min(1).max(20),
   buyerEmail: z.string().email().max(160),
   lovableEmail: z.string().email().max(160),
+  cpfCnpj: z.string().regex(/^\d{11}$|^\d{14}$/, "CPF/CNPJ inválido"),
   environment: z.enum(["sandbox", "live"]),
 });
 
@@ -56,6 +57,7 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
     const customer = await findOrCreateCustomer(env, {
       email: buyer,
       name: buyer.split("@")[0],
+      cpfCnpj: data.cpfCnpj,
     });
 
     const { data: row, error: insErr } = await (supabaseAdmin as any)

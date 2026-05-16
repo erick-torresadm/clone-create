@@ -48,6 +48,7 @@ function CreditsPage() {
   const [selected, setSelected] = useState<CreditPackage | null>(null);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [lovableEmail, setLovableEmail] = useState("");
+  const [cpfCnpj, setCpfCnpj] = useState("");
   const [creating, setCreating] = useState(false);
   const [pix, setPix] = useState<PixSession | null>(null);
   const [paid, setPaid] = useState(false);
@@ -57,7 +58,9 @@ function CreditsPage() {
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const buyerValid = emailRe.test(buyerEmail.trim());
   const lovableValid = emailRe.test(lovableEmail.trim());
-  const formValid = !!selected && buyerValid && lovableValid;
+  const cpfDigits = cpfCnpj.replace(/\D/g, "");
+  const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
+  const formValid = !!selected && buyerValid && lovableValid && cpfValid;
 
   const remaining = useMemo(() => {
     if (!pix) return 0;
@@ -119,6 +122,7 @@ function CreditsPage() {
           packageId: selected.id,
           buyerEmail: buyerEmail.trim(),
           lovableEmail: lovableEmail.trim(),
+          cpfCnpj: cpfDigits,
           environment: ENV,
         },
       });
@@ -459,6 +463,35 @@ function CreditsPage() {
               />
               <p className="mt-1 text-[11px] text-muted-foreground">
                 É nessa conta que os créditos serão liberados. Confira antes de comprar.
+              </p>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground">CPF ou CNPJ</label>
+              <Input
+                inputMode="numeric"
+                placeholder="000.000.000-00"
+                value={cpfCnpj}
+                onChange={(e) => {
+                  const d = e.target.value.replace(/\D/g, "").slice(0, 14);
+                  let v = d;
+                  if (d.length <= 11) {
+                    v = d
+                      .replace(/^(\d{3})(\d)/, "$1.$2")
+                      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+                      .replace(/\.(\d{3})(\d)/, ".$1-$2");
+                  } else {
+                    v = d
+                      .replace(/^(\d{2})(\d)/, "$1.$2")
+                      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+                      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+                      .replace(/(\d{4})(\d)/, "$1-$2");
+                  }
+                  setCpfCnpj(v);
+                }}
+                className="mt-1"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Exigido pelo provedor de pagamento para gerar o PIX.
               </p>
             </div>
             <Button
