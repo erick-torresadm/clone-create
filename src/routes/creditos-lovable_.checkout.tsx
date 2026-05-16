@@ -14,6 +14,11 @@ import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
+  initCreditsPixel,
+  fbCreditsTrack,
+  creditsPurchaseEventId,
+} from "@/lib/meta-pixel-credits";
+import {
   Copy,
   CheckCircle2,
   Loader2,

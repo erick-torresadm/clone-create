@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { Button } from "@/components/ui/button";
 import { CREDIT_PACKAGES, type CreditPackage } from "@/lib/credits.functions";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
+import { initCreditsPixel, fbCreditsTrack } from "@/lib/meta-pixel-credits";
 import {
   Sparkles,
   Zap,
@@ -46,16 +47,30 @@ function CreditsLanding() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<CreditPackage>(CREDIT_PACKAGES[0]);
 
+  // 🎯 Pixel dedicado do funil de créditos (PageView + ViewContent)
+  useEffect(() => {
+    initCreditsPixel();
+    fbCreditsTrack("ViewContent", {
+      content_ids: CREDIT_PACKAGES.map((p) => p.id),
+      content_name: "Landing Créditos Lovable",
+      content_type: "product_group",
+      currency: "BRL",
+    });
+  }, []);
+
   function goToCheckout(pkg: CreditPackage) {
-    // 🎯 Meta Pixel: AddToCart no clique de comprar
-    fbTrack("AddToCart", {
+    const payload = {
       content_ids: [pkg.id],
       content_name: `${pkg.credits} créditos Lovable`,
       content_type: "product",
       value: pkg.priceBrl,
       currency: "BRL",
       num_items: 1,
-    });
+    };
+    // Pixel global do site (mantém compatibilidade)
+    fbTrack("AddToCart", payload);
+    // Pixel dedicado do funil de créditos
+    fbCreditsTrack("AddToCart", payload);
     navigate({ to: "/creditos-lovable/checkout", search: { pkg: pkg.id } });
   }
 
