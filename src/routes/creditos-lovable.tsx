@@ -81,6 +81,32 @@ function CreditsLanding() {
             </strong>
             , automaticamente, até completar o plano contratado.
           </p>
+
+          {/* Social proof bar */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
+            <div className="inline-flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+              ))}
+              <span className="ml-1 font-semibold text-foreground">4.9/5</span>
+              <span>· +2.300 clientes</span>
+            </div>
+            <span className="hidden h-3 w-px bg-border sm:block" />
+            <div className="inline-flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 font-semibold text-destructive">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-destructive" />
+              </span>
+              <Flame className="h-3 w-3" /> Vagas limitadas hoje
+            </div>
+          </div>
+
+          <div className="mx-auto mt-6 max-w-md">
+            <ScarcityPanel seed="creditos-lovable-hero" compact />
+          </div>
+          <p className="mx-auto mt-3 max-w-xs text-[10px] text-muted-foreground">
+            Atendemos por ordem de chegada. Após esgotar a fila do dia, novas compras entram em espera.
+          </p>
         </div>
       </section>
 
