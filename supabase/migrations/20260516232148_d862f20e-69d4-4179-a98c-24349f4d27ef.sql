@@ -1,0 +1,1 @@
+UPDATE public.site_settings SET logo_url='https://btlncxsfdxzuxvpcxcwg.supabase.co/storage/v1/object/public/product-images/brand/ativosfy-logo.png' WHERE id=1;
