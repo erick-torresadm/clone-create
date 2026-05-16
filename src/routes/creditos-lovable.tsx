@@ -69,6 +69,27 @@ function CreditsPage() {
     return () => clearInterval(t);
   }, []);
 
+  // Restaura compra ativa do localStorage ao carregar a página
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { purchaseId: string; lovableEmail: string };
+      if (saved?.purchaseId) {
+        setPaid(true);
+        setLovableEmail(saved.lovableEmail || "");
+        setPix({
+          purchaseId: saved.purchaseId,
+          paymentId: "",
+          pixPayload: "",
+          pixQrBase64: "",
+          expiresAt: new Date().toISOString(),
+          totalBrl: 0,
+        });
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (!pix || paid) return;
     pollRef.current = setInterval(async () => {
@@ -76,12 +97,18 @@ function CreditsPage() {
         const r = await checkFn({ data: { paymentId: pix.paymentId, environment: ENV } });
         if (r.paid) {
           setPaid(true);
+          try {
+            localStorage.setItem(
+              LS_KEY,
+              JSON.stringify({ purchaseId: pix.purchaseId, lovableEmail: lovableEmail.trim() }),
+            );
+          } catch {}
           if (pollRef.current) clearInterval(pollRef.current);
         }
       } catch {}
     }, 4000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [pix, paid, checkFn]);
+  }, [pix, paid, checkFn, lovableEmail]);
 
   async function startCheckout() {
     if (!formValid || !selected) return;
