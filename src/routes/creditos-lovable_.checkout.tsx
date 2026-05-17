@@ -563,6 +563,9 @@ function CheckoutPage() {
           />
         </div>
 
+        <SocialProofTicker />
+        <RepeatBonusBanner email={buyerEmail} />
+
         <div
           id="credit-checkout-form"
           className="rounded-2xl border border-border bg-card p-6 shadow-xl"
