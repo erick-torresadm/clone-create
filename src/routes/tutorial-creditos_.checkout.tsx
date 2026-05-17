@@ -11,6 +11,7 @@ import {
   type CreditPackage,
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
+import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { useAuth } from "@/lib/use-auth";
 import { fbTrack } from "@/lib/meta-pixel";
@@ -368,6 +369,7 @@ function CheckoutPage() {
           </ol>
 
           <CreditProgressCard purchaseId={pix.purchaseId} />
+          <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={lovableEmail} />
 
           <div className="mt-8 text-center">
             <Button variant="outline" onClick={reset}>
