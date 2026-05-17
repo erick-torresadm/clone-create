@@ -12,6 +12,7 @@ import {
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
+import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
@@ -493,6 +494,13 @@ function CheckoutPage() {
 
         <div className="mb-4">
           <ScarcityPanel seed={`credits-${selected?.id ?? "p"}`} compact />
+        </div>
+
+        <div className="mb-4">
+          <TutorialVideo
+            title="Veja antes de comprar: como liberar seus créditos (1 min)"
+            subtitle="Mostramos exatamente o que você precisa fazer depois do pagamento. É simples, mesmo se você nunca usou o Lovable."
+          />
         </div>
 
         <div

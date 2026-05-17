@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PlayCircle, Users, MessageCircle, Lock, Clock } from "lucide-react";
+import { Users, MessageCircle, Lock, Clock } from "lucide-react";
+import { TutorialVideo } from "./TutorialVideo";
 
 const SUPPORT_WHATSAPP = "5511930070320";
 const COMMUNITY_URL = "https://chat.whatsapp.com/CAQzvoaGFQUDLAGdxqWy1o";
-// 📹 Cole aqui o link do tutorial (YouTube embed, ex: https://www.youtube.com/embed/XXXX)
-const TUTORIAL_VIDEO_URL = "";
 const UNLOCK_MINUTES = 20;
 
 export function PostPurchaseHelp({ purchaseId, lovableEmail }: { purchaseId: string; lovableEmail?: string }) {
@@ -42,30 +41,7 @@ export function PostPurchaseHelp({ purchaseId, lovableEmail }: { purchaseId: str
   return (
     <div className="mt-8 space-y-6">
       {/* 🎥 Tutorial */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2">
-          <PlayCircle className="h-5 w-5 text-primary" />
-          <h3 className="text-base font-bold text-foreground">Tutorial: como adicionar o bot na sua conta Lovable</h3>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Assista o vídeo abaixo (1 min) — é bem simples e você consegue fazer sozinho.
-        </p>
-        <div className="mt-4 aspect-video w-full overflow-hidden rounded-xl border border-border bg-black">
-          {TUTORIAL_VIDEO_URL ? (
-            <iframe
-              src={TUTORIAL_VIDEO_URL}
-              title="Tutorial créditos Lovable"
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-              Vídeo em breve
-            </div>
-          )}
-        </div>
-      </div>
+      <TutorialVideo />
 
       {/* 👥 Comunidade */}
       <a
