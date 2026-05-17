@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PlayCircle, Users, MessageCircle, Lock, Clock } from "lucide-react";
+import { Users, MessageCircle, Lock, Clock } from "lucide-react";
+import { TutorialVideo } from "./TutorialVideo";
 
 const SUPPORT_WHATSAPP = "5511930070320";
 const COMMUNITY_URL = "https://chat.whatsapp.com/CAQzvoaGFQUDLAGdxqWy1o";
-// 📹 Cole aqui o link do tutorial (YouTube embed, ex: https://www.youtube.com/embed/XXXX)
-const TUTORIAL_VIDEO_URL = "";
 const UNLOCK_MINUTES = 20;
 
 export function PostPurchaseHelp({ purchaseId, lovableEmail }: { purchaseId: string; lovableEmail?: string }) {
