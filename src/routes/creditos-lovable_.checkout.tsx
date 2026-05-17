@@ -36,11 +36,12 @@ const ENV = "live" as "sandbox" | "live";
 const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 const LS_KEY = "credits-active-purchase";
 
-type CheckoutSearch = { pkg?: string };
+type CheckoutSearch = { pkg?: string; purchase?: string };
 
 export const Route = createFileRoute("/creditos-lovable_/checkout")({
   validateSearch: (search: Record<string, unknown>): CheckoutSearch => ({
     pkg: typeof search.pkg === "string" ? search.pkg : undefined,
+    purchase: typeof search.purchase === "string" ? search.purchase : undefined,
   }),
   head: () => ({
     meta: [
@@ -72,7 +73,7 @@ function formatBrl(n: number) {
 
 function CheckoutPage() {
   const navigate = useNavigate();
-  const { pkg } = Route.useSearch();
+  const { pkg, purchase } = Route.useSearch();
   const createFn = useServerFn(createCreditCheckout);
   const checkFn = useServerFn(checkCreditPayment);
 
@@ -128,6 +129,34 @@ function CheckoutPage() {
     fbTrack("InitiateCheckout", payload);
     fbCreditsTrack("InitiateCheckout", payload);
   }, [selected]);
+
+  // 🔁 Resumir compra via ?purchase=<id> (acesso pela "Minha conta")
+  useEffect(() => {
+    if (!purchase) return;
+    let cancelled = false;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from("credit_purchases")
+        .select("id,lovable_email,price_brl,status,asaas_payment_id")
+        .eq("id", purchase)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      if (data.lovable_email) setLovableEmail(data.lovable_email);
+      setPix({
+        purchaseId: data.id,
+        paymentId: data.asaas_payment_id ?? "",
+        pixPayload: "",
+        pixQrBase64: "",
+        expiresAt: new Date().toISOString(),
+        totalBrl: Number(data.price_brl) || 0,
+      });
+      setPaid(data.status === "paid" || data.status === "done");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [purchase]);
 
   // 💾 Detecta compra recente (apenas notifica, NÃO bloqueia nova compra)
   useEffect(() => {
