@@ -14,6 +14,9 @@ import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
 import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
+import { PostPurchaseEuphoria } from "@/components/site/PostPurchaseEuphoria";
+import { RepeatBonusBanner } from "@/components/site/RepeatBonusBanner";
+import { SocialProofTicker } from "@/components/site/SocialProofTicker";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
   initCreditsPixel,
@@ -89,6 +92,13 @@ function CheckoutPage() {
   const [paid, setPaid] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [recent, setRecent] = useState<{ purchaseId: string; lovableEmail: string } | null>(null);
+  const [loyalty, setLoyalty] = useState<{
+    credits: number;
+    bonusCredits: number;
+    purchaseSequence: number | null;
+    cashbackGenerated: number;
+    cashbackExpiresAt: string | null;
+  } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const purchaseFiredRef = useRef(false);
 
@@ -238,6 +248,39 @@ function CheckoutPage() {
     };
   }, [pix, paid, checkFn, lovableEmail, selected]);
 
+  // 🎁 Quando o pagamento é confirmado, busca dados de fidelidade da compra
+  useEffect(() => {
+    if (!paid || !pix?.purchaseId) return;
+    let cancelled = false;
+    let tries = 0;
+    const tick = async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase
+          .from("credit_purchases")
+          .select("credits,bonus_credits,purchase_sequence,cashback_generated,cashback_expires_at")
+          .eq("id", pix.purchaseId)
+          .maybeSingle();
+        if (cancelled || !data) return;
+        setLoyalty({
+          credits: Number((data as any).credits) || 0,
+          bonusCredits: Number((data as any).bonus_credits) || 0,
+          purchaseSequence: (data as any).purchase_sequence ?? null,
+          cashbackGenerated: Number((data as any).cashback_generated) || 0,
+          cashbackExpiresAt: (data as any).cashback_expires_at ?? null,
+        });
+        if ((data as any).purchase_sequence == null && tries < 6) {
+          tries++;
+          setTimeout(tick, 2500);
+        }
+      } catch {}
+    };
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [paid, pix?.purchaseId]);
+
   async function startCheckout() {
     if (!formValid || !selected) return;
     setCreating(true);
@@ -382,6 +425,15 @@ function CheckoutPage() {
             </li>
           </ol>
 
+          {loyalty && (
+            <PostPurchaseEuphoria
+              credits={loyalty.credits}
+              bonusCredits={loyalty.bonusCredits}
+              purchaseSequence={loyalty.purchaseSequence}
+              cashbackGenerated={loyalty.cashbackGenerated}
+              cashbackExpiresAt={loyalty.cashbackExpiresAt}
+            />
+          )}
           <CreditProgressCard purchaseId={pix.purchaseId} />
           <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={lovableEmail} />
 
@@ -510,6 +562,9 @@ function CheckoutPage() {
             subtitle="Mostramos exatamente o que você precisa fazer depois do pagamento. É simples, mesmo se você nunca usou o Lovable."
           />
         </div>
+
+        <SocialProofTicker />
+        <RepeatBonusBanner email={buyerEmail} />
 
         <div
           id="credit-checkout-form"

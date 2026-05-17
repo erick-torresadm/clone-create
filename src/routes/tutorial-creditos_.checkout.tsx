@@ -14,6 +14,8 @@ import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
 import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
+import { SocialProofTicker } from "@/components/site/SocialProofTicker";
+import { RepeatBonusBanner } from "@/components/site/RepeatBonusBanner";
 import { useAuth } from "@/lib/use-auth";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
@@ -526,6 +528,9 @@ function CheckoutPage() {
             subtitle="Mostramos exatamente o que você precisa fazer depois do pagamento. É simples, mesmo se você nunca usou o Lovable."
           />
         </div>
+
+        <SocialProofTicker />
+        <RepeatBonusBanner email={buyerEmail} />
 
         <div
           id="credit-checkout-form"

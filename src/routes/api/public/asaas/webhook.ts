@@ -47,9 +47,55 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
           // Re-busca a row (sem filtrar status) pra notificar de forma idempotente
           const { data: creditRow } = await (supabaseAdmin as any)
             .from("credit_purchases")
-            .select("id, buyer_email, lovable_email, price_brl, package_id, credits, cycles, admin_notified_at")
+            .select("id, buyer_email, lovable_email, price_brl, package_id, credits, cycles, admin_notified_at, purchase_sequence, bonus_credits, cashback_generated")
             .eq("asaas_payment_id", paymentId)
             .maybeSingle();
+
+          // 🎁 Fidelidade: calcular sequência + bônus + cashback (idempotente)
+          if (creditRow?.id && creditRow.buyer_email && creditRow.purchase_sequence == null) {
+            try {
+              const { effectiveBonusPercent } = await import("@/lib/loyalty.functions");
+              const buyerEmail = String(creditRow.buyer_email).toLowerCase();
+              // conta compras pagas anteriores (excluindo esta)
+              const { count: priorCount } = await (supabaseAdmin as any)
+                .from("credit_purchases")
+                .select("id", { count: "exact", head: true })
+                .eq("buyer_email", buyerEmail)
+                .in("status", ["paid", "done"])
+                .neq("id", creditRow.id);
+              const purchaseSequence = (priorCount ?? 0) + 1;
+              // total gasto anterior (para tier)
+              const { data: priorRows } = await (supabaseAdmin as any)
+                .from("credit_purchases")
+                .select("price_brl")
+                .eq("buyer_email", buyerEmail)
+                .in("status", ["paid", "done"])
+                .neq("id", creditRow.id);
+              const prevSpent = ((priorRows ?? []) as any[]).reduce((s, r) => s + Number(r.price_brl || 0), 0);
+              const bonusPercent = effectiveBonusPercent(purchaseSequence, prevSpent);
+              const bonusCredits = Math.round((Number(creditRow.credits) * bonusPercent) / 100);
+              const priceBrl = Number(creditRow.price_brl) || 0;
+              const cashback = Math.round(priceBrl * 5) / 100; // 5% arredondado em centavos
+              const cashbackExpires = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+
+              await (supabaseAdmin as any)
+                .from("credit_purchases")
+                .update({
+                  purchase_sequence: purchaseSequence,
+                  bonus_credits: bonusCredits,
+                  bonus_percent: bonusPercent,
+                  cashback_generated: cashback,
+                  cashback_expires_at: cashbackExpires,
+                })
+                .eq("id", creditRow.id);
+
+              creditRow.purchase_sequence = purchaseSequence;
+              creditRow.bonus_credits = bonusCredits;
+              creditRow.cashback_generated = cashback;
+            } catch (e: any) {
+              console.error(`[asaas-webhook] loyalty calc failed: ${e?.message}`);
+            }
+          }
 
           // 🔔 Telegram: pagamento aprovado (créditos Lovable) — só dispara 1x
           if (creditRow?.id && !creditRow.admin_notified_at) {
