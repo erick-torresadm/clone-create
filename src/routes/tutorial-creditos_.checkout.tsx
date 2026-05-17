@@ -250,7 +250,7 @@ function CheckoutPage() {
   // ✅ SUCCESS
   if (paid && pix) {
     return (
-      <Layout>
+      <Layout><div className="w-full border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-center text-xs font-semibold text-amber-300">🧪 MODO TUTORIAL — Asaas Sandbox (pagamento simulado)</div>
         <div className="mx-auto max-w-2xl px-4 py-12">
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-8 text-center">
             <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-500" />
@@ -364,7 +364,7 @@ function CheckoutPage() {
       .padStart(2, "0");
     const secs = (remaining % 60).toString().padStart(2, "0");
     return (
-      <Layout>
+      <Layout><div className="w-full border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-center text-xs font-semibold text-amber-300">🧪 MODO TUTORIAL — Asaas Sandbox (pagamento simulado)</div>
         <div className="mx-auto max-w-xl px-4 py-10">
           <button
             onClick={() => setPix(null)}
@@ -422,7 +422,7 @@ function CheckoutPage() {
 
   // 📋 FORMULÁRIO
   return (
-    <Layout>
+    <Layout><div className="w-full border-b border-amber-500/40 bg-amber-500/10 px-4 py-2 text-center text-xs font-semibold text-amber-300">🧪 MODO TUTORIAL — Asaas Sandbox (pagamento simulado)</div>
       <section className="mx-auto max-w-xl px-4 py-12">
         <Link
           to="/creditos-lovable"
