@@ -76,12 +76,20 @@ export type Database = {
           admin_notified_at: string | null
           asaas_customer_id: string | null
           asaas_payment_id: string | null
+          bonus_credits: number
+          bonus_percent: number
           buyer_email: string
+          cashback_applied: number
+          cashback_expires_at: string | null
+          cashback_expiry_warned_at: string | null
+          cashback_generated: number
           created_at: string
           credits: number
           cycles: number
           cycles_completed: number
           daily_cycles_completed: number
+          followup_d15_sent_at: string | null
+          followup_d3_sent_at: string | null
           id: string
           last_cycle_date: string | null
           lovable_email: string
@@ -91,18 +99,27 @@ export type Database = {
           pix_payload: string | null
           pix_qr_base64: string | null
           price_brl: number
+          purchase_sequence: number | null
           status: string
         }
         Insert: {
           admin_notified_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
+          bonus_credits?: number
+          bonus_percent?: number
           buyer_email: string
+          cashback_applied?: number
+          cashback_expires_at?: string | null
+          cashback_expiry_warned_at?: string | null
+          cashback_generated?: number
           created_at?: string
           credits: number
           cycles: number
           cycles_completed?: number
           daily_cycles_completed?: number
+          followup_d15_sent_at?: string | null
+          followup_d3_sent_at?: string | null
           id?: string
           last_cycle_date?: string | null
           lovable_email: string
@@ -112,18 +129,27 @@ export type Database = {
           pix_payload?: string | null
           pix_qr_base64?: string | null
           price_brl: number
+          purchase_sequence?: number | null
           status?: string
         }
         Update: {
           admin_notified_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
+          bonus_credits?: number
+          bonus_percent?: number
           buyer_email?: string
+          cashback_applied?: number
+          cashback_expires_at?: string | null
+          cashback_expiry_warned_at?: string | null
+          cashback_generated?: number
           created_at?: string
           credits?: number
           cycles?: number
           cycles_completed?: number
           daily_cycles_completed?: number
+          followup_d15_sent_at?: string | null
+          followup_d3_sent_at?: string | null
           id?: string
           last_cycle_date?: string | null
           lovable_email?: string
@@ -133,6 +159,7 @@ export type Database = {
           pix_payload?: string | null
           pix_qr_base64?: string | null
           price_brl?: number
+          purchase_sequence?: number | null
           status?: string
         }
         Relationships: []
