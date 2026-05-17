@@ -24,6 +24,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as TutorialCreditosCheckoutRouteImport } from './routes/tutorial-creditos_.checkout'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
 import { Route as CreditosLovableCheckoutRouteImport } from './routes/creditos-lovable_.checkout'
@@ -118,6 +119,12 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TutorialCreditosCheckoutRoute =
+  TutorialCreditosCheckoutRouteImport.update({
+    id: '/tutorial-creditos_/checkout',
+    path: '/tutorial-creditos/checkout',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
@@ -241,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/tutorial-creditos/checkout': typeof TutorialCreditosCheckoutRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -276,6 +284,7 @@ export interface FileRoutesByTo {
   '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/tutorial-creditos/checkout': typeof TutorialCreditosCheckoutRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -312,6 +321,7 @@ export interface FileRoutesById {
   '/creditos-lovable_/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/tutorial-creditos_/checkout': typeof TutorialCreditosCheckoutRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
+    | '/tutorial-creditos/checkout'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
+    | '/tutorial-creditos/checkout'
     | '/admin'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
@@ -419,6 +431,7 @@ export interface FileRouteTypes {
     | '/creditos-lovable_/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
+    | '/tutorial-creditos_/checkout'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
@@ -454,6 +467,7 @@ export interface RootRouteChildren {
   AdminTelegramRoute: typeof AdminTelegramRoute
   CreditosLovableCheckoutRoute: typeof CreditosLovableCheckoutRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  TutorialCreditosCheckoutRoute: typeof TutorialCreditosCheckoutRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
@@ -567,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutorial-creditos_/checkout': {
+      id: '/tutorial-creditos_/checkout'
+      path: '/tutorial-creditos/checkout'
+      fullPath: '/tutorial-creditos/checkout'
+      preLoaderRoute: typeof TutorialCreditosCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produto/$id': {
@@ -737,6 +758,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTelegramRoute: AdminTelegramRoute,
   CreditosLovableCheckoutRoute: CreditosLovableCheckoutRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  TutorialCreditosCheckoutRoute: TutorialCreditosCheckoutRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
