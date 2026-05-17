@@ -12,6 +12,7 @@ import {
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
+import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
