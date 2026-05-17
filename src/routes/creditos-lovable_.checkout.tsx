@@ -425,6 +425,15 @@ function CheckoutPage() {
             </li>
           </ol>
 
+          {loyalty && (
+            <PostPurchaseEuphoria
+              credits={loyalty.credits}
+              bonusCredits={loyalty.bonusCredits}
+              purchaseSequence={loyalty.purchaseSequence}
+              cashbackGenerated={loyalty.cashbackGenerated}
+              cashbackExpiresAt={loyalty.cashbackExpiresAt}
+            />
+          )}
           <CreditProgressCard purchaseId={pix.purchaseId} />
           <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={lovableEmail} />
 
