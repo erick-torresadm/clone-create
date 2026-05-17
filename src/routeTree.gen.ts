@@ -15,6 +15,7 @@ import { Route as RevendedorRouteImport } from './routes/revendedor'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as MinhaContaRouteImport } from './routes/minha-conta'
+import { Route as MinhaCompraRouteImport } from './routes/minha-compra'
 import { Route as GarantiaRouteImport } from './routes/garantia'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as DicasRouteImport } from './routes/dicas'
@@ -72,6 +73,11 @@ const ProdutosRoute = ProdutosRouteImport.update({
 const MinhaContaRoute = MinhaContaRouteImport.update({
   id: '/minha-conta',
   path: '/minha-conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MinhaCompraRoute = MinhaCompraRouteImport.update({
+  id: '/minha-compra',
+  path: '/minha-compra',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GarantiaRoute = GarantiaRouteImport.update({
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
+  '/minha-compra': typeof MinhaCompraRoute
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
+  '/minha-compra': typeof MinhaCompraRoute
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/dicas': typeof DicasRoute
   '/entrar': typeof EntrarRoute
   '/garantia': typeof GarantiaRoute
+  '/minha-compra': typeof MinhaCompraRoute
   '/minha-conta': typeof MinhaContaRouteWithChildren
   '/produtos': typeof ProdutosRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/dicas'
     | '/entrar'
     | '/garantia'
+    | '/minha-compra'
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/dicas'
     | '/entrar'
     | '/garantia'
+    | '/minha-compra'
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
@@ -412,6 +423,7 @@ export interface FileRouteTypes {
     | '/dicas'
     | '/entrar'
     | '/garantia'
+    | '/minha-compra'
     | '/minha-conta'
     | '/produtos'
     | '/redefinir-senha'
@@ -449,6 +461,7 @@ export interface RootRouteChildren {
   DicasRoute: typeof DicasRoute
   EntrarRoute: typeof EntrarRoute
   GarantiaRoute: typeof GarantiaRoute
+  MinhaCompraRoute: typeof MinhaCompraRoute
   MinhaContaRoute: typeof MinhaContaRouteWithChildren
   ProdutosRoute: typeof ProdutosRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
@@ -518,6 +531,13 @@ declare module '@tanstack/react-router' {
       path: '/minha-conta'
       fullPath: '/minha-conta'
       preLoaderRoute: typeof MinhaContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/minha-compra': {
+      id: '/minha-compra'
+      path: '/minha-compra'
+      fullPath: '/minha-compra'
+      preLoaderRoute: typeof MinhaCompraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/garantia': {
@@ -740,6 +760,7 @@ const rootRouteChildren: RootRouteChildren = {
   DicasRoute: DicasRoute,
   EntrarRoute: EntrarRoute,
   GarantiaRoute: GarantiaRoute,
+  MinhaCompraRoute: MinhaCompraRoute,
   MinhaContaRoute: MinhaContaRouteWithChildren,
   ProdutosRoute: ProdutosRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
