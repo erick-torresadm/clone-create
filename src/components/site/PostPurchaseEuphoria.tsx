@@ -119,7 +119,7 @@ export function PostPurchaseEuphoria({
             <p className="mt-0.5 text-xs text-muted-foreground">
               Oferta válida por <strong className="text-primary tabular-nums">{hours}h {mins.toString().padStart(2, "0")}m</strong>. Use o cupom <code className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-primary">RECOMPRA10</code> ou volte por aqui.
             </p>
-            <Link to="/creditos-lovable" search={{ coupon: "RECOMPRA10" }}>
+            <Link to="/creditos-lovable">
               <Button className="mt-3 rounded-full" size="sm">
                 Recarregar com bônus
                 <ArrowRight className="ml-1 h-3.5 w-3.5" />
