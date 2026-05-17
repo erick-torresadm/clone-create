@@ -462,13 +462,21 @@ function CheckoutPage() {
   return (
     <Layout>
       <section className="mx-auto max-w-xl px-4 py-12">
-        <Link
-          to="/creditos-lovable"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Trocar pacote
-        </Link>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+          <Link
+            to="/creditos-lovable"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Trocar pacote
+          </Link>
+          <Link
+            to="/minha-compra"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+          >
+            Já comprei — recuperar acesso
+          </Link>
+        </div>
 
         {recent && (
           <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
