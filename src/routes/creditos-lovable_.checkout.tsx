@@ -36,11 +36,12 @@ const ENV = "live" as "sandbox" | "live";
 const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 const LS_KEY = "credits-active-purchase";
 
-type CheckoutSearch = { pkg?: string };
+type CheckoutSearch = { pkg?: string; purchase?: string };
 
 export const Route = createFileRoute("/creditos-lovable_/checkout")({
   validateSearch: (search: Record<string, unknown>): CheckoutSearch => ({
     pkg: typeof search.pkg === "string" ? search.pkg : undefined,
+    purchase: typeof search.purchase === "string" ? search.purchase : undefined,
   }),
   head: () => ({
     meta: [
