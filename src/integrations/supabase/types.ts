@@ -73,6 +73,7 @@ export type Database = {
       }
       credit_purchases: {
         Row: {
+          admin_notified_at: string | null
           asaas_customer_id: string | null
           asaas_payment_id: string | null
           buyer_email: string
@@ -93,6 +94,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          admin_notified_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           buyer_email: string
@@ -113,6 +115,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          admin_notified_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           buyer_email?: string
@@ -137,6 +140,7 @@ export type Database = {
       orders: {
         Row: {
           abandoned_email_sent_at: string | null
+          admin_notified_at: string | null
           asaas_customer_id: string | null
           asaas_payment_id: string | null
           coupon_code: string | null
@@ -159,6 +163,7 @@ export type Database = {
         }
         Insert: {
           abandoned_email_sent_at?: string | null
+          admin_notified_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           coupon_code?: string | null
@@ -181,6 +186,7 @@ export type Database = {
         }
         Update: {
           abandoned_email_sent_at?: string | null
+          admin_notified_at?: string | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           coupon_code?: string | null
