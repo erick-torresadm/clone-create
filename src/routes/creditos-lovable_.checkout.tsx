@@ -73,7 +73,7 @@ function formatBrl(n: number) {
 
 function CheckoutPage() {
   const navigate = useNavigate();
-  const { pkg } = Route.useSearch();
+  const { pkg, purchase } = Route.useSearch();
   const createFn = useServerFn(createCreditCheckout);
   const checkFn = useServerFn(checkCreditPayment);
 
