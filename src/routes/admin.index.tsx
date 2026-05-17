@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Layout } from "@/components/site/Layout";
 import { useAuth } from "@/lib/use-auth";
-import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send, Sparkles, User, ArrowRight } from "lucide-react";
+import { Package, Tag, Bell, Settings, LogOut, Database, HardDrive, Upload, MessageCircle, BadgeCheck, Send, Sparkles, User, ArrowRight, FlaskConical } from "lucide-react";
 import { getPlatformStats } from "@/lib/admin.functions";
 import { SalesDashboard } from "@/components/admin/SalesDashboard";
 import { StorageCleanup } from "@/components/admin/StorageCleanup";
@@ -101,6 +101,7 @@ function AdminHome() {
     { to: "/admin/suporte", icon: MessageCircle, title: "Suporte ao cliente", desc: "Converse com clientes em tempo real." },
     { to: "/admin/revendedores", icon: BadgeCheck, title: "Revendedores", desc: "Aprove pedidos de cadastro como revendedor." },
     { to: "/admin/telegram", icon: Send, title: "Newsletter Telegram", desc: "Avise inscritos sobre cupons e promoções." },
+    { to: "/tutorial-creditos", icon: FlaskConical, title: "Tutorial (Sandbox)", desc: "Fluxo de créditos em ambiente de teste para gravar vídeo." },
   ];
 
   return (
