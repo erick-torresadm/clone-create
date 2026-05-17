@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
+import { TrustBar } from "./TrustBar";
 
 import { Starfield } from "./Starfield";
 import { SupportChat } from "./SupportChat";
@@ -25,6 +26,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="relative z-10 flex min-h-screen flex-col">
         
         <Header />
+        <TrustBar />
         <main key={typeof window !== "undefined" ? window.location.pathname : "ssr"} className="route-fade-in flex-1">{children}</main>
         <Footer />
       </div>

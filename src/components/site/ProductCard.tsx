@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Share2, ShoppingCart, BadgeCheck } from "lucide-react";
+import { Share2, ShoppingCart, BadgeCheck, ShieldCheck } from "lucide-react";
 import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
 import { useResellerStatus } from "@/lib/reseller";
+import { productImage } from "@/lib/product-image";
 
 function CardLink({
   isCredits, productId, className, ariaLabel, children,
@@ -41,18 +42,16 @@ export function ProductCard({ product }: { product: Product }) {
     <div className="glow-border group relative flex h-full flex-col rounded-xl bg-card transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_20px_50px_-15px_rgba(59,130,246,0.45)]">
       <CardLink isCredits={isCredits} productId={product.id} className="relative block" ariaLabel={`Ver ${product.name}`}>
         <div className="relative aspect-video w-full overflow-hidden rounded-t-xl bg-gradient-to-br from-secondary via-card to-background">
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.name}
-              loading="lazy"
-              className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${!isCredits && typeof product.stock === "number" && product.stock <= 0 ? "grayscale opacity-50" : ""}`}
-            />
-          ) : (
-            <div className="absolute inset-0 grid place-items-center text-xs uppercase tracking-widest text-muted-foreground/40">
-              {product.name.split(" - ")[0]}
-            </div>
-          )}
+          <img
+            src={productImage(product.image)}
+            alt={product.name}
+            loading="lazy"
+            className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${!isCredits && typeof product.stock === "number" && product.stock <= 0 ? "grayscale opacity-50" : ""}`}
+          />
+          {/* Selo de garantia sutil no canto inferior da imagem */}
+          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-md bg-black/55 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md ring-1 ring-emerald-500/30">
+            <ShieldCheck className="h-2.5 w-2.5" /> Garantia 7d
+          </span>
           {isCredits ? (
             <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-white/90" />
