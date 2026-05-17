@@ -14,6 +14,9 @@ import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
 import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
+import { PostPurchaseEuphoria } from "@/components/site/PostPurchaseEuphoria";
+import { RepeatBonusBanner } from "@/components/site/RepeatBonusBanner";
+import { SocialProofTicker } from "@/components/site/SocialProofTicker";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
   initCreditsPixel,
