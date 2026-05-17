@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { Button } from "@/components/ui/button";
 import { CREDIT_PACKAGES, type CreditPackage } from "@/lib/credits.functions";
+import { useAuth } from "@/lib/use-auth";
 import { Sparkles, Zap, FlaskConical } from "lucide-react";
 
 export const Route = createFileRoute("/tutorial-creditos")({
