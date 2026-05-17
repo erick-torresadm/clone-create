@@ -39,6 +39,7 @@ import { Route as AdminAparenciaRouteImport } from './routes/admin.aparencia'
 import { Route as ApiPublicSyncMaxviaStockRouteImport } from './routes/api/public/sync-maxvia-stock'
 import { Route as ApiPublicSendAbandonedCartRouteImport } from './routes/api/public/send-abandoned-cart'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicCronNotifyPendingRouteImport } from './routes/api/public/cron/notify-pending'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 
 const SobreRoute = SobreRouteImport.update({
@@ -194,6 +195,12 @@ const ApiPublicTelegramWebhookRoute =
     path: '/api/public/telegram/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronNotifyPendingRoute =
+  ApiPublicCronNotifyPendingRouteImport.update({
+    id: '/api/public/cron/notify-pending',
+    path: '/api/public/cron/notify-pending',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
   id: '/api/public/asaas/webhook',
   path: '/api/public/asaas/webhook',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/cron/notify-pending': typeof ApiPublicCronNotifyPendingRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -264,6 +272,7 @@ export interface FileRoutesByTo {
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/cron/notify-pending': typeof ApiPublicCronNotifyPendingRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesById {
@@ -298,6 +307,7 @@ export interface FileRoutesById {
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
   '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/cron/notify-pending': typeof ApiPublicCronNotifyPendingRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRouteTypes {
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
+    | '/api/public/cron/notify-pending'
     | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -366,6 +377,7 @@ export interface FileRouteTypes {
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
+    | '/api/public/cron/notify-pending'
     | '/api/public/telegram/webhook'
   id:
     | '__root__'
@@ -399,6 +411,7 @@ export interface FileRouteTypes {
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
     | '/api/public/asaas/webhook'
+    | '/api/public/cron/notify-pending'
     | '/api/public/telegram/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -432,6 +445,7 @@ export interface RootRouteChildren {
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicCronNotifyPendingRoute: typeof ApiPublicCronNotifyPendingRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
 }
 
@@ -647,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/notify-pending': {
+      id: '/api/public/cron/notify-pending'
+      path: '/api/public/cron/notify-pending'
+      fullPath: '/api/public/cron/notify-pending'
+      preLoaderRoute: typeof ApiPublicCronNotifyPendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/asaas/webhook': {
       id: '/api/public/asaas/webhook'
       path: '/api/public/asaas/webhook'
@@ -699,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicCronNotifyPendingRoute: ApiPublicCronNotifyPendingRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
 }
 export const routeTree = rootRouteImport

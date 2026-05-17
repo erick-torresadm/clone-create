@@ -36,27 +36,40 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
         console.log(`[asaas-webhook] event=${event} payment=${paymentId} status=${payment?.status}`);
 
         if (event === "PAYMENT_RECEIVED" || event === "PAYMENT_CONFIRMED") {
-          // Créditos Lovable
-          const { data: creditRow } = await (supabaseAdmin as any)
+          // Créditos Lovable — sempre atualiza pra paid (idempotente)
+          await (supabaseAdmin as any)
             .from("credit_purchases")
             .update({ status: "paid", paid_at: new Date().toISOString() })
             .eq("asaas_payment_id", paymentId)
-            .eq("status", "pending")
-            .select("id, buyer_email, lovable_email, price_brl, package_id, credits, cycles")
+            .eq("status", "pending");
+
+          // Re-busca a row (sem filtrar status) pra notificar de forma idempotente
+          const { data: creditRow } = await (supabaseAdmin as any)
+            .from("credit_purchases")
+            .select("id, buyer_email, lovable_email, price_brl, package_id, credits, cycles, admin_notified_at")
+            .eq("asaas_payment_id", paymentId)
             .maybeSingle();
 
-          // 🔔 Telegram: pagamento aprovado (créditos Lovable)
-          if (creditRow?.id) {
-            await notifyAdmin(
-              [
-                `✅ <b>Pagamento aprovado — Créditos Lovable</b>`,
-                `<b>Pacote:</b> ${creditRow.credits} créditos (${creditRow.cycles} ciclos) — R$ ${Number(creditRow.price_brl).toFixed(2)}`,
-                `<b>Cliente:</b> ${creditRow.buyer_email}`,
-                `<b>Conta Lovable:</b> ${creditRow.lovable_email}`,
-                `<b>Compra:</b> <code>${creditRow.id}</code>`,
-                `<b>Cobrança:</b> <code>${paymentId}</code>`,
-              ].join("\n"),
-            ).catch(() => {});
+          // 🔔 Telegram: pagamento aprovado (créditos Lovable) — só dispara 1x
+          if (creditRow?.id && !creditRow.admin_notified_at) {
+            try {
+              await notifyAdmin(
+                [
+                  `✅ <b>Pagamento aprovado — Créditos Lovable</b>`,
+                  `<b>Pacote:</b> ${creditRow.credits} créditos (${creditRow.cycles} ciclos) — R$ ${Number(creditRow.price_brl).toFixed(2)}`,
+                  `<b>Cliente:</b> ${creditRow.buyer_email}`,
+                  `<b>Conta Lovable:</b> ${creditRow.lovable_email}`,
+                  `<b>Compra:</b> <code>${creditRow.id}</code>`,
+                  `<b>Cobrança:</b> <code>${paymentId}</code>`,
+                ].join("\n"),
+              );
+              await (supabaseAdmin as any)
+                .from("credit_purchases")
+                .update({ admin_notified_at: new Date().toISOString() })
+                .eq("id", creditRow.id);
+            } catch (e: any) {
+              console.error(`[asaas-webhook] telegram credit alert failed: ${e?.message}`);
+            }
           }
 
           // 🎯 Meta CAPI: Purchase server-side do funil de créditos
