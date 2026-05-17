@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fulfillByAsaasPaymentId } from "@/lib/checkout.server";
 import { notifyOrderStatus, notifyAdmin } from "@/lib/telegram.server";
 import { sendCreditsCapiEvent, creditsPurchaseEventId } from "@/lib/meta-capi.server";
+import { sendCreditPurchaseConfirmationEmail } from "@/lib/resend.server";
 import type { AsaasEnv } from "@/lib/asaas.server";
 
 // Webhook do Asaas. Configure em "Integrações > Webhooks" apontando para
@@ -67,6 +68,20 @@ export const Route = createFileRoute("/api/public/asaas/webhook")({
                 .from("credit_purchases")
                 .update({ admin_notified_at: new Date().toISOString() })
                 .eq("id", creditRow.id);
+
+              // 📧 Email pro cliente com link da página de progresso
+              if (creditRow.buyer_email) {
+                sendCreditPurchaseConfirmationEmail({
+                  to: creditRow.buyer_email,
+                  purchaseId: creditRow.id,
+                  credits: creditRow.credits,
+                  cycles: creditRow.cycles,
+                  priceBrl: Number(creditRow.price_brl) || 0,
+                  lovableEmail: creditRow.lovable_email,
+                }).catch((e) =>
+                  console.error(`[asaas-webhook] credit email failed: ${e?.message}`),
+                );
+              }
             } catch (e: any) {
               console.error(`[asaas-webhook] telegram credit alert failed: ${e?.message}`);
             }
