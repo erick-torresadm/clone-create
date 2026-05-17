@@ -4,6 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Layout } from "@/components/site/Layout";
 import { ProductCard } from "@/components/site/ProductCard";
 import { useSettings, useCatalog } from "@/lib/site-data";
+import { Testimonials } from "@/components/site/Testimonials";
+import { AntiScamFaq } from "@/components/site/AntiScamFaq";
+import { GuaranteeStrip } from "@/components/site/GuaranteeStrip";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -118,6 +121,11 @@ function Index() {
             Nenhum produto encontrado para "{query}".
           </p>
         )}
+
+        {/* Construção de confiança — fica abaixo dos produtos */}
+        <GuaranteeStrip />
+        <Testimonials />
+        <AntiScamFaq />
       </main>
     </Layout>
   );
