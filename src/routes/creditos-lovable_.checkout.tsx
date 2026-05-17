@@ -92,6 +92,13 @@ function CheckoutPage() {
   const [paid, setPaid] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [recent, setRecent] = useState<{ purchaseId: string; lovableEmail: string } | null>(null);
+  const [loyalty, setLoyalty] = useState<{
+    credits: number;
+    bonusCredits: number;
+    purchaseSequence: number | null;
+    cashbackGenerated: number;
+    cashbackExpiresAt: string | null;
+  } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const purchaseFiredRef = useRef(false);
 
