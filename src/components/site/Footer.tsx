@@ -1,9 +1,31 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, Instagram, Send, Mail } from "lucide-react";
+import { Sparkles, Instagram, Send, Mail, ShieldCheck, Lock, Zap } from "lucide-react";
 
 export function Footer() {
   return (
     <footer className="relative z-10 mt-20 border-t border-border/60 bg-background/60">
+      {/* Faixa de selos de confiança */}
+      <div className="border-b border-border/60 bg-card/40">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 py-5 sm:gap-10 sm:px-6">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <span>Garantia de <b className="text-foreground">7 dias</b></span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Lock className="h-4 w-4 text-emerald-400" />
+            <span>Pagamento via <b className="text-foreground">Asaas / PIX</b></span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Zap className="h-4 w-4 text-emerald-400" />
+            <span>Entrega <b className="text-foreground">automática</b></span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>Suporte <b className="text-foreground">24/7</b></span>
+          </div>
+        </div>
+      </div>
+
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2">
@@ -14,25 +36,29 @@ export function Footer() {
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
             Contas Facebook, Business Managers e ativos digitais premium —
-            entrega automática, garantia e suporte 24/7.
+            entrega automática, garantia de 7 dias e suporte humano todos os dias.
           </p>
           <div className="mt-4 flex items-center gap-2">
             <a
-              href="#"
+              href="https://instagram.com/ativosfy"
+              target="_blank"
+              rel="noreferrer"
               aria-label="Instagram"
               className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
             >
               <Instagram className="h-4 w-4" />
             </a>
             <a
-              href="#"
+              href="https://t.me/ativosfy"
+              target="_blank"
+              rel="noreferrer"
               aria-label="Telegram"
               className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
             >
               <Send className="h-4 w-4" />
             </a>
             <a
-              href="#"
+              href="mailto:contato@ativosfy.store"
               aria-label="E-mail"
               className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-foreground"
             >
@@ -64,8 +90,11 @@ export function Footer() {
 
       <div className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row sm:px-6">
-          <span>© {new Date().getFullYear()} Ativosfy. Todos os direitos reservados.</span>
-          <span>Feito com cuidado ✦</span>
+          <span>© {new Date().getFullYear()} Ativosfy Digital — Em operação desde 2023.</span>
+          <span className="flex items-center gap-1.5">
+            <Lock className="h-3 w-3 text-emerald-400" />
+            Conexão segura · SSL · LGPD compliant
+          </span>
         </div>
       </div>
     </footer>
