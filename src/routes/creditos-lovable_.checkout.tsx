@@ -248,6 +248,39 @@ function CheckoutPage() {
     };
   }, [pix, paid, checkFn, lovableEmail, selected]);
 
+  // 🎁 Quando o pagamento é confirmado, busca dados de fidelidade da compra
+  useEffect(() => {
+    if (!paid || !pix?.purchaseId) return;
+    let cancelled = false;
+    let tries = 0;
+    const tick = async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase
+          .from("credit_purchases")
+          .select("credits,bonus_credits,purchase_sequence,cashback_generated,cashback_expires_at")
+          .eq("id", pix.purchaseId)
+          .maybeSingle();
+        if (cancelled || !data) return;
+        setLoyalty({
+          credits: Number((data as any).credits) || 0,
+          bonusCredits: Number((data as any).bonus_credits) || 0,
+          purchaseSequence: (data as any).purchase_sequence ?? null,
+          cashbackGenerated: Number((data as any).cashback_generated) || 0,
+          cashbackExpiresAt: (data as any).cashback_expires_at ?? null,
+        });
+        if ((data as any).purchase_sequence == null && tries < 6) {
+          tries++;
+          setTimeout(tick, 2500);
+        }
+      } catch {}
+    };
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [paid, pix?.purchaseId]);
+
   async function startCheckout() {
     if (!formValid || !selected) return;
     setCreating(true);
