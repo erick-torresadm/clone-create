@@ -541,3 +541,73 @@ function PasswordCard({ email }: { email: string }) {
     </div>
   );
 }
+
+function CreditPurchasesSection({ email }: { email: string }) {
+  const { data: purchases = [] } = useQuery({
+    queryKey: ["my-credit-purchases", email],
+    enabled: !!email,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("credit_purchases")
+        .select("id,credits,cycles,price_brl,status,created_at,lovable_email,paid_at")
+        .eq("buyer_email", email.toLowerCase())
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as any[];
+    },
+    refetchInterval: 15000,
+  });
+
+  if (!purchases.length) return null;
+
+  const statusLabel: Record<string, string> = {
+    pending: "Aguardando Pix",
+    paid: "Pago · processando",
+    processing: "Processando",
+    done: "Concluído",
+    canceled: "Cancelado",
+  };
+  const statusColor: Record<string, string> = {
+    pending: "bg-yellow-500/15 text-yellow-600",
+    paid: "bg-blue-500/15 text-blue-600",
+    processing: "bg-blue-500/15 text-blue-600",
+    done: "bg-emerald-500/15 text-emerald-600",
+    canceled: "bg-red-500/15 text-red-600",
+  };
+
+  return (
+    <div className="mt-10">
+      <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
+        <KeyRound className="h-5 w-5 text-primary" />
+        Créditos Lovable
+      </h2>
+      <div className="mt-4 space-y-3">
+        {purchases.map((p) => (
+          <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-foreground">
+                  {p.credits.toLocaleString("pt-BR")} créditos · {p.cycles} ciclos
+                </p>
+                <span className={`rounded px-2 py-0.5 text-[11px] font-semibold ${statusColor[p.status] ?? "bg-muted text-foreground"}`}>
+                  {statusLabel[p.status] ?? p.status}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Conta: <span className="text-foreground">{p.lovable_email}</span> · {new Date(p.created_at).toLocaleString("pt-BR")}
+              </p>
+              <p className="text-xs text-muted-foreground">R$ {Number(p.price_brl).toFixed(2)}</p>
+            </div>
+            <Link
+              to="/creditos-lovable/checkout"
+              search={{ purchase: p.id }}
+              className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
+            >
+              Ver detalhes
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
