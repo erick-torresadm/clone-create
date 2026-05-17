@@ -12,6 +12,7 @@ import {
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { ScarcityPanel } from "@/components/site/Scarcity";
+import { useAuth } from "@/lib/use-auth";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
   initCreditsPixel,
@@ -66,8 +67,13 @@ function formatBrl(n: number) {
 function CheckoutPage() {
   const navigate = useNavigate();
   const { pkg } = Route.useSearch();
+  const { user, isAdmin, loading, roleLoading } = useAuth();
   const createFn = useServerFn(createCreditCheckout);
   const checkFn = useServerFn(checkCreditPayment);
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/entrar" });
+  }, [loading, user, navigate]);
 
   const selected: CreditPackage | undefined =
     CREDIT_PACKAGES.find((p) => p.id === pkg) ?? CREDIT_PACKAGES[0];
