@@ -12,6 +12,7 @@ import {
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
+import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
 import { useAuth } from "@/lib/use-auth";
 import { fbTrack } from "@/lib/meta-pixel";
@@ -37,11 +38,12 @@ const ENV = "sandbox" as "sandbox" | "live";
 const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 const LS_KEY = "credits-active-purchase";
 
-type CheckoutSearch = { pkg?: string };
+type CheckoutSearch = { pkg?: string; purchase?: string };
 
 export const Route = createFileRoute("/tutorial-creditos_/checkout")({
   validateSearch: (search: Record<string, unknown>): CheckoutSearch => ({
     pkg: typeof search.pkg === "string" ? search.pkg : undefined,
+    purchase: typeof search.purchase === "string" ? search.purchase : undefined,
   }),
   head: () => ({
     meta: [
@@ -67,7 +69,7 @@ function formatBrl(n: number) {
 
 function CheckoutPage() {
   const navigate = useNavigate();
-  const { pkg } = Route.useSearch();
+  const { pkg, purchase } = Route.useSearch();
   const { user, isAdmin, loading, roleLoading } = useAuth();
   const createFn = useServerFn(createCreditCheckout);
   const checkFn = useServerFn(checkCreditPayment);
@@ -128,6 +130,34 @@ function CheckoutPage() {
     fbTrack("InitiateCheckout", payload);
     fbCreditsTrack("InitiateCheckout", payload);
   }, [selected]);
+
+  // 🔁 Resumir compra via ?purchase=<id>
+  useEffect(() => {
+    if (!purchase) return;
+    let cancelled = false;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from("credit_purchases")
+        .select("id,lovable_email,price_brl,status,asaas_payment_id")
+        .eq("id", purchase)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      if (data.lovable_email) setLovableEmail(data.lovable_email);
+      setPix({
+        purchaseId: data.id,
+        paymentId: data.asaas_payment_id ?? "",
+        pixPayload: "",
+        pixQrBase64: "",
+        expiresAt: new Date().toISOString(),
+        totalBrl: Number(data.price_brl) || 0,
+      });
+      setPaid(data.status === "paid" || data.status === "done");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [purchase]);
 
   // 💾 Detecta compra recente (apenas notifica, NÃO bloqueia nova compra)
   useEffect(() => {
@@ -480,6 +510,13 @@ function CheckoutPage() {
 
         <div className="mb-4">
           <ScarcityPanel seed={`credits-${selected?.id ?? "p"}`} compact />
+        </div>
+
+        <div className="mb-4">
+          <TutorialVideo
+            title="Veja antes de comprar: como liberar seus créditos (1 min)"
+            subtitle="Mostramos exatamente o que você precisa fazer depois do pagamento. É simples, mesmo se você nunca usou o Lovable."
+          />
         </div>
 
         <div
