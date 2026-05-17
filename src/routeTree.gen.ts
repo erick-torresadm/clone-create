@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorialCreditosRouteImport } from './routes/tutorial-creditos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as RevendedorRouteImport } from './routes/revendedor'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
@@ -23,6 +24,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as TutorialCreditosCheckoutRouteImport } from './routes/tutorial-creditos_.checkout'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
 import { Route as MinhaContaIndicacoesRouteImport } from './routes/minha-conta.indicacoes'
 import { Route as CreditosLovableCheckoutRouteImport } from './routes/creditos-lovable_.checkout'
@@ -42,6 +44,11 @@ import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicCronNotifyPendingRouteImport } from './routes/api/public/cron/notify-pending'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 
+const TutorialCreditosRoute = TutorialCreditosRouteImport.update({
+  id: '/tutorial-creditos',
+  path: '/tutorial-creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -112,6 +119,12 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TutorialCreditosCheckoutRoute =
+  TutorialCreditosCheckoutRouteImport.update({
+    id: '/tutorial-creditos_/checkout',
+    path: '/tutorial-creditos/checkout',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
@@ -221,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
+  '/tutorial-creditos': typeof TutorialCreditosRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/estoque': typeof AdminEstoqueRoute
@@ -234,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/tutorial-creditos/checkout': typeof TutorialCreditosCheckoutRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -255,6 +270,7 @@ export interface FileRoutesByTo {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
+  '/tutorial-creditos': typeof TutorialCreditosRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/estoque': typeof AdminEstoqueRoute
@@ -268,6 +284,7 @@ export interface FileRoutesByTo {
   '/creditos-lovable/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/tutorial-creditos/checkout': typeof TutorialCreditosCheckoutRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -290,6 +307,7 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
+  '/tutorial-creditos': typeof TutorialCreditosRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/estoque': typeof AdminEstoqueRoute
@@ -303,6 +321,7 @@ export interface FileRoutesById {
   '/creditos-lovable_/checkout': typeof CreditosLovableCheckoutRoute
   '/minha-conta/indicacoes': typeof MinhaContaIndicacoesRoute
   '/produto/$id': typeof ProdutoIdRoute
+  '/tutorial-creditos_/checkout': typeof TutorialCreditosCheckoutRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/send-abandoned-cart': typeof ApiPublicSendAbandonedCartRoute
   '/api/public/sync-maxvia-stock': typeof ApiPublicSyncMaxviaStockRoute
@@ -326,6 +345,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/revendedor'
     | '/sobre'
+    | '/tutorial-creditos'
     | '/admin/aparencia'
     | '/admin/cupons'
     | '/admin/estoque'
@@ -339,6 +359,7 @@ export interface FileRouteTypes {
     | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
+    | '/tutorial-creditos/checkout'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
@@ -360,6 +381,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/revendedor'
     | '/sobre'
+    | '/tutorial-creditos'
     | '/admin/aparencia'
     | '/admin/cupons'
     | '/admin/estoque'
@@ -373,6 +395,7 @@ export interface FileRouteTypes {
     | '/creditos-lovable/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
+    | '/tutorial-creditos/checkout'
     | '/admin'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
@@ -394,6 +417,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/revendedor'
     | '/sobre'
+    | '/tutorial-creditos'
     | '/admin/aparencia'
     | '/admin/cupons'
     | '/admin/estoque'
@@ -407,6 +431,7 @@ export interface FileRouteTypes {
     | '/creditos-lovable_/checkout'
     | '/minha-conta/indicacoes'
     | '/produto/$id'
+    | '/tutorial-creditos_/checkout'
     | '/admin/'
     | '/api/public/send-abandoned-cart'
     | '/api/public/sync-maxvia-stock'
@@ -429,6 +454,7 @@ export interface RootRouteChildren {
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   RevendedorRoute: typeof RevendedorRoute
   SobreRoute: typeof SobreRoute
+  TutorialCreditosRoute: typeof TutorialCreditosRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
   AdminEstoqueRoute: typeof AdminEstoqueRoute
@@ -441,6 +467,7 @@ export interface RootRouteChildren {
   AdminTelegramRoute: typeof AdminTelegramRoute
   CreditosLovableCheckoutRoute: typeof CreditosLovableCheckoutRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
+  TutorialCreditosCheckoutRoute: typeof TutorialCreditosCheckoutRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicSendAbandonedCartRoute: typeof ApiPublicSendAbandonedCartRoute
   ApiPublicSyncMaxviaStockRoute: typeof ApiPublicSyncMaxviaStockRoute
@@ -451,6 +478,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutorial-creditos': {
+      id: '/tutorial-creditos'
+      path: '/tutorial-creditos'
+      fullPath: '/tutorial-creditos'
+      preLoaderRoute: typeof TutorialCreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sobre': {
       id: '/sobre'
       path: '/sobre'
@@ -547,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutorial-creditos_/checkout': {
+      id: '/tutorial-creditos_/checkout'
+      path: '/tutorial-creditos/checkout'
+      fullPath: '/tutorial-creditos/checkout'
+      preLoaderRoute: typeof TutorialCreditosCheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/produto/$id': {
@@ -704,6 +745,7 @@ const rootRouteChildren: RootRouteChildren = {
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   RevendedorRoute: RevendedorRoute,
   SobreRoute: SobreRoute,
+  TutorialCreditosRoute: TutorialCreditosRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
   AdminEstoqueRoute: AdminEstoqueRoute,
@@ -716,6 +758,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTelegramRoute: AdminTelegramRoute,
   CreditosLovableCheckoutRoute: CreditosLovableCheckoutRoute,
   ProdutoIdRoute: ProdutoIdRoute,
+  TutorialCreditosCheckoutRoute: TutorialCreditosCheckoutRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicSendAbandonedCartRoute: ApiPublicSendAbandonedCartRoute,
   ApiPublicSyncMaxviaStockRoute: ApiPublicSyncMaxviaStockRoute,
