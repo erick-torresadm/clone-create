@@ -581,6 +581,7 @@ function CreditPurchasesSection({ email }: { email: string }) {
         <KeyRound className="h-5 w-5 text-primary" />
         Créditos Lovable
       </h2>
+      <LoyaltyTierCard email={email.toLowerCase()} />
       <div className="mt-4 space-y-3">
         {purchases.map((p) => (
           <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4">
