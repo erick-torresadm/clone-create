@@ -12,6 +12,7 @@ import {
 } from "@/lib/credits.functions";
 import { CreditProgressCard } from "@/components/site/CreditProgressCard";
 import { ScarcityPanel } from "@/components/site/Scarcity";
+import { useAuth } from "@/lib/use-auth";
 import { fbTrack } from "@/lib/meta-pixel";
 import {
   initCreditsPixel,
@@ -66,8 +67,13 @@ function formatBrl(n: number) {
 function CheckoutPage() {
   const navigate = useNavigate();
   const { pkg } = Route.useSearch();
+  const { user, isAdmin, loading, roleLoading } = useAuth();
   const createFn = useServerFn(createCreditCheckout);
   const checkFn = useServerFn(checkCreditPayment);
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/entrar" });
+  }, [loading, user, navigate]);
 
   const selected: CreditPackage | undefined =
     CREDIT_PACKAGES.find((p) => p.id === pkg) ?? CREDIT_PACKAGES[0];
@@ -245,6 +251,22 @@ function CheckoutPage() {
     setLovableEmail("");
     setCpfCnpj("");
     navigate({ to: "/creditos-lovable" });
+  }
+
+  // 🔐 Guarda de admin
+  if (loading || (user && roleLoading)) {
+    return <Layout><div className="p-12 text-center text-muted-foreground">Carregando…</div></Layout>;
+  }
+  if (!user) return null;
+  if (!isAdmin) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-md px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-foreground">Acesso restrito</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Esta página é apenas para administradores.</p>
+        </div>
+      </Layout>
+    );
   }
 
   // ✅ SUCCESS
