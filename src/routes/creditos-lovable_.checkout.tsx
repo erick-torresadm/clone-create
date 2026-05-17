@@ -130,6 +130,34 @@ function CheckoutPage() {
     fbCreditsTrack("InitiateCheckout", payload);
   }, [selected]);
 
+  // 🔁 Resumir compra via ?purchase=<id> (acesso pela "Minha conta")
+  useEffect(() => {
+    if (!purchase) return;
+    let cancelled = false;
+    (async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase
+        .from("credit_purchases")
+        .select("id,lovable_email,price_brl,status,asaas_payment_id")
+        .eq("id", purchase)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      if (data.lovable_email) setLovableEmail(data.lovable_email);
+      setPix({
+        purchaseId: data.id,
+        paymentId: data.asaas_payment_id ?? "",
+        pixPayload: "",
+        pixQrBase64: "",
+        expiresAt: new Date().toISOString(),
+        totalBrl: Number(data.price_brl) || 0,
+      });
+      setPaid(data.status === "paid" || data.status === "done");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [purchase]);
+
   // 💾 Detecta compra recente (apenas notifica, NÃO bloqueia nova compra)
   useEffect(() => {
     try {
