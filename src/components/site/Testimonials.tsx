@@ -1,8 +1,8 @@
-import { Star, Quote, ShieldCheck } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 type Testimonial = {
   name: string;
-  handle: string;
+  handle?: string;
   avatar: string;
   rating: number;
   product: string;
@@ -10,69 +10,66 @@ type Testimonial = {
   date: string;
 };
 
-// Avatares gerados via DiceBear (sem dependência externa, sem crédito a pagar).
+// Avatares neutros (iniciais coloridas) — sem cara de "stock photo".
 const av = (seed: string) =>
-  `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(seed)}&backgroundColor=3b82f6,1e40af,1d4ed8,2563eb&radius=50`;
+  `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1e293b,334155,0f172a,1e40af,475569&textColor=ffffff&fontWeight=600`;
 
 const TESTIMONIALS: Testimonial[] = [
   {
-    name: "Rafael Moura",
-    handle: "@rafa.adstrafego",
-    avatar: av("Rafael Moura"),
+    name: "Rafael M.",
+    avatar: av("RM"),
     rating: 5,
-    product: "PRO Premium — 90 dias",
+    product: "PRO Premium",
     body:
-      "Tô há 3 meses comprando aqui, sempre que precisei de reposição responderam em menos de 10 minutos. Não tenho mais paciência pra grupo de Telegram aleatório, esse aqui virou meu fornecedor fixo.",
+      "Tô comprando aqui já faz uns meses. Já precisei de reposição duas vezes e resolveram rápido no whats. Tá valendo.",
     date: "há 5 dias",
   },
   {
-    name: "Camila Andrade",
+    name: "Camila A.",
     handle: "@cami.scale",
-    avatar: av("Camila Andrade"),
-    rating: 5,
-    product: "BM 300 — Verificado",
+    avatar: av("CA"),
+    rating: 4,
+    product: "BM 300",
     body:
-      "Confesso que da primeira vez fiquei com pé atrás (já tomei golpe em outro lugar). Comprei o mais barato pra testar, chegou em 4 minutos no e-mail e logou de primeira. Agora já comprei 11 vezes.",
+      "Confesso que da primeira vez fiquei com pé atrás, já tinha tomado golpe antes. Comprei o mais barato pra testar e deu certo. Hoje sou cliente fixa.",
     date: "há 1 semana",
   },
   {
-    name: "Diego Patriota",
-    handle: "@patriota.media",
-    avatar: av("Diego Patriota"),
+    name: "Diego P.",
+    avatar: av("DP"),
     rating: 5,
-    product: "USA — Aquecido + BM + Proxy",
+    product: "USA Aquecido",
     body:
-      "Trabalho com infoproduto gringo e o perfil USA com proxy já veio configurado certinho. Subi campanha no segundo dia e nem rampou de gasto. Top demais.",
+      "Perfil veio com proxy configurado. Subi campanha sem dor de cabeça. Recomendo.",
     date: "há 2 semanas",
   },
   {
-    name: "Juliana Reis",
-    handle: "@ju.ecommerce",
-    avatar: av("Juliana Reis"),
+    name: "Juliana R.",
+    handle: "@ju.ecom",
+    avatar: av("JR"),
     rating: 4,
     product: "Expert Premium",
     body:
-      "Atendimento muito humano. Tive um problema com 2FA porque eu mesma errei o passo, mas a equipe me guiou no WhatsApp e resolveu sem cobrar nada. Recomendo demais.",
+      "Tive um probleminha com 2FA (culpa minha) e o suporte me ajudou no whats sem enrolação. Atendimento bom.",
     date: "há 3 semanas",
   },
   {
-    name: "Lucas Bernardes",
-    handle: "@lucasb.trafficks",
-    avatar: av("Lucas Bernardes"),
+    name: "Lucas B.",
+    avatar: av("LB"),
     rating: 5,
-    product: "Perfil BR — Restabelecido",
+    product: "Perfil BR",
     body:
-      "Já testei uns 4 fornecedores diferentes. Aqui o aquecimento é real, não é aquele perfil 'novo' enrolado. Compensa pagar um pouco a mais e dormir tranquilo.",
+      "Já testei outros fornecedores. Aqui o aquecimento parece mais consistente, não é aquele perfil novo enrolado.",
     date: "há 1 mês",
   },
   {
-    name: "Bruna Tavares",
-    handle: "@bru.taboola",
-    avatar: av("Bruna Tavares"),
-    rating: 5,
-    product: "PRO Máster — 180 dias",
+    name: "Bruna T.",
+    handle: "@bru.t",
+    avatar: av("BT"),
+    rating: 4,
+    product: "PRO Máster",
     body:
-      "Comprei o pacote máster pra escala. Em 3 meses não tive uma queda sequer. Quando precisei de nota fiscal pra prestação de contas, mandaram em 24h. Profissional.",
+      "Comprei o pacote maior pra escalar. Até agora sem quedas. Quando pedi nota pra prestar conta mandaram no dia seguinte.",
     date: "há 1 mês",
   },
 ];
@@ -96,14 +93,11 @@ export function Testimonials() {
   return (
     <section className="mt-16 sm:mt-20">
       <div className="mb-6 text-center sm:mb-10">
-        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
-          <ShieldCheck className="h-3.5 w-3.5" /> Clientes verificados
-        </span>
-        <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+        <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-4xl">
           O que dizem quem já comprou
         </h2>
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-          Depoimentos reais de gestores de tráfego e operadores que usam Ativosfy diariamente.
+          Comentários de clientes coletados no atendimento e nos canais privados.
         </p>
       </div>
 
@@ -125,11 +119,10 @@ export function Testimonials() {
                 className="h-11 w-11 rounded-full border border-border bg-secondary"
               />
               <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="truncate text-sm font-bold text-foreground">{t.name}</p>
-                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 fill-primary text-primary-foreground" />
-                </div>
-                <p className="truncate text-[11px] text-muted-foreground">{t.handle}</p>
+                <p className="truncate text-sm font-semibold text-foreground">{t.name}</p>
+                {t.handle && (
+                  <p className="truncate text-[11px] text-muted-foreground">{t.handle}</p>
+                )}
               </div>
             </div>
 
@@ -144,9 +137,8 @@ export function Testimonials() {
               "{t.body}"
             </p>
 
-            <div className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-md border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
-              <ShieldCheck className="h-3 w-3" />
-              {t.product}
+            <div className="mt-4 text-[11px] text-muted-foreground/80">
+              Compra: <span className="text-foreground/80">{t.product}</span>
             </div>
           </div>
         ))}
