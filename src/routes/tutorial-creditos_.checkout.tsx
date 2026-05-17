@@ -43,15 +43,9 @@ export const Route = createFileRoute("/tutorial-creditos_/checkout")({
   }),
   head: () => ({
     meta: [
-      { title: "Checkout Créditos Lovable — Pagamento via PIX" },
-      {
-        name: "description",
-        content:
-          "Finalize a compra dos seus créditos Lovable. Pagamento via PIX, ativação rápida.",
-      },
+      { title: "Tutorial Checkout — Sandbox" },
       { name: "robots", content: "noindex,nofollow" },
     ],
-    links: [{ rel: "canonical", href: "/creditos-lovable/checkout" }],
   }),
   component: CheckoutPage,
 });
