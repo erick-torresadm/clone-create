@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorialCreditosRouteImport } from './routes/tutorial-creditos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as RevendedorRouteImport } from './routes/revendedor'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
@@ -42,6 +43,11 @@ import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicCronNotifyPendingRouteImport } from './routes/api/public/cron/notify-pending'
 import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 
+const TutorialCreditosRoute = TutorialCreditosRouteImport.update({
+  id: '/tutorial-creditos',
+  path: '/tutorial-creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SobreRoute = SobreRouteImport.update({
   id: '/sobre',
   path: '/sobre',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
+  '/tutorial-creditos': typeof TutorialCreditosRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/estoque': typeof AdminEstoqueRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
+  '/tutorial-creditos': typeof TutorialCreditosRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/estoque': typeof AdminEstoqueRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/revendedor': typeof RevendedorRoute
   '/sobre': typeof SobreRoute
+  '/tutorial-creditos': typeof TutorialCreditosRoute
   '/admin/aparencia': typeof AdminAparenciaRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/estoque': typeof AdminEstoqueRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/revendedor'
     | '/sobre'
+    | '/tutorial-creditos'
     | '/admin/aparencia'
     | '/admin/cupons'
     | '/admin/estoque'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/revendedor'
     | '/sobre'
+    | '/tutorial-creditos'
     | '/admin/aparencia'
     | '/admin/cupons'
     | '/admin/estoque'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/revendedor'
     | '/sobre'
+    | '/tutorial-creditos'
     | '/admin/aparencia'
     | '/admin/cupons'
     | '/admin/estoque'
@@ -429,6 +441,7 @@ export interface RootRouteChildren {
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   RevendedorRoute: typeof RevendedorRoute
   SobreRoute: typeof SobreRoute
+  TutorialCreditosRoute: typeof TutorialCreditosRoute
   AdminAparenciaRoute: typeof AdminAparenciaRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
   AdminEstoqueRoute: typeof AdminEstoqueRoute
@@ -451,6 +464,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutorial-creditos': {
+      id: '/tutorial-creditos'
+      path: '/tutorial-creditos'
+      fullPath: '/tutorial-creditos'
+      preLoaderRoute: typeof TutorialCreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sobre': {
       id: '/sobre'
       path: '/sobre'
@@ -704,6 +724,7 @@ const rootRouteChildren: RootRouteChildren = {
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   RevendedorRoute: RevendedorRoute,
   SobreRoute: SobreRoute,
+  TutorialCreditosRoute: TutorialCreditosRoute,
   AdminAparenciaRoute: AdminAparenciaRoute,
   AdminCuponsRoute: AdminCuponsRoute,
   AdminEstoqueRoute: AdminEstoqueRoute,
@@ -726,3 +747,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
