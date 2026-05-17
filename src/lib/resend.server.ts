@@ -149,3 +149,86 @@ export async function sendAbandonedCartEmail(opts: {
     html,
   });
 }
+
+export async function sendCreditPurchaseConfirmationEmail(opts: {
+  to: string;
+  purchaseId: string;
+  credits: number;
+  cycles: number;
+  priceBrl: number;
+  lovableEmail: string;
+}) {
+  const link = `https://ativosfy.store/creditos-lovable/checkout?purchase=${encodeURIComponent(opts.purchaseId)}`;
+  const total = `R$ ${Number(opts.priceBrl).toFixed(2).replace(".", ",")}`;
+  const html = `<!doctype html><html><body style="margin:0;background:#f5f7fb;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#0f172a">
+    <div style="max-width:560px;margin:0 auto;padding:24px">
+      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,.08)">
+        <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);padding:28px;text-align:center;color:#fff">
+          <div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Ativosfy</div>
+          <div style="margin-top:6px;opacity:.95;font-size:14px">Pagamento confirmado ✅</div>
+        </div>
+        <div style="padding:24px">
+          <p style="margin:0 0 6px;font-size:16px">Recebemos seu pagamento de <b>${escapeHtml(opts.credits.toLocaleString("pt-BR"))} créditos Lovable</b> (${opts.cycles} ciclos) · ${total}.</p>
+          <p style="margin:10px 0 18px;color:#475569;font-size:14px">Os créditos serão liberados na conta <b>${escapeHtml(opts.lovableEmail)}</b>. Pode levar até 10 minutos para a contagem começar.</p>
+          <div style="text-align:center;margin:24px 0">
+            <a href="${escapeHtml(link)}" style="display:inline-block;padding:14px 28px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px">Acompanhar liberação dos créditos</a>
+          </div>
+          <p style="margin:18px 0 0;font-size:13px;color:#64748b">⚠ <b>Guarde este email</b>: o link acima leva direto à sua página de progresso, com tutorial em vídeo e suporte. Você pode voltar a qualquer momento.</p>
+          <p style="margin:14px 0 0;font-size:12px;color:#94a3b8">ID da compra: <code>${escapeHtml(opts.purchaseId)}</code></p>
+        </div>
+        <div style="padding:16px 24px;background:#f8fafc;color:#94a3b8;font-size:12px;text-align:center">
+          © ${new Date().getFullYear()} Ativosfy · ativosfy.store
+        </div>
+      </div>
+    </div></body></html>`;
+  await sendResendEmail({
+    to: opts.to,
+    subject: `Ativosfy · Créditos Lovable pagos — acompanhe aqui`,
+    html,
+  });
+}
+
+export async function sendCreditPurchaseRecoveryEmail(opts: {
+  to: string;
+  purchases: Array<{ id: string; credits: number; status: string; created_at: string; lovable_email: string }>;
+}) {
+  const rows = opts.purchases
+    .map((p) => {
+      const link = `https://ativosfy.store/creditos-lovable/checkout?purchase=${encodeURIComponent(p.id)}`;
+      const date = new Date(p.created_at).toLocaleString("pt-BR");
+      const statusLabel =
+        p.status === "paid" || p.status === "done"
+          ? "Pago"
+          : p.status === "pending"
+            ? "Aguardando Pix"
+            : p.status;
+      return `<tr><td style="padding:14px;border-bottom:1px solid #eee">
+        <div style="font-weight:700;color:#0f172a">${escapeHtml(p.credits.toLocaleString("pt-BR"))} créditos · ${escapeHtml(statusLabel)}</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px">${escapeHtml(p.lovable_email)} · ${escapeHtml(date)}</div>
+        <div style="margin-top:8px"><a href="${escapeHtml(link)}" style="color:#3b82f6;font-weight:600">Abrir página da compra →</a></div>
+      </td></tr>`;
+    })
+    .join("");
+  const html = `<!doctype html><html><body style="margin:0;background:#f5f7fb;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#0f172a">
+    <div style="max-width:560px;margin:0 auto;padding:24px">
+      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,.08)">
+        <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);padding:28px;text-align:center;color:#fff">
+          <div style="font-size:22px;font-weight:800;letter-spacing:-.5px">Ativosfy</div>
+          <div style="margin-top:6px;opacity:.95;font-size:14px">Acesso às suas compras</div>
+        </div>
+        <div style="padding:24px">
+          <p style="margin:0 0 14px;font-size:15px">Encontramos as compras vinculadas a este email. Clique no link para abrir a página de cada uma:</p>
+          <table style="width:100%;border-collapse:collapse">${rows}</table>
+          <p style="margin:18px 0 0;font-size:12px;color:#94a3b8">Se você não pediu este email, pode ignorá-lo com segurança.</p>
+        </div>
+        <div style="padding:16px 24px;background:#f8fafc;color:#94a3b8;font-size:12px;text-align:center">
+          © ${new Date().getFullYear()} Ativosfy · ativosfy.store
+        </div>
+      </div>
+    </div></body></html>`;
+  await sendResendEmail({
+    to: opts.to,
+    subject: `Ativosfy · Seus links de compra de créditos`,
+    html,
+  });
+}
