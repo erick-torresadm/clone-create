@@ -152,8 +152,8 @@ function CheckoutPage() {
       if (!nameValid) return toast.error("Informe seu nome completo");
       if (!emailValid) return toast.error("Informe um e-mail válido");
       if (!emailMatches) return toast.error("Os e-mails não conferem");
-      if (!cpfValid) return toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido");
     }
+    if (!cpfValid) return toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido");
     setCreating(true);
     try {
       const account = await ensureAuthenticated();
