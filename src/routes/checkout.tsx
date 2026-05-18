@@ -69,7 +69,7 @@ function CheckoutPage() {
   const nameValid = name.trim().length >= 2;
   const cpfDigits = cpf.replace(/\D/g, "");
   const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
-  const formValid = !!user || (emailValid && emailMatches && nameValid && cpfValid);
+  const formValid = cpfValid && (!!user || (emailValid && emailMatches && nameValid));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -152,8 +152,8 @@ function CheckoutPage() {
       if (!nameValid) return toast.error("Informe seu nome completo");
       if (!emailValid) return toast.error("Informe um e-mail válido");
       if (!emailMatches) return toast.error("Os e-mails não conferem");
-      if (!cpfValid) return toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido");
     }
+    if (!cpfValid) return toast.error("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido");
     setCreating(true);
     try {
       const account = await ensureAuthenticated();
@@ -336,26 +336,29 @@ function CheckoutPage() {
                       )}
                     </div>
 
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        CPF ou CNPJ *
-                      </label>
-                      <Input
-                        value={cpf}
-                        onChange={(e) => setCpf(maskCpf(e.target.value))}
-                        placeholder="000.000.000-00"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        className={cpfValid ? "h-12 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
-                      />
-                    </div>
-
                     <p className="text-[11px] text-muted-foreground">
                       <Sparkles className="mr-1 inline h-3 w-3 text-primary" />
                       Sem senha agora. Criamos sua conta automaticamente e enviamos o acesso ao e-mail informado.
                     </p>
                   </div>
                 )}
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    CPF ou CNPJ *
+                  </label>
+                  <Input
+                    value={cpf}
+                    onChange={(e) => setCpf(maskCpf(e.target.value))}
+                    placeholder="000.000.000-00"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    className={cpfValid ? "h-12 border-emerald-500/50 focus-visible:ring-emerald-500/30" : "h-12"}
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Exigido pelo provedor de pagamento (Asaas) para emitir a cobrança Pix.
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-medium text-muted-foreground">
                   <div className="flex flex-col items-center gap-0.5 rounded-lg bg-muted/40 p-2">
