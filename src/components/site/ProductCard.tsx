@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Share2, ShoppingCart, BadgeCheck, ShieldCheck } from "lucide-react";
 import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
@@ -25,6 +25,7 @@ export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const { data: reseller } = useResellerStatus();
   const isReseller = reseller.isReseller;
+  const navigate = useNavigate();
 
   const isCredits = !!product.tags?.includes("creditos-lovable");
 
@@ -36,6 +37,7 @@ export function ProductCard({ product }: { product: Product }) {
       return;
     }
     add({ id: product.id, name: product.name, price: product.price, image: product.image });
+    navigate({ to: "/checkout" });
   };
 
   return (

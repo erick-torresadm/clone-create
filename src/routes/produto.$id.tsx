@@ -72,7 +72,7 @@ function ProductPage() {
     add({ id: product.id, name: product.name, price: product.price, image: product.image }, minQty);
   const handleBuyNow = () => {
     add({ id: product.id, name: product.name, price: product.price, image: product.image }, minQty);
-    navigate({ to: "/carrinho" });
+    navigate({ to: "/checkout" });
   };
 
   return (
