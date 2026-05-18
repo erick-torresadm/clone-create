@@ -208,7 +208,10 @@ function CheckoutPage() {
             order_id: pix.orderId,
           });
           toast.success("Pagamento confirmado!");
-          setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
+          // Se criamos conta automaticamente, deixa o usuário escolher senha antes de redirecionar
+          if (!accountCreated) {
+            setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
+          }
           return;
         }
       } catch { /* keep polling */ }
