@@ -5,6 +5,7 @@ import { CommunityCTA } from "./CommunityCTA";
 export function Footer() {
   return (
     <footer className="relative z-10 mt-20 border-t border-border/60 bg-background/60">
+      <CommunityCTA />
       {/* Faixa de selos de confiança */}
       <div className="border-b border-border/60 bg-card/40">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 py-5 sm:gap-10 sm:px-6">
