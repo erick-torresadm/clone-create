@@ -49,6 +49,11 @@ function CheckoutPage() {
   const [showAccount, setShowAccount] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
+  const [newPwd, setNewPwd] = useState("");
+  const [newPwdConfirm, setNewPwdConfirm] = useState("");
+  const [savingPwd, setSavingPwd] = useState(false);
+  const [pwdSaved, setPwdSaved] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
 
   function maskCpf(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 14);
