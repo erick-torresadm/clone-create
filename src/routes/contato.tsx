@@ -1,15 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout } from "@/components/site/Layout";
-import { Mail, MessageCircle, Send } from "lucide-react";
-import { useState } from "react";
+import { MessageCircle, Clock, ShieldCheck, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+
+const WHATSAPP_NUMBER = "5511999999999"; // ajuste aqui o número oficial
+const WHATSAPP_MESSAGE = "Olá! Vim pelo site da Ativosfy e gostaria de falar com o suporte.";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
 export const Route = createFileRoute("/contato")({
   head: () => ({
     meta: [
-      { title: "Contato — Minha Loja" },
-      { name: "description", content: "Fale com nosso suporte. Estamos disponíveis 24/7." },
-      { property: "og:title", content: "Contato — Minha Loja" },
-      { property: "og:description", content: "Fale com nosso suporte 24/7." },
+      { title: "Contato — Ativosfy" },
+      { name: "description", content: "Fale com o suporte da Ativosfy direto no WhatsApp. Resposta rápida, 24/7." },
+      { property: "og:title", content: "Contato — Ativosfy" },
+      { property: "og:description", content: "Fale com o suporte da Ativosfy direto no WhatsApp." },
       { property: "og:url", content: "/contato" },
     ],
     links: [{ rel: "canonical", href: "/contato" }],
@@ -18,65 +22,65 @@ export const Route = createFileRoute("/contato")({
 });
 
 function Contato() {
-  const [sent, setSent] = useState(false);
+  const [redirecting, setRedirecting] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      window.location.href = WHATSAPP_URL;
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <Layout>
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 py-16 lg:grid-cols-2">
-        <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            Vamos conversar.
-          </h1>
-          <p className="mt-4 text-muted-foreground">
-            Tire dúvidas, peça suporte ou envie sugestões. Respondemos em até 1 hora em horário
-            comercial.
-          </p>
-
-          <div className="mt-8 space-y-3">
-            {[
-              { icon: Mail, label: "E-mail", value: "contato@minhaloja.com" },
-              { icon: MessageCircle, label: "WhatsApp", value: "+55 (00) 00000-0000" },
-              { icon: Send, label: "Telegram", value: "@minhaloja" },
-            ].map((c) => (
-              <div key={c.label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <c.icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">{c.label}</div>
-                  <div className="font-medium text-foreground">{c.value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="mx-auto flex max-w-2xl flex-col items-center px-4 sm:px-6 py-20 text-center">
+        <div className="grid h-20 w-20 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_20px_50px_-15px_rgba(16,185,129,0.6)]">
+          <MessageCircle className="h-9 w-9" />
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSent(true);
-          }}
-          className="rounded-2xl border border-border bg-card p-6"
+        <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+          Falar no WhatsApp
+        </h1>
+        <p className="mt-4 max-w-md text-muted-foreground">
+          Nosso suporte responde direto no WhatsApp — mais rápido, sem formulário.
+          {redirecting && " Você está sendo redirecionado…"}
+        </p>
+
+        <a
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() => setRedirecting(false)}
+          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-7 py-4 text-base font-semibold text-white shadow-[0_12px_30px_-10px_rgba(16,185,129,0.8)] transition hover:brightness-110 active:scale-[0.98]"
         >
-          <h2 className="text-xl font-semibold text-foreground">Envie uma mensagem</h2>
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className="mb-1 block text-sm text-muted-foreground">Nome</label>
-              <input required className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          <MessageCircle className="h-5 w-5" />
+          Abrir conversa no WhatsApp
+        </a>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          Se nada acontecer,{" "}
+          <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="text-primary underline">
+            clique aqui
+          </a>
+          .
+        </p>
+
+        <div className="mt-12 grid w-full gap-3 sm:grid-cols-3">
+          {[
+            { icon: Zap, label: "Resposta em <5min", sub: "horário comercial" },
+            { icon: Clock, label: "Atendimento 24/7", sub: "todos os dias" },
+            { icon: ShieldCheck, label: "Suporte humano", sub: "sem bot genérico" },
+          ].map((c) => (
+            <div
+              key={c.label}
+              className="rounded-xl border border-border bg-card p-4 text-left"
+            >
+              <c.icon className="h-4 w-4 text-emerald-400" />
+              <div className="mt-2 text-sm font-semibold text-foreground">{c.label}</div>
+              <div className="text-xs text-muted-foreground">{c.sub}</div>
             </div>
-            <div>
-              <label className="mb-1 block text-sm text-muted-foreground">E-mail</label>
-              <input type="email" required className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-muted-foreground">Mensagem</label>
-              <textarea required rows={5} className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-            <button className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_rgba(99,140,255,0.7)] transition hover:brightness-110">
-              Enviar mensagem
-            </button>
-            {sent && <p className="text-center text-sm text-primary">Mensagem enviada! Em breve retornamos.</p>}
-          </div>
-        </form>
+          ))}
+        </div>
       </div>
     </Layout>
   );
