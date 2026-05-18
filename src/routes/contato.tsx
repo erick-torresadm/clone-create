@@ -3,7 +3,7 @@ import { Layout } from "@/components/site/Layout";
 import { MessageCircle, Clock, ShieldCheck, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const WHATSAPP_NUMBER = "5511999999999"; // ajuste aqui o número oficial
+const WHATSAPP_NUMBER = "5511930070320";
 const WHATSAPP_MESSAGE = "Olá! Vim pelo site da Ativosfy e gostaria de falar com o suporte.";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
