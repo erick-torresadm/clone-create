@@ -69,7 +69,7 @@ function CheckoutPage() {
   const nameValid = name.trim().length >= 2;
   const cpfDigits = cpf.replace(/\D/g, "");
   const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
-  const formValid = !!user || (emailValid && emailMatches && nameValid && cpfValid);
+  const formValid = cpfValid && (!!user || (emailValid && emailMatches && nameValid));
 
   useEffect(() => {
     if (typeof window === "undefined") return;
