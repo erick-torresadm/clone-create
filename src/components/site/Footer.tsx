@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkles, Instagram, Send, Mail, ShieldCheck, Lock, Zap } from "lucide-react";
+import { CommunityCTA } from "./CommunityCTA";
 
 export function Footer() {
   return (
