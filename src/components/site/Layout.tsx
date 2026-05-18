@@ -6,6 +6,7 @@ import { TrustBar } from "./TrustBar";
 
 import { Starfield } from "./Starfield";
 import { SupportChat } from "./SupportChat";
+import { WhatsAppFloat } from "./WhatsAppFloat";
 import { useSettings } from "@/lib/site-data";
 import { setSoundsEnabled } from "@/lib/sound";
 
