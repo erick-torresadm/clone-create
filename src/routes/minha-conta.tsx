@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { translateAuthError } from "@/lib/auth-errors";
 import { getMyTelegramStatus, setTelegramSubscriptionActive } from "@/lib/telegram.functions";
 import { useResellerStatus } from "@/lib/reseller";
+import { LoyaltyTierCard } from "@/components/site/LoyaltyTierCard";
 
 const MANUAL_SUPPORT_WHATSAPP = "5511930070320";
 import { toast } from "sonner";
