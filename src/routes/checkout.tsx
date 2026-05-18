@@ -219,7 +219,7 @@ function CheckoutPage() {
     };
     tick();
     return () => { stop = true; polling.current = false; };
-  }, [pix, paid, checkFn, clear, navigate]);
+  }, [pix, paid, checkFn, clear, navigate, accountCreated]);
 
   if (authLoading) return null;
 
