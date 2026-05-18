@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Share2, ShoppingCart, BadgeCheck, ShieldCheck } from "lucide-react";
 import { type Product, discount, formatBRL } from "@/lib/products";
 import { useCart } from "@/lib/use-cart";
