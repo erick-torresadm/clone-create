@@ -33,6 +33,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </div>
       <CartDrawer />
       <SupportChat />
+      <WhatsAppFloat />
     </div>
   );
 }
