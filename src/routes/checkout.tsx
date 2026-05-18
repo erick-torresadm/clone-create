@@ -272,6 +272,20 @@ function CheckoutPage() {
                 </div>
 
                 {!user && (
+                  <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3 text-xs">
+                    <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-foreground">Criamos sua conta automaticamente</p>
+                      <p className="text-muted-foreground">
+                        Com o e-mail que você informar abaixo você acessa seu painel, vê seus pedidos, suporte e garantia.
+                        Os dados de acesso vão por e-mail logo após o pagamento.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+
+                {!user && (
                   <div className="space-y-4">
                     <div>
                       <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
