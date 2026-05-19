@@ -97,7 +97,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const ids = data.items.map((i) => i.productId);
     const { data: products, error } = await supabaseAdmin
       .from("products")
-      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity,external_price,min_quantity")
+      .select("id,name,price,image_url,active,source,external_provider,external_id,external_quantity,external_price,external_currency,min_quantity")
       .in("id", ids);
     if (error) throw new Error(error.message);
     if (!products || products.length !== ids.length) throw new Error("Produto não encontrado");
@@ -114,22 +114,28 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const discountPct = isReseller ? Number(resellerRow!.discount_pct ?? 50) : 0;
 
     let brlPerUsd = 5.5;
+    let brlPerVnd = 0.00024;
     if (isReseller) {
       const { data: settings } = await supabaseAdmin
-        .from("site_settings").select("brl_per_usd").eq("id", 1).maybeSingle();
+        .from("site_settings").select("brl_per_usd,brl_per_vnd").eq("id", 1).maybeSingle();
       if (settings?.brl_per_usd) brlPerUsd = Number(settings.brl_per_usd);
+      if (settings?.brl_per_vnd) brlPerVnd = Number(settings.brl_per_vnd);
     }
 
     function priceFor(p: any): number {
       const base = Number(p.price);
       if (!isReseller) return base;
-      // API: preço baseado no CUSTO (external_price * câmbio * margem), não no preço público
-      if (p.source && p.source !== "manual" && p.external_price && brlPerUsd) {
-        const marginMult = 1 + discountPct / 100;
-        const costPrice = Number(p.external_price) * brlPerUsd * marginMult;
-        return Math.min(costPrice, base);
+      // API: preço baseado no CUSTO (external_price * câmbio da moeda * margem)
+      if (p.source && p.source !== "manual" && p.external_price) {
+        const cur = String(p.external_currency || "USD").toUpperCase();
+        const rate = cur === "VND" ? brlPerVnd : cur === "USD" ? brlPerUsd : cur === "BRL" ? 1 : 0;
+        if (rate > 0) {
+          const marginMult = 1 + discountPct / 100;
+          const costPrice = Number(p.external_price) * rate * marginMult;
+          return Math.min(costPrice, base);
+        }
       }
-      // Manual: desconto sobre o preço público
+      // Manual (ou sem câmbio configurado): desconto sobre o preço público
       return base * (1 - discountPct / 100);
     }
 
