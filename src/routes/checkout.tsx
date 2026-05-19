@@ -49,6 +49,11 @@ function CheckoutPage() {
   const [showAccount, setShowAccount] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [coupon, setCoupon] = useState<{ code: string; type: "percent" | "fixed"; value: number } | null>(null);
+  const [newPwd, setNewPwd] = useState("");
+  const [newPwdConfirm, setNewPwdConfirm] = useState("");
+  const [savingPwd, setSavingPwd] = useState(false);
+  const [pwdSaved, setPwdSaved] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
 
   function maskCpf(v: string) {
     const d = v.replace(/\D/g, "").slice(0, 14);
@@ -208,7 +213,10 @@ function CheckoutPage() {
             order_id: pix.orderId,
           });
           toast.success("Pagamento confirmado!");
-          setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
+          // Se criamos conta automaticamente, deixa o usuário escolher senha antes de redirecionar
+          if (!accountCreated) {
+            setTimeout(() => navigate({ to: "/minha-conta" }), 1200);
+          }
           return;
         }
       } catch { /* keep polling */ }
@@ -216,7 +224,7 @@ function CheckoutPage() {
     };
     tick();
     return () => { stop = true; polling.current = false; };
-  }, [pix, paid, checkFn, clear, navigate]);
+  }, [pix, paid, checkFn, clear, navigate, accountCreated]);
 
   if (authLoading) return null;
 
@@ -570,17 +578,96 @@ function CheckoutPage() {
           )}
 
           {paid && (
-            <div className="mt-6 flex flex-col items-center rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-10 text-center shadow-[0_20px_60px_-20px_rgba(16,185,129,0.4)]">
-              <div className="grid h-20 w-20 place-items-center rounded-full bg-emerald-500/20 ring-4 ring-emerald-500/10">
-                <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+            <div className="mt-6 space-y-4">
+              <div className="flex flex-col items-center rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-8 text-center shadow-[0_20px_60px_-20px_rgba(16,185,129,0.4)]">
+                <div className="grid h-16 w-16 place-items-center rounded-full bg-emerald-500/20 ring-4 ring-emerald-500/10">
+                  <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+                </div>
+                <h2 className="mt-4 text-2xl font-extrabold text-foreground sm:text-3xl">Pagamento confirmado!</h2>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+                  Seu pedido foi aprovado. Sua entrega já está em <Link to="/minha-conta" className="font-semibold text-primary hover:underline">Minha conta</Link>.
+                </p>
               </div>
-              <h2 className="mt-5 text-2xl font-extrabold text-foreground sm:text-3xl">Pagamento confirmado!</h2>
-              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                Estamos preparando suas contas. Você será redirecionado em instantes para visualizá-las.
-              </p>
-              <div className="mt-5 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Redirecionando para suas contas...
-              </div>
+
+              {accountCreated && !pwdSaved && (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (newPwd.length < 8) return toast.error("A senha deve ter pelo menos 8 caracteres");
+                    if (newPwd !== newPwdConfirm) return toast.error("As senhas não conferem");
+                    setSavingPwd(true);
+                    try {
+                      const { error } = await supabase.auth.updateUser({ password: newPwd });
+                      if (error) {
+                        toast.error(translateAuthError(error.message, "Não foi possível salvar a senha"));
+                        return;
+                      }
+                      setPwdSaved(true);
+                      toast.success("Senha definida! Bem-vindo(a).");
+                      setTimeout(() => navigate({ to: "/minha-conta" }), 1000);
+                    } finally {
+                      setSavingPwd(false);
+                    }
+                  }}
+                  className="rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card to-card p-6 shadow-xl"
+                >
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                    <Lock className="h-4 w-4" /> Crie sua senha de acesso
+                  </div>
+                  <h3 className="mt-1 text-lg font-bold text-foreground">Defina uma senha pra acessar sua conta</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Sua conta foi criada com o e-mail <strong className="text-foreground">{accountCreated.email}</strong>. Escolha uma senha que você lembre — você usará pra entrar em <Link to="/minha-conta" className="text-primary underline">Minha conta</Link> e ver seus produtos.
+                  </p>
+
+                  <label className="mt-4 block text-xs font-semibold text-muted-foreground">Nova senha</label>
+                  <div className="relative mt-1">
+                    <Input
+                      type={showNewPwd ? "text" : "password"}
+                      value={newPwd}
+                      onChange={(e) => setNewPwd(e.target.value)}
+                      placeholder="Mínimo 8 caracteres"
+                      autoComplete="new-password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPwd((v) => !v)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={showNewPwd ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showNewPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+
+                  <label className="mt-3 block text-xs font-semibold text-muted-foreground">Confirme a senha</label>
+                  <Input
+                    type={showNewPwd ? "text" : "password"}
+                    value={newPwdConfirm}
+                    onChange={(e) => setNewPwdConfirm(e.target.value)}
+                    placeholder="Repita a senha"
+                    autoComplete="new-password"
+                    className="mt-1"
+                  />
+
+                  <Button type="submit" className="mt-5 w-full" disabled={savingPwd}>
+                    {savingPwd ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</> : <>Salvar senha e acessar minha conta</>}
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate({ to: "/minha-conta" })}
+                    className="mt-3 block w-full text-center text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Pular por agora (também enviamos por e-mail)
+                  </button>
+                </form>
+              )}
+
+              {pwdSaved && (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-400">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Redirecionando para Minha conta...
+                </div>
+              )}
             </div>
           )}
         </div>
