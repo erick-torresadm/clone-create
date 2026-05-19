@@ -14,7 +14,7 @@ export function WhatsAppFloat() {
   if (!mounted) return null;
 
   return (
-    <div className="fixed bottom-5 left-5 z-[60] flex flex-col items-start gap-2 sm:bottom-6 sm:left-6">
+    <div className="fixed bottom-24 right-5 z-[60] flex flex-col items-end gap-2">
       {open && (
         <div className="relative max-w-[260px] rounded-2xl border border-emerald-500/30 bg-card/95 p-3 pr-8 text-xs text-foreground shadow-2xl backdrop-blur animate-in fade-in slide-in-from-bottom-2">
           <button
