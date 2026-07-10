@@ -296,7 +296,7 @@ function CheckoutPage() {
         data: {
           packageId: selected.id,
           buyerEmail: buyerEmail.trim(),
-          lovableEmail: lovableEmail.trim(),
+          lovableEmail: (lovableEmail || buyerEmail).trim(),
           cpfCnpj: cpfDigits,
           environment: ENV,
         },
