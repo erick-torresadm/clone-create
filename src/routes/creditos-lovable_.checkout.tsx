@@ -37,7 +37,6 @@ import {
 import { toast } from "sonner";
 
 const ENV = "live" as "sandbox" | "live";
-const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 const LS_KEY = "credits-active-purchase";
 
 type CheckoutSearch = { pkg?: string; purchase?: string };
