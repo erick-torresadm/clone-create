@@ -435,8 +435,7 @@ function CheckoutPage() {
               cashbackExpiresAt={loyalty.cashbackExpiresAt}
             />
           )}
-          <CreditProgressCard purchaseId={pix.purchaseId} />
-          <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={lovableEmail} />
+          <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={buyerEmail || lovableEmail} />
 
           <div className="mt-8 text-center">
             <Button variant="outline" onClick={reset}>
