@@ -75,7 +75,7 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
       .single();
     if (insErr || !row) throw new Error(insErr?.message || "Falha ao registrar compra");
 
-    const description = `${pkg.credits} créditos Lovable (${pkg.cycles} ciclos) para ${lovable}`;
+    const description = `Plano Pro Lite Lovable — 1 ano (${pkg.credits} créditos via voucher) para ${lovable}`;
     const payment = await createPixPayment(env, {
       customerId: customer.id,
       valueBrl: pkg.priceBrl,
