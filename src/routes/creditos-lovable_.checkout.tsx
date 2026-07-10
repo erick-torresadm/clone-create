@@ -574,43 +574,36 @@ function CheckoutPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {selected ? (
               <>
-                Pacote selecionado:{" "}
-                <strong className="text-foreground">
-                  {selected.credits.toLocaleString("pt-BR")} créditos
-                </strong>{" "}
-                · {formatBrl(selected.priceBrl)}
+                Plano selecionado:{" "}
+                <strong className="text-foreground">{selected.name}</strong> ·{" "}
+                {formatBrl(selected.priceBrl)}
+                <span className="text-muted-foreground">
+                  {" "}
+                  · {selected.credits} créditos via voucher
+                </span>
               </>
             ) : (
-              "Escolha um pacote primeiro."
+              "Escolha um plano primeiro."
             )}
           </p>
           <div className="mt-6 space-y-4">
             <div>
               <label className="text-xs font-semibold text-muted-foreground">
-                Seu email (para contato)
+                Seu e-mail (o link de voucher será enviado aqui)
               </label>
               <Input
                 type="email"
                 placeholder="voce@email.com"
                 value={buyerEmail}
-                onChange={(e) => setBuyerEmail(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground">
-                Email da sua conta no Lovable
-              </label>
-              <Input
-                type="email"
-                placeholder="conta@lovable.dev"
-                value={lovableEmail}
-                onChange={(e) => setLovableEmail(e.target.value)}
+                onChange={(e) => {
+                  setBuyerEmail(e.target.value);
+                  setLovableEmail(e.target.value);
+                }}
                 className="mt-1"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">
-                É nessa conta que os créditos serão liberados. Confira antes de
-                comprar.
+                Use um e-mail válido — o voucher chega neste endereço logo após
+                a confirmação do pagamento.
               </p>
             </div>
             <div>
