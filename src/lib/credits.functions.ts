@@ -96,11 +96,11 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
       })
       .eq("id", row.id);
 
-    // 🔔 Telegram: PIX gerado (créditos Lovable)
+    // 🔔 Telegram: PIX gerado (Plano Pro Lite Lovable)
     notifyAdmin(
       [
-        `🟡 <b>Novo PIX gerado — Créditos Lovable</b>`,
-        `<b>Pacote:</b> ${pkg.credits} créditos (${pkg.cycles} ciclos) — R$ ${pkg.priceBrl.toFixed(2)}`,
+        `🟡 <b>Novo PIX gerado — Plano Pro Lite Lovable (1 ano)</b>`,
+        `<b>Pacote:</b> ${pkg.name} — ${pkg.credits} créditos via voucher — R$ ${pkg.priceBrl.toFixed(2)}`,
         `<b>Cliente:</b> ${buyer}`,
         `<b>Conta Lovable:</b> ${lovable}`,
         `<b>Compra:</b> <code>${row.id}</code>`,
