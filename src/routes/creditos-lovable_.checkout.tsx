@@ -104,10 +104,11 @@ function CheckoutPage() {
 
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const buyerValid = emailRe.test(buyerEmail.trim());
-  const lovableValid = emailRe.test(lovableEmail.trim());
+  // O voucher é entregue no e-mail do comprador — reutilizamos o mesmo endereço.
+  const lovableValid = buyerValid;
   const cpfDigits = cpfCnpj.replace(/\D/g, "");
   const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
-  const formValid = !!selected && buyerValid && lovableValid && cpfValid;
+  const formValid = !!selected && buyerValid && cpfValid;
 
   const remaining = useMemo(() => {
     if (!pix) return 0;
