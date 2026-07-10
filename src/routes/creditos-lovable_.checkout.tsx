@@ -10,7 +10,7 @@ import {
   checkCreditPayment,
   type CreditPackage,
 } from "@/lib/credits.functions";
-import { CreditProgressCard } from "@/components/site/CreditProgressCard";
+
 import { PostPurchaseHelp } from "@/components/site/PostPurchaseHelp";
 import { TutorialVideo } from "@/components/site/TutorialVideo";
 import { ScarcityPanel } from "@/components/site/Scarcity";
@@ -37,7 +37,6 @@ import {
 import { toast } from "sonner";
 
 const ENV = "live" as "sandbox" | "live";
-const SUPPORT_EMAIL = "er.ic.klo.vabl.ecredits@gmail.com";
 const LS_KEY = "credits-active-purchase";
 
 type CheckoutSearch = { pkg?: string; purchase?: string };
@@ -104,10 +103,10 @@ function CheckoutPage() {
 
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const buyerValid = emailRe.test(buyerEmail.trim());
-  const lovableValid = emailRe.test(lovableEmail.trim());
+  // O voucher é entregue no e-mail do comprador — mesmo endereço.
   const cpfDigits = cpfCnpj.replace(/\D/g, "");
   const cpfValid = cpfDigits.length === 11 || cpfDigits.length === 14;
-  const formValid = !!selected && buyerValid && lovableValid && cpfValid;
+  const formValid = !!selected && buyerValid && cpfValid;
 
   const remaining = useMemo(() => {
     if (!pix) return 0;
@@ -219,7 +218,7 @@ function CheckoutPage() {
               LS_KEY,
               JSON.stringify({
                 purchaseId: pix.purchaseId,
-                lovableEmail: lovableEmail.trim(),
+                lovableEmail: (lovableEmail || buyerEmail).trim(),
                 savedAt: Date.now(),
               }),
             );
@@ -297,7 +296,7 @@ function CheckoutPage() {
         data: {
           packageId: selected.id,
           buyerEmail: buyerEmail.trim(),
-          lovableEmail: lovableEmail.trim(),
+          lovableEmail: (lovableEmail || buyerEmail).trim(),
           cpfCnpj: cpfDigits,
           environment: ENV,
         },
@@ -338,8 +337,28 @@ function CheckoutPage() {
               Pagamento confirmado!
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Agora siga estes passos para receber seus créditos:
+              Estamos preparando seu <strong>link de voucher</strong> do Plano
+              Pro Lite (1 ano — 300 créditos).
             </p>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-border bg-card p-5">
+            <p className="text-sm text-muted-foreground">
+              O link de resgate será enviado em instantes para o e-mail:
+            </p>
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background p-3">
+              <code className="flex-1 break-all text-sm text-foreground">
+                {buyerEmail || lovableEmail || "seu e-mail"}
+              </code>
+            </div>
+            <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+              <p className="text-xs text-amber-200">
+                ⏱️ <strong>Atenção:</strong> a entrega é feita manualmente para
+                garantir a qualidade. Pode levar de alguns minutos até 1h.
+                Verifique também a caixa de <strong>spam/promoções</strong>. Se
+                precisar de ajuda, fale conosco pelo WhatsApp no rodapé.
+              </p>
+            </div>
           </div>
 
           <ol className="mt-8 space-y-4">
@@ -350,16 +369,11 @@ function CheckoutPage() {
                 </span>
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">
-                    Abra as configurações da sua conta Lovable
+                    Abra o link de voucher recebido por e-mail
                   </p>
-                  <a
-                    href="https://lovable.dev/settings/people"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-block text-sm text-primary underline"
-                  >
-                    https://lovable.dev/settings/people
-                  </a>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Faça login na sua conta Lovable antes de abrir o link.
+                  </p>
                 </div>
               </div>
             </li>
@@ -370,7 +384,11 @@ function CheckoutPage() {
                 </span>
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">
-                    Clique em "Invite members"
+                    Crie um novo workspace na sua conta
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Recomendado para manter seus créditos isolados. Você pode
+                    transferir projetos depois.
                   </p>
                 </div>
               </div>
@@ -382,22 +400,11 @@ function CheckoutPage() {
                 </span>
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">
-                    Adicione como <span className="text-primary">Owner</span> o
-                    email abaixo:
+                    Resgate o link no novo workspace
                   </p>
-                  <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background p-3">
-                    <code className="flex-1 break-all text-sm text-foreground">
-                      {SUPPORT_EMAIL}
-                    </code>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => copy(SUPPORT_EMAIL)}
-                    >
-                      <Copy className="mr-1 h-3.5 w-3.5" />
-                      Copiar
-                    </Button>
-                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    300 créditos + bônus diários liberados na hora.
+                  </p>
                 </div>
               </div>
             </li>
@@ -409,17 +416,9 @@ function CheckoutPage() {
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">Pronto!</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Os créditos serão liberados na conta{" "}
-                    <strong>{lovableEmail || pix.purchaseId}</strong>.
+                    Seu Plano Pro Lite fica ativo por 12 meses. Você pode
+                    comprar mais vouchers a qualquer momento.
                   </p>
-                  <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-left">
-                    <p className="text-xs text-amber-200">
-                      ⏱️ <strong>Atenção:</strong> devido à alta demanda, pode
-                      levar até <strong>10 minutos</strong> para a contagem dos
-                      créditos começar. Mantenha esta página aberta para
-                      acompanhar em tempo real.
-                    </p>
-                  </div>
                 </div>
               </div>
             </li>
@@ -434,8 +433,7 @@ function CheckoutPage() {
               cashbackExpiresAt={loyalty.cashbackExpiresAt}
             />
           )}
-          <CreditProgressCard purchaseId={pix.purchaseId} />
-          <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={lovableEmail} />
+          <PostPurchaseHelp purchaseId={pix.purchaseId} lovableEmail={buyerEmail || lovableEmail} />
 
           <div className="mt-8 text-center">
             <Button variant="outline" onClick={reset}>
@@ -574,43 +572,36 @@ function CheckoutPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {selected ? (
               <>
-                Pacote selecionado:{" "}
-                <strong className="text-foreground">
-                  {selected.credits.toLocaleString("pt-BR")} créditos
-                </strong>{" "}
-                · {formatBrl(selected.priceBrl)}
+                Plano selecionado:{" "}
+                <strong className="text-foreground">{selected.name}</strong> ·{" "}
+                {formatBrl(selected.priceBrl)}
+                <span className="text-muted-foreground">
+                  {" "}
+                  · {selected.credits} créditos via voucher
+                </span>
               </>
             ) : (
-              "Escolha um pacote primeiro."
+              "Escolha um plano primeiro."
             )}
           </p>
           <div className="mt-6 space-y-4">
             <div>
               <label className="text-xs font-semibold text-muted-foreground">
-                Seu email (para contato)
+                Seu e-mail (o link de voucher será enviado aqui)
               </label>
               <Input
                 type="email"
                 placeholder="voce@email.com"
                 value={buyerEmail}
-                onChange={(e) => setBuyerEmail(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground">
-                Email da sua conta no Lovable
-              </label>
-              <Input
-                type="email"
-                placeholder="conta@lovable.dev"
-                value={lovableEmail}
-                onChange={(e) => setLovableEmail(e.target.value)}
+                onChange={(e) => {
+                  setBuyerEmail(e.target.value);
+                  setLovableEmail(e.target.value);
+                }}
                 className="mt-1"
               />
               <p className="mt-1 text-[11px] text-muted-foreground">
-                É nessa conta que os créditos serão liberados. Confira antes de
-                comprar.
+                Use um e-mail válido — o voucher chega neste endereço logo após
+                a confirmação do pagamento.
               </p>
             </div>
             <div>

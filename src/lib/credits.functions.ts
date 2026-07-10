@@ -22,19 +22,17 @@ export type CreditPackage = {
 };
 
 // Fonte única de verdade dos pacotes (server-side enforced).
+// Plano Pro Lite de 1 ano — entrega via link de voucher resgatável.
 export const CREDIT_PACKAGES: CreditPackage[] = [
-  { id: "p100",  name: "Starter",  credits: 100,  cycles: 5,   days: 1,  priceBrl: 14.9 },
-  { id: "p200",  name: "Básico",   credits: 200,  cycles: 10,  days: 1,  priceBrl: 24.9 },
-  { id: "p300",  name: "Light",    credits: 300,  cycles: 15,  days: 2,  priceBrl: 34.9 },
-  { id: "p400",  name: "Avançado", credits: 400,  cycles: 20,  days: 2,  priceBrl: 44.9, highlight: true },
-  { id: "p500",  name: "Plus",     credits: 500,  cycles: 25,  days: 3,  priceBrl: 49.9 },
-  { id: "p600",  name: "Pro",      credits: 600,  cycles: 30,  days: 3,  priceBrl: 69.9 },
-  { id: "p700",  name: "Pro+",     credits: 700,  cycles: 35,  days: 4,  priceBrl: 79.9 },
-  { id: "p800",  name: "Ultra",    credits: 800,  cycles: 40,  days: 4,  priceBrl: 89.9 },
-  { id: "p900",  name: "Ultra+",   credits: 900,  cycles: 45,  days: 5,  priceBrl: 99.9 },
-  { id: "p1000", name: "Premium",  credits: 1000, cycles: 50,  days: 5,  priceBrl: 129.9 },
-  { id: "p1500", name: "Mega",     credits: 1500, cycles: 75,  days: 7,  priceBrl: 169.9 },
-  { id: "p2000", name: "Máximo",   credits: 2000, cycles: 100, days: 10, priceBrl: 199.9 },
+  {
+    id: "prolite1y",
+    name: "Pro Lite • 1 ano",
+    credits: 300,
+    cycles: 1,
+    days: 365,
+    priceBrl: 69.9,
+    highlight: true,
+  },
 ];
 
 const createSchema = z.object({
@@ -77,7 +75,7 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
       .single();
     if (insErr || !row) throw new Error(insErr?.message || "Falha ao registrar compra");
 
-    const description = `${pkg.credits} créditos Lovable (${pkg.cycles} ciclos) para ${lovable}`;
+    const description = `Plano Pro Lite Lovable — 1 ano (${pkg.credits} créditos via voucher) para ${lovable}`;
     const payment = await createPixPayment(env, {
       customerId: customer.id,
       valueBrl: pkg.priceBrl,
@@ -98,11 +96,11 @@ export const createCreditCheckout = createServerFn({ method: "POST" })
       })
       .eq("id", row.id);
 
-    // 🔔 Telegram: PIX gerado (créditos Lovable)
+    // 🔔 Telegram: PIX gerado (Plano Pro Lite Lovable)
     notifyAdmin(
       [
-        `🟡 <b>Novo PIX gerado — Créditos Lovable</b>`,
-        `<b>Pacote:</b> ${pkg.credits} créditos (${pkg.cycles} ciclos) — R$ ${pkg.priceBrl.toFixed(2)}`,
+        `🟡 <b>Novo PIX gerado — Plano Pro Lite Lovable (1 ano)</b>`,
+        `<b>Pacote:</b> ${pkg.name} — ${pkg.credits} créditos via voucher — R$ ${pkg.priceBrl.toFixed(2)}`,
         `<b>Cliente:</b> ${buyer}`,
         `<b>Conta Lovable:</b> ${lovable}`,
         `<b>Compra:</b> <code>${row.id}</code>`,
