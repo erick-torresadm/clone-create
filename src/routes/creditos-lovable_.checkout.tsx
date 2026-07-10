@@ -218,7 +218,7 @@ function CheckoutPage() {
               LS_KEY,
               JSON.stringify({
                 purchaseId: pix.purchaseId,
-                lovableEmail: lovableEmail.trim(),
+                lovableEmail: (lovableEmail || buyerEmail).trim(),
                 savedAt: Date.now(),
               }),
             );
