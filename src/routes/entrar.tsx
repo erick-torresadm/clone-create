@@ -7,7 +7,9 @@ import { toast } from "sonner";
 import { translateAuthError } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/entrar")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { redirect?: string; ref?: string; mode?: "signup" | "forgot" } => ({
     redirect: typeof s.redirect === "string" ? s.redirect : undefined,
     ref: typeof s.ref === "string" ? s.ref : undefined,
     mode: s.mode === "signup" || s.mode === "forgot" ? s.mode : undefined,
