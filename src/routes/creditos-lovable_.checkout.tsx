@@ -554,12 +554,6 @@ function CheckoutPage() {
           <ScarcityPanel seed={`credits-${selected?.id ?? "p"}`} compact />
         </div>
 
-        <div className="mb-4">
-          <TutorialVideo
-            title="Veja antes de comprar: como liberar seus créditos (1 min)"
-            subtitle="Mostramos exatamente o que você precisa fazer depois do pagamento. É simples, mesmo se você nunca usou o Lovable."
-          />
-        </div>
 
         <SocialProofTicker />
         <RepeatBonusBanner email={buyerEmail} />
@@ -657,6 +651,14 @@ function CheckoutPage() {
               Pagamento processado pelo Asaas
             </div>
           </div>
+        </div>
+
+        <div className="mt-5">
+          <TutorialVideo
+            collapsed
+            title="Veja antes de comprar: como liberar seus créditos (1 min)"
+            subtitle="Mostramos exatamente o que você precisa fazer depois do pagamento. É simples, mesmo se você nunca usou o Lovable."
+          />
         </div>
       </section>
     </Layout>
